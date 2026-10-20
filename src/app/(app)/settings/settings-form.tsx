@@ -7,11 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { resizeImage } from "@/lib/images";
 import { CURRENCIES, type Settings } from "@/lib/types";
 import { SubmitButton } from "@/components/buttons";
-import { saveSettings } from "./actions";
+import { saveSettings, type SettingsState } from "./actions";
 
 export function SettingsForm({ settings }: { settings: Settings }) {
   const { t } = useT();
-  const [state, action] = useActionState(saveSettings, {});
+  const [state, action] = useActionState(saveSettings, {} as SettingsState);
   const [logo, setLogo] = useState(settings.logo_url ?? "");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);

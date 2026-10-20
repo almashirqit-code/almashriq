@@ -152,7 +152,11 @@ export async function deleteInvoice(id: string) {
   redirect("/invoices");
 }
 
-export async function addPayment(invoiceId: string, _prev: { error?: string; ok?: boolean }, formData: FormData) {
+export async function addPayment(
+  invoiceId: string,
+  _prev: { error?: string; ok?: boolean },
+  formData: FormData
+): Promise<{ error?: string; ok?: boolean }> {
   const profile = await getProfile();
   const amount = Number(formData.get("amount"));
   if (!amount || amount <= 0) return { error: "Enter an amount." };

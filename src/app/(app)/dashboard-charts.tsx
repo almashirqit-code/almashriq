@@ -32,7 +32,7 @@ export function SalesChart({ data, locale }: { data: { label: string; value: num
           />
           <Tooltip
             cursor={{ fill: "#f1f5f9" }}
-            formatter={(v: number) => [full.format(v), ""]}
+            formatter={(v) => [full.format(Number(v)), ""]}
             contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }}
           />
           <Bar dataKey="value" fill="#1d58f1" radius={[4, 4, 0, 0]} maxBarSize={36} />

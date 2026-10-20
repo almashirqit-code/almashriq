@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { CURRENCIES, type Currency } from "@/lib/types";
 
-export async function saveSettings(_prev: { error?: string; ok?: boolean }, formData: FormData) {
+export type SettingsState = { error?: string; ok?: boolean };
+
+export async function saveSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
   await assertRole(["admin"]);
   const s = (k: string) => {
     const v = String(formData.get(k) ?? "").trim();
