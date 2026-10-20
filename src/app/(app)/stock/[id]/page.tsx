@@ -13,6 +13,7 @@ import { VehicleForm } from "../vehicle-form";
 import { updateVehicle, deleteVehicle } from "../actions";
 import { ImageManager } from "./image-manager";
 import { loadMasters } from "../masters-data";
+import { MakeAvailableButton } from "../make-available";
 
 export default async function VehiclePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -92,6 +93,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
                 {t("va_create_invoice")}
               </Link>
             )}
+            {canEdit && v.status !== "in_stock" && <MakeAvailableButton vehicleId={v.id} stockNo={v.stock_no} />}
             {can.deleteStock(profile.role) && (
               <ConfirmButton action={del}>
                 <Trash2 className="h-4 w-4" />

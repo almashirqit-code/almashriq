@@ -93,6 +93,77 @@ export async function setVehicleFlag(id: string, field: "show_on_website" | "for
   revalidatePath("/showroom");
 }
 
+export type MakeAvailableResult = {
+  ok?: boolean;
+  error?: string;
+  /** TT money still allocated to this car — must be unallocated first */
+  remittances?: number[];
+  /** invoices that block the reset (payments recorded, or other cars on them) */
+  blockingInvoices?: { id: string; invoice_no: string; reason: "paid" | "multi" }[];
+};
+
+/**
+ * "Make available": deletes the car's invoice(s) and reservation(s) so it goes back to In stock.
+ * Refuses while TT money is allocated to the car or the invoice has payments / other cars on it.
+ */
+export async function makeAvailable(id: string): Promise<MakeAvailableResult> {
+  await assertRole(["admin", "manager"]);
+  const supabase = await createClient();
+
+  // 1. TT allocations must be removed first.
+  const { data: allocs } = await supabase.from("remittance_allocations").select("remittance_id").eq("vehicle_id", id);
+  if (allocs?.length) return { remittances: [...new Set<number>(allocs.map((a: { remittance_id: number }) => Number(a.remittance_id)))] };
+
+  // 2. Live invoices containing this car.
+  const { data: items } = await supabase
+    .from("invoice_items")
+    .select("invoice_id, invoices!inner(id, invoice_no, status, amount_paid)")
+    .eq("vehicle_id", id)
+    .neq("invoices.status", "cancelled");
+  type Inv = { id: string; invoice_no: string; status: string; amount_paid: number };
+  const invoices: Inv[] = [
+    ...new Map<string, Inv>((items ?? []).map((i: { invoice_id: string; invoices: unknown }) => [i.invoice_id, i.invoices as Inv])).values(),
+  ];
+
+  const blocking: NonNullable<MakeAvailableResult["blockingInvoices"]> = [];
+  for (const inv of invoices) {
+    const { count: payCount } = await supabase.from("payments").select("id", { count: "exact", head: true }).eq("invoice_id", inv.id);
+    if ((payCount ?? 0) > 0 || Number(inv.amount_paid) > 0) {
+      blocking.push({ id: inv.id, invoice_no: inv.invoice_no, reason: "paid" });
+      continue;
+    }
+    const { count: others } = await supabase
+      .from("invoice_items")
+      .select("id", { count: "exact", head: true })
+      .eq("invoice_id", inv.id)
+      .not("vehicle_id", "is", null)
+      .neq("vehicle_id", id);
+    if ((others ?? 0) > 0) blocking.push({ id: inv.id, invoice_no: inv.invoice_no, reason: "multi" });
+  }
+  if (blocking.length) return { blockingInvoices: blocking };
+
+  // 3. Delete the invoices (items first so status triggers run), then the reservations.
+  for (const inv of invoices) {
+    const { error: e1 } = await supabase.from("invoice_items").delete().eq("invoice_id", inv.id);
+    if (e1) return { error: e1.message };
+    const { error: e2 } = await supabase.from("invoices").delete().eq("id", inv.id);
+    if (e2) return { error: e2.message };
+  }
+  const { error: e3 } = await supabase.from("reservations").delete().eq("vehicle_id", id).in("status", ["active", "invoiced"]);
+  if (e3) return { error: e3.message };
+
+  // 4. Back to stock (also covers cars marked shipped by hand).
+  const { error: e4 } = await supabase.from("vehicles").update({ status: "in_stock" }).eq("id", id);
+  if (e4) return { error: e4.message };
+
+  revalidatePath("/stock");
+  revalidatePath(`/stock/${id}`);
+  revalidatePath("/invoices");
+  revalidatePath("/reservations");
+  revalidatePath("/");
+  return { ok: true };
+}
+
 export async function refreshVehicle(vehicleId: string) {
   revalidatePath(`/stock/${vehicleId}`);
   revalidatePath("/stock");

@@ -181,6 +181,7 @@ export default async function StockPage({
                       <td className="text-right">
                         <VehicleRowActions
                           id={v.id}
+                          stockNo={v.stock_no}
                           status={v.status}
                           showOnWebsite={!!v.show_on_website}
                           forParts={!!v.for_parts}

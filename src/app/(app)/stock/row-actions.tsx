@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Eye, FileText, Globe, EyeOff, Wrench, Trash2, BookmarkCheck, BookmarkPlus } from "lucide-react";
+import { ChevronDown, Eye, FileText, Globe, EyeOff, Wrench, Trash2, BookmarkCheck, BookmarkPlus, RotateCcw } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { VehicleStatus } from "@/lib/types";
 import { deleteVehicle, setVehicleFlag } from "./actions";
+import { useMakeAvailable } from "./make-available";
 
 /**
  * Per-vehicle "Actions" dropdown on the stock list.
@@ -14,6 +15,7 @@ import { deleteVehicle, setVehicleFlag } from "./actions";
  */
 export function VehicleRowActions({
   id,
+  stockNo,
   status,
   showOnWebsite,
   forParts,
@@ -23,6 +25,7 @@ export function VehicleRowActions({
   reservationId = null,
 }: {
   id: string;
+  stockNo: string;
   status: VehicleStatus;
   showOnWebsite: boolean;
   forParts: boolean;
@@ -36,6 +39,7 @@ export function VehicleRowActions({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const avail = useMakeAvailable();
   const ref = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const [pos, setPos] = useState<{ top?: number; bottom?: number; right: number }>({ right: 0 });
@@ -136,6 +140,20 @@ export function VehicleRowActions({
               <button type="button" disabled={busy} className={item} onClick={() => run(() => setVehicleFlag(id, "for_parts", !forParts))}>
                 <Wrench className="h-4 w-4 text-slate-400" />
                 {forParts ? t("va_unmark_parts") : t("va_mark_parts")}
+              </button>
+            </>
+          )}
+          {canEdit && status !== "in_stock" && (
+            <>
+              <div className="my-1 border-t border-slate-100" />
+              <button
+                type="button"
+                disabled={avail.pending}
+                className={`${item} font-semibold text-emerald-700 hover:bg-emerald-50`}
+                onClick={() => avail.run(id, stockNo, () => setOpen(false))}
+              >
+                <RotateCcw className="h-4 w-4 text-emerald-500" />
+                {t("va_make_available")}
               </button>
             </>
           )}
