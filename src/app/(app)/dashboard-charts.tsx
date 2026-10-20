@@ -35,7 +35,7 @@ export function SalesChart({ data, locale }: { data: { label: string; value: num
             formatter={(v) => [full.format(Number(v)), ""]}
             contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }}
           />
-          <Bar dataKey="value" fill="#1d58f1" radius={[4, 4, 0, 0]} maxBarSize={36} />
+          <Bar dataKey="value" fill="#d71920" radius={[4, 4, 0, 0]} maxBarSize={36} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -53,7 +53,7 @@ export function MakesChart({ data }: { data: { make: string; count: number }[] }
             cursor={{ fill: "#f1f5f9" }}
             contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }}
           />
-          <Bar dataKey="count" fill="#3378fc" radius={[0, 4, 4, 0]} maxBarSize={18} />
+          <Bar dataKey="count" fill="#334155" radius={[0, 4, 4, 0]} maxBarSize={18} />
         </BarChart>
       </ResponsiveContainer>
     </div>

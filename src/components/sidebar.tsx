@@ -41,11 +41,13 @@ export function Sidebar({
   name,
   email,
   companyName,
+  logoUrl,
 }: {
   role: Role;
   name: string;
   email: string;
   companyName: string;
+  logoUrl?: string | null;
 }) {
   const { t } = useT();
   const pathname = usePathname();
@@ -59,14 +61,21 @@ export function Sidebar({
 
   const nav = (
     <nav className="flex h-full flex-col">
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
-          <Car className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-white">{companyName}</div>
-          <div className="text-xs text-slate-400">ERP</div>
-        </div>
+      <Link href="/" className="block px-5 pb-4 pt-5" onClick={() => setOpen(false)}>
+        {logoUrl ? (
+          <span className="block rounded-lg bg-white px-2 py-1.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logoUrl} alt={companyName} className="mx-auto h-10 w-auto object-contain" />
+          </span>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src="/brand/logo-light.png" alt={companyName} className="h-12 w-auto object-contain" />
+        )}
+        <span className="mt-1.5 block truncate text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">ERP</span>
+      </Link>
+      <div className="mx-5 mb-3 flex h-[3px] overflow-hidden rounded-full">
+        <div className="w-2/3 bg-brand-600" />
+        <div className="w-1/3 bg-slate-700" />
       </div>
       <ul className="flex-1 space-y-0.5 px-3">
         {ITEMS.filter((i) => !i.roles || i.roles.includes(role)).map((i) => {
@@ -78,8 +87,8 @@ export function Sidebar({
                 href={i.href}
                 target={i.newTab ? "_blank" : undefined}
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  active ? "bg-white/10 text-white" : "text-slate-300 hover:bg-white/5 hover:text-white"
+                className={`flex items-center gap-3 rounded-lg border-l-[3px] px-3 py-2 text-sm font-medium transition ${
+                  active ? "border-brand-600 bg-white/10 text-white" : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -116,7 +125,7 @@ export function Sidebar({
       >
         <Menu className="h-5 w-5" />
       </button>
-      <aside className="no-print fixed inset-y-0 left-0 z-30 hidden w-60 bg-slate-900 lg:block">{nav}</aside>
+      <aside className="no-print fixed inset-y-0 left-0 z-30 hidden w-60 bg-[#0f172a] lg:block">{nav}</aside>
       {open && (
         <div className="no-print fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />

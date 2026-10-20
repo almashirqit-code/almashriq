@@ -5,18 +5,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Al Mashriq red (from the logo / invoice): 600 = #D71920
         brand: {
-          50: "#eef6ff",
-          100: "#d9eaff",
-          200: "#bcdaff",
-          300: "#8ec2ff",
-          400: "#599eff",
-          500: "#3378fc",
-          600: "#1d58f1",
-          700: "#1543de",
-          800: "#1838b4",
-          900: "#1a358d",
-          950: "#152256",
+          50: "#fef2f2",
+          100: "#fee2e3",
+          200: "#fecacc",
+          300: "#fca5a8",
+          400: "#f76d72",
+          500: "#ec3a40",
+          600: "#d71920",
+          700: "#b5141a",
+          800: "#95151a",
+          900: "#7c171c",
+          950: "#430709",
         },
       },
       fontFamily: {

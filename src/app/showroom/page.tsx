@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Car, Mail, Phone, ImageIcon } from "lucide-react";
+import { Mail, Phone, ImageIcon } from "lucide-react";
 import { getShowroom } from "@/lib/showroom";
 import { getT } from "@/lib/i18n/server";
 import { money, num, publicImageUrl } from "@/lib/format";
@@ -24,14 +24,8 @@ export default async function ShowroomPage() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
           <div className="flex items-center gap-3">
-            {company?.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={company.logo_url} alt="" className="h-10 w-auto object-contain" />
-            ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600 text-white">
-                <Car className="h-5 w-5" />
-              </div>
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={company?.logo_url || "/brand/logo.png"} alt={name} className="h-12 w-auto object-contain" />
             <div>
               <div className="font-semibold text-slate-900">{name}</div>
               <div className="text-xs text-slate-500">{t("showroom_subtitle")}</div>

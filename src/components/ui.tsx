@@ -31,13 +31,13 @@ export function PageHeader({
 const VEHICLE_COLORS: Record<VehicleStatus, string> = {
   in_stock: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
   reserved: "bg-amber-50 text-amber-700 ring-amber-600/20",
-  sold: "bg-brand-50 text-brand-700 ring-brand-600/20",
+  sold: "bg-indigo-50 text-indigo-700 ring-indigo-600/20",
   shipped: "bg-slate-100 text-slate-600 ring-slate-500/20",
 };
 
 const INVOICE_COLORS: Record<InvoiceStatus, string> = {
   draft: "bg-slate-100 text-slate-600 ring-slate-500/20",
-  issued: "bg-brand-50 text-brand-700 ring-brand-600/20",
+  issued: "bg-sky-50 text-sky-700 ring-sky-600/20",
   partially_paid: "bg-amber-50 text-amber-700 ring-amber-600/20",
   paid: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
   cancelled: "bg-red-50 text-red-600 ring-red-600/20",

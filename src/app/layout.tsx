@@ -8,9 +8,12 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swa
 const notoJp = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "500", "700"], display: "swap", variable: "--font-jp" });
 
 export const metadata: Metadata = {
-  title: "Al Mashriq ERP",
-  description: "Vehicle export ERP — stock, customers and invoicing",
+  title: { default: "Al Mashriq Trading — ERP", template: "%s · Al Mashriq ERP" },
+  description: "Al Mashriq Trading Co., Ltd. — car & spare parts export ERP",
+  applicationName: "Al Mashriq ERP",
 };
+
+export const viewport = { themeColor: "#d71920" };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
