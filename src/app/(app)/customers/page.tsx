@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { num } from "@/lib/format";
@@ -67,6 +67,7 @@ export default async function CustomersPage({
                   <th>{t("c_email")}</th>
                   <th>{t("c_phone")}</th>
                   <th>{t("rem_tagged_with")}</th>
+                  <th className="text-right">{t("actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -84,6 +85,12 @@ export default async function CustomersPage({
                     <td className="text-slate-600">{c.email ?? "—"}</td>
                     <td className="text-slate-600">{c.phone ?? c.whatsapp ?? "—"}</td>
                     <td className="text-slate-600">{c.assigned_to ? staffName.get(c.assigned_to) : "—"}</td>
+                    <td className="text-right">
+                      <Link href={`/customers/${c.id}/edit`} className="btn-secondary py-1 text-xs">
+                        <Pencil className="h-3.5 w-3.5" />
+                        {t("edit")}
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>

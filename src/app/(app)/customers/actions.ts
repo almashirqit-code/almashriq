@@ -104,7 +104,8 @@ export async function updateCustomer(id: string, _prev: FormState, formData: For
   if (error) return { error: mapDbError(error) };
   revalidatePath("/customers");
   revalidatePath(`/customers/${id}`);
-  return { ok: true };
+  // Back to the customer page after saving from the edit screen.
+  redirect(`/customers/${id}`);
 }
 
 export async function deleteCustomer(id: string) {
