@@ -1,5 +1,7 @@
 import {
   CURRENCIES,
+  EXPENSE_TYPES,
+  type ExpenseItem,
   NUMERIC_VEHICLE_FIELDS,
   VEHICLE_FIELDS,
   VEHICLE_STATUSES,
@@ -120,6 +122,14 @@ const ALIASES: Record<string, VehicleField> = {
   published: "show_on_website",
   web: "show_on_website",
   サイト掲載: "show_on_website",
+  taxrate: "purchase_tax_rate",
+  purchasetaxrate: "purchase_tax_rate",
+  consumptiontax: "purchase_tax_rate",
+  fxrate: "fob_fx_rate",
+  fobfxrate: "fob_fx_rate",
+  usdrate: "fob_fx_rate",
+  jpyusd: "fob_fx_rate",
+  為替レート: "fob_fx_rate",
   forparts: "for_parts",
   parts: "for_parts",
   partscar: "for_parts",
@@ -164,6 +174,28 @@ const OWNERSHIP_ALIASES: Record<string, "own" | "third_party"> = {
   委託車両: "third_party",
 };
 
+/** Accepts the JSON array from the form (or a spreadsheet cell); drops invalid lines. */
+function parseExpenseItems(v: unknown): ExpenseItem[] {
+  let arr: unknown = v;
+  if (typeof v === "string") {
+    try {
+      arr = v.trim() ? JSON.parse(v) : [];
+    } catch {
+      arr = [];
+    }
+  }
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .map((e) => {
+      const o = (e ?? {}) as Record<string, unknown>;
+      const type = String(o.type ?? "") as ExpenseItem["type"];
+      const amount = Number(o.amount);
+      const note = typeof o.note === "string" ? o.note.trim().slice(0, 200) : undefined;
+      return EXPENSE_TYPES.includes(type) && Number.isFinite(amount) && amount > 0 ? { type, amount, ...(note ? { note } : {}) } : null;
+    })
+    .filter(Boolean) as ExpenseItem[];
+}
+
 function toBool(v: unknown, fallback: boolean): boolean {
   if (v === null || v === undefined || v === "") return fallback;
   if (typeof v === "boolean") return v;
@@ -190,7 +222,7 @@ function toDate(v: unknown): string | null {
   return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
 }
 
-export type VehicleInput = Partial<Record<VehicleField, string | number | boolean | null>>;
+export type VehicleInput = Partial<Record<VehicleField, string | number | boolean | null | ExpenseItem[]>>;
 
 /**
  * Normalizes raw values (from a form or spreadsheet row) into a DB-ready vehicle record.
@@ -206,7 +238,14 @@ export function parseVehicle(raw: Record<string, unknown>): { data: VehicleInput
     if (NUMERIC_VEHICLE_FIELDS.includes(field)) {
       const n = toNumber(v);
       if (v !== "" && v !== null && v !== undefined && n === null) errors.push(`${field}: not a number`);
-      data[field] = n === null ? null : ["price", "purchase_price", "expenses", "supplier_price"].includes(field) ? n : Math.round(n);
+      data[field] =
+        n === null
+          ? field === "purchase_tax_rate"
+            ? 10
+            : null
+          : ["price", "purchase_price", "expenses", "supplier_price", "purchase_tax_rate", "fob_fx_rate"].includes(field)
+            ? n
+            : Math.round(n);
     } else if (field === "ownership") {
       const k = String(v ?? "").trim().toLowerCase().replace(/[\s_\-]/g, "");
       data.ownership = OWNERSHIP_ALIASES[k] ?? OWNERSHIP_ALIASES[String(v ?? "").trim()] ?? "own";
@@ -214,6 +253,8 @@ export function parseVehicle(raw: Record<string, unknown>): { data: VehicleInput
       data.show_on_website = toBool(v, true);
     } else if (field === "for_parts") {
       data.for_parts = toBool(v, false);
+    } else if (field === "expense_items") {
+      data.expense_items = parseExpenseItems(v);
     } else if (field === "supplier_currency") {
       const c = String(v ?? "").trim().toUpperCase();
       data.supplier_currency = (CURRENCIES as string[]).includes(c) ? c : "JPY";
@@ -279,9 +320,11 @@ export const TEMPLATE_HEADERS: VehicleField[] = [
   "supplier_currency",
   "show_on_website",
   "for_parts",
+  "purchase_tax_rate",
+  "fob_fx_rate",
 ];
 
 export const TEMPLATE_SAMPLE = [
-  "A1023,ZVW50-8012345,Toyota,Prius,S Touring,2018,5,62000,Pearl White,1800,Hybrid,AT,2WD,RHD,5,5,Hatchback,4.5,Yokohama,2026-09-12,980000,85000,8900,USD,in_stock,Sunroof,own,,,,,yes,no",
-  "P2001,NHP10-6123456,Toyota,Aqua,G,2017,11,78000,Silver,1500,Hybrid,AT,2WD,RHD,5,5,Hatchback,4,Kobe,,,,5600,USD,in_stock,Partner car,third_party,Sakura Motors,+81 90 1234 5678,700000,JPY,yes,no",
+  "A1023,ZVW50-8012345,Toyota,Prius,S Touring,2018,5,62000,Pearl White,1800,Hybrid,AT,2WD,RHD,5,5,Hatchback,4.5,Yokohama,2026-09-12,980000,85000,8900,USD,in_stock,Sunroof,own,,,,,yes,no,10,150",
+  "P2001,NHP10-6123456,Toyota,Aqua,G,2017,11,78000,Silver,1500,Hybrid,AT,2WD,RHD,5,5,Hatchback,4,Kobe,,,,5600,USD,in_stock,Partner car,third_party,Sakura Motors,+81 90 1234 5678,700000,JPY,yes,no,10,150",
 ];

@@ -5,6 +5,7 @@ import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { CURRENCIES, VEHICLE_STATUSES, type Vehicle, type VehicleField } from "@/lib/types";
 import { SubmitButton } from "@/components/buttons";
+import { CostCalculator } from "./cost-calculator";
 import type { FormState } from "./actions";
 
 type FieldDef = {
@@ -54,11 +55,13 @@ export function VehicleForm({
   action,
   showCost,
   readOnly = false,
+  defaultFx = 0,
 }: {
   vehicle?: Partial<Vehicle>;
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
   showCost: boolean;
   readOnly?: boolean;
+  defaultFx?: number;
 }) {
   const { t } = useT();
   const [state, formAction] = useActionState(action, {});
@@ -105,7 +108,7 @@ export function VehicleForm({
     );
   };
 
-  const pricing = PRICING.filter((f) => showCost || !["purchase_date", "purchase_price", "expenses"].includes(f.name));
+  const pricing = PRICING.filter((f) => !["purchase_date", "purchase_price", "expenses"].includes(f.name));
 
   return (
     <form action={formAction} className="space-y-5">
@@ -223,6 +226,8 @@ export function VehicleForm({
         <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("stock_specs")}</h2>
         <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-3">{SPECS.map(render)}</div>
       </section>
+
+      {showCost && <CostCalculator vehicle={vehicle} defaultFx={defaultFx} readOnly={readOnly} />}
 
       <section className="card">
         <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("stock_pricing")}</h2>

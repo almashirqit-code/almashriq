@@ -436,7 +436,7 @@ export function Importer() {
                       <td className="text-xs text-slate-400">{r.line}</td>
                       {headers.map((h) => (
                         <td key={h} className="whitespace-nowrap text-xs">
-                          {r.data[h] === null || r.data[h] === undefined ? "" : String(r.data[h])}
+                          {r.data[h] === null || r.data[h] === undefined ? "" : Array.isArray(r.data[h]) ? `${(r.data[h] as unknown[]).length} items` : String(r.data[h])}
                         </td>
                       ))}
                       <td className="text-xs tabular-nums">{photos || ""}</td>

@@ -104,10 +104,28 @@ export interface Vehicle {
   supplier_currency: Currency;
   show_on_website: boolean;
   for_parts: boolean;
+  purchase_tax_rate: number;
+  purchase_tax: number;
+  expense_items: ExpenseItem[];
+  fob_fx_rate: number | null;
+  fob_usd: number | null;
   created_at: string;
   updated_at: string;
   vehicle_images?: VehicleImage[];
 }
+
+export type ExpenseType =
+  | "auction_fee"
+  | "recycle_fee"
+  | "transportation"
+  | "inspection"
+  | "company_fee"
+  | "meter_rewind"
+  | "other";
+export const EXPENSE_TYPES: ExpenseType[] = ["auction_fee", "recycle_fee", "transportation", "inspection", "company_fee", "meter_rewind", "other"];
+/** Expense types that carry the consumption tax (e.g. auction fee + 10%). */
+export const TAXED_EXPENSES: ExpenseType[] = ["auction_fee"];
+export type ExpenseItem = { type: ExpenseType; amount: number; note?: string };
 
 export type Ownership = "own" | "third_party";
 export const OWNERSHIPS: Ownership[] = ["own", "third_party"];
@@ -204,6 +222,9 @@ export const VEHICLE_FIELDS = [
   "supplier_currency",
   "show_on_website",
   "for_parts",
+  "purchase_tax_rate",
+  "fob_fx_rate",
+  "expense_items",
 ] as const;
 
 export type VehicleField = (typeof VEHICLE_FIELDS)[number];
@@ -219,10 +240,21 @@ export const NUMERIC_VEHICLE_FIELDS: VehicleField[] = [
   "expenses",
   "price",
   "supplier_price",
+  "purchase_tax_rate",
+  "fob_fx_rate",
 ];
 
 /** Cost fields hidden from the sales role. */
-export const COST_FIELDS: VehicleField[] = ["purchase_price", "expenses", "purchase_date", "supplier_price", "supplier_currency"];
+export const COST_FIELDS: VehicleField[] = [
+  "purchase_price",
+  "expenses",
+  "purchase_date",
+  "supplier_price",
+  "supplier_currency",
+  "purchase_tax_rate",
+  "fob_fx_rate",
+  "expense_items",
+];
 
 export type RemittanceStatus = "unallocated" | "partial" | "allocated";
 export const REMITTANCE_STATUSES: RemittanceStatus[] = ["unallocated", "partial", "allocated"];

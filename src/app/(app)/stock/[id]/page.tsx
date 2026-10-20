@@ -40,7 +40,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
   // Own stock: what we paid. Third-party: what we owe the supplier (+ any expenses we incurred).
   const cost = thirdParty
     ? convert(Number(v.supplier_price || 0), v.supplier_currency ?? "JPY", "JPY", rates) + Number(v.expenses || 0)
-    : Number(v.purchase_price || 0) + Number(v.expenses || 0);
+    : Number(v.purchase_price || 0) + Number(v.purchase_tax || 0) + Number(v.expenses || 0);
   const priceJpy = v.price != null ? convert(Number(v.price), v.price_currency, "JPY", rates) : null;
 
   type Inv = { id: string; invoice_no: string; status: InvoiceStatus; currency: Currency; issue_date: string; customers: { name: string } | null };
@@ -90,7 +90,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
         <div className="xl:col-span-3">
-          <VehicleForm vehicle={v} action={update} showCost={seeCost} readOnly={!canEdit} />
+          <VehicleForm vehicle={v} action={update} showCost={seeCost} readOnly={!canEdit} defaultFx={Number(rates.USD ?? 0)} />
         </div>
         <div className="space-y-5 xl:col-span-2">
           <ImageManager vehicleId={id} images={(images ?? []) as VehicleImage[]} canEdit={canEdit} />

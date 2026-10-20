@@ -13,7 +13,9 @@ export async function GET(req: NextRequest) {
   const profile = await getProfile();
   const supabase = await createClient();
   const sp = req.nextUrl.searchParams;
-  const fields = VEHICLE_FIELDS.filter((f) => can.seeCost(profile.role) || !COST_FIELDS.includes(f));
+  const fields: string[] = VEHICLE_FIELDS.filter((f) => can.seeCost(profile.role) || !COST_FIELDS.includes(f));
+  // Computed by the database (buying tax and FOB in USD)
+  if (can.seeCost(profile.role)) fields.push("purchase_tax", "fob_usd");
 
   let query = supabase.from("vehicles").select(fields.join(",")).order("created_at", { ascending: false }).limit(50000);
   const status = sp.get("status");
@@ -28,7 +30,8 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const rows = (data ?? []) as unknown as Record<string, unknown>[];
-  const csv = "﻿" + [fields.join(","), ...rows.map((r) => fields.map((f) => csvCell(r[f])).join(","))].join("\r\n");
+  const cell = (v: unknown) => csvCell(v !== null && typeof v === "object" ? JSON.stringify(v) : v);
+  const csv = "﻿" + [fields.join(","), ...rows.map((r) => fields.map((f) => cell(r[f])).join(","))].join("\r\n");
 
   return new NextResponse(csv, {
     headers: {
