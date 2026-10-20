@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Eye, FileText, Globe, EyeOff, Wrench, Trash2, BookmarkCheck, BookmarkPlus, RotateCcw } from "lucide-react";
+import { ChevronDown, Eye, FileText, Globe, EyeOff, Wrench, Trash2, BookmarkCheck, BookmarkPlus, RotateCcw, Ship, Package } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { VehicleStatus } from "@/lib/types";
 import { deleteVehicle, setVehicleFlag } from "./actions";
@@ -112,6 +112,15 @@ export function VehicleRowActions({
             <Eye className="h-4 w-4 text-slate-400" />
             {t("va_view")}
           </Link>
+          <Link href={`/stock/${id}/shipping`} className={item}>
+            <Ship className="h-4 w-4 text-slate-400" />
+            {t("sh_tab_shipping")}
+          </Link>
+          <Link href={`/stock/${id}/shipping?tab=courier`} className={item}>
+            <Package className="h-4 w-4 text-slate-400" />
+            {t("sh_tab_courier")}
+          </Link>
+          <div className="my-1 border-t border-slate-100" />
           {status === "in_stock" && !reservationId && (
             <Link href={`/reservations/new?vehicle=${id}`} className={`${item} font-semibold text-amber-700`}>
               <BookmarkPlus className="h-4 w-4 text-amber-500" />

@@ -379,3 +379,60 @@ export interface Reservation {
   created_by: string | null;
   created_at: string;
 }
+
+export type ShippingStatus = "not_booked" | "booked" | "shipped" | "delivered";
+export const SHIPPING_STATUSES: ShippingStatus[] = ["not_booked", "booked", "shipped", "delivered"];
+
+export const SHIPPING_DOC_KINDS = ["bl", "amend_bl", "surrender", "draft_bl", "waybill", "shipping_invoice", "shipping_other"] as const;
+export const COURIER_DOC_KINDS = [
+  "export_cert",
+  "export_cert_en",
+  "inspection_cert",
+  "auction_sheet",
+  "courier_bl",
+  "spare_key",
+  "dhl_docs",
+  "courier_other",
+] as const;
+export type VehicleDocKind = (typeof SHIPPING_DOC_KINDS)[number] | (typeof COURIER_DOC_KINDS)[number];
+
+export interface VehicleDocument {
+  id: string;
+  vehicle_id: string;
+  kind: VehicleDocKind;
+  path: string;
+  file_name: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  created_at: string;
+}
+
+export interface VehicleShipment {
+  vehicle_id: string;
+  ship_company: string | null;
+  vessel_name: string | null;
+  voyage_no: string | null;
+  etd: string | null;
+  eta: string | null;
+  port_of_loading: string | null;
+  place_of_delivery: string | null;
+  forwarding_agent: string | null;
+  cut_off_date: string | null;
+  bl_no: string | null;
+  bl_date: string | null;
+  booking_no: string | null;
+  track_url: string | null;
+  shipment_type: ShipmentType | null;
+  container_no: string | null;
+  freight_charges: number | null;
+  freight_currency: Currency;
+  vanning_charges: number | null;
+  ship_invoice_details: string | null;
+  courier_service: string | null;
+  courier_company: string | null;
+  courier_tracking: string | null;
+  courier_date: string | null;
+  courier_details: string | null;
+  courier_charges: number | null;
+  updated_at: string;
+}

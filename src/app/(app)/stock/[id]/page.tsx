@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Trash2, FileText, Car, BookmarkPlus, BookmarkCheck } from "lucide-react";
+import { Trash2, FileText, Car, BookmarkPlus, BookmarkCheck, Ship } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -93,6 +93,10 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
                 {t("va_create_invoice")}
               </Link>
             )}
+            <Link href={`/stock/${v.id}/shipping`} className="btn bg-gradient-to-r from-slate-800 to-slate-900 text-white hover:from-slate-700 hover:to-slate-800">
+              <Ship className="h-4 w-4" />
+              {t("sh_edit")}
+            </Link>
             {canEdit && v.status !== "in_stock" && <MakeAvailableButton vehicleId={v.id} stockNo={v.stock_no} />}
             {can.deleteStock(profile.role) && (
               <ConfirmButton action={del}>
