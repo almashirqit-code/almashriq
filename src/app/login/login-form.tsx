@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { signIn } from "./actions";
+import { PasswordInput } from "@/components/password-input";
 
 export function LoginForm() {
   const { t } = useT();
@@ -20,13 +21,13 @@ export function LoginForm() {
         <label className="label" htmlFor="password">
           {t("password")}
         </label>
-        <input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           required
           autoComplete="current-password"
-          className="input"
+          showLabel={t("show_password")}
+          hideLabel={t("hide_password")}
         />
       </div>
       {state.error && (

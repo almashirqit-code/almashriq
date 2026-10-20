@@ -6,6 +6,7 @@ import type { DictKey } from "@/lib/i18n/dictionaries";
 import { ROLES } from "@/lib/types";
 import { SubmitButton } from "@/components/buttons";
 import { createUser } from "./actions";
+import { PasswordInput } from "@/components/password-input";
 
 export function NewUserForm() {
   const { t } = useT();
@@ -28,7 +29,14 @@ export function NewUserForm() {
       </div>
       <div>
         <label className="label">{t("password")} *</label>
-        <input name="password" type="password" minLength={8} required className="input" autoComplete="new-password" />
+        <PasswordInput
+          name="password"
+          minLength={8}
+          required
+          autoComplete="new-password"
+          showLabel={t("show_password")}
+          hideLabel={t("hide_password")}
+        />
       </div>
       <div>
         <label className="label">{t("role")}</label>
