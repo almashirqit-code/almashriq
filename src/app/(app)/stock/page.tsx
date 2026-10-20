@@ -26,7 +26,7 @@ export default async function StockPage({
 
   let query = supabase
     .from("vehicles")
-    .select("*, vehicle_images(path, sort_order)", { count: "exact" })
+    .select("*, vehicle_images(path, sort_order), reservations(id, status)", { count: "exact" })
     .order("created_at", { ascending: false })
     .order("sort_order", { referencedTable: "vehicle_images", ascending: true })
     .limit(1, { referencedTable: "vehicle_images" })
@@ -187,6 +187,9 @@ export default async function StockPage({
                           canEdit={canEdit}
                           canDelete={can.deleteStock(profile.role)}
                           canInvoice
+                          reservationId={
+                            (v as unknown as { reservations?: { id: string; status: string }[] }).reservations?.find((r) => r.status === "active")?.id ?? null
+                          }
                         />
                       </td>
                     </tr>

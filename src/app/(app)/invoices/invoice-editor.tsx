@@ -27,6 +27,7 @@ export function InvoiceEditor({
   defaults,
   initial,
   addVehicleId,
+  addVehiclePrice,
 }: {
   customers: Pick<
     Customer,
@@ -38,6 +39,8 @@ export function InvoiceEditor({
   initial?: Partial<InvoicePayload> & { id?: string; items?: InvoicePayload["items"] };
   /** Pre-adds this vehicle (from the stock list "Create invoice" action). */
   addVehicleId?: string;
+  /** Unit price for the pre-added vehicle (e.g. from a reservation). */
+  addVehiclePrice?: number;
 }) {
   const { t, locale } = useT();
   const router = useRouter();
@@ -116,8 +119,9 @@ export function InvoiceEditor({
     return `${vehicleTitle(v)}\n${specs.join(" · ")}`;
   }
 
-  function addVehicle(v: VehicleOption) {
-    const price = v.price != null ? convert(Number(v.price), v.price_currency, currency, effectiveRates) : 0;
+  function addVehicle(v: VehicleOption, priceOverride?: number) {
+    const price =
+      priceOverride != null ? priceOverride : v.price != null ? convert(Number(v.price), v.price_currency, currency, effectiveRates) : 0;
     setLines((ls) => [...ls, { key: newKey(), vehicle_id: v.id, description: describe(v), quantity: 1, unit_price: price }]);
     if (!pol && v.port?.name) setPol(`${v.port.name}, Japan`);
     if (v.port && !v.port.shipment_modes.includes("roro") && shipmentType === "") setShipmentType("container_20");
@@ -131,7 +135,7 @@ export function InvoiceEditor({
     if (autoAdded.current || !addVehicleId) return;
     autoAdded.current = true;
     const v = vehicleMap.get(addVehicleId);
-    if (v && !usedIds.has(v.id)) addVehicle(v);
+    if (v && !usedIds.has(v.id)) addVehicle(v, addVehiclePrice);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addVehicleId]);
 
@@ -197,6 +201,7 @@ export function InvoiceEditor({
       tax_rate: Number(taxRate) || 0,
       items: lines.map(({ vehicle_id, description, quantity, unit_price }) => ({ vehicle_id, description, quantity, unit_price })),
       issue,
+      reservation_id: initial?.reservation_id ?? null,
     };
     start(async () => {
       const res = await saveInvoice(payload);

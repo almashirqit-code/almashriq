@@ -29,6 +29,8 @@ export type InvoicePayload = {
   tax_rate: number;
   items: { vehicle_id: string | null; description: string; quantity: number; unit_price: number }[];
   issue: boolean;
+  /** When created from a reservation, that reservation is marked invoiced. */
+  reservation_id?: string | null;
 };
 
 export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; error?: string }> {
@@ -143,6 +145,16 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
   if (p.issue) {
     const { error } = await supabase.from("invoices").update({ status: "issued" }).eq("id", id);
     if (error) return { error: error.message };
+  }
+
+  if (p.reservation_id) {
+    await supabase
+      .from("reservations")
+      .update({ status: "invoiced", invoice_id: id })
+      .eq("id", p.reservation_id)
+      .eq("status", "active");
+    revalidatePath("/reservations");
+    revalidatePath(`/reservations/${p.reservation_id}`);
   }
 
   revalidatePath("/invoices");

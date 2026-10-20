@@ -337,3 +337,45 @@ export interface Yard {
 
 /** RoRo is only possible when the port allows it. */
 export const portAllowsRoro = (p: Pick<Port, "shipment_modes"> | null | undefined) => !p || p.shipment_modes.includes("roro");
+
+export interface FreightRate {
+  id: string;
+  port_id: string | null;
+  destination: string;
+  country: string | null;
+  shipment_type: ShipmentType;
+  amount: number;
+  currency: Currency;
+  valid_until: string | null;
+  notes: string | null;
+  active: boolean;
+}
+
+export type ReservationStatus = "active" | "invoiced" | "cancelled";
+export const RESERVATION_STATUSES: ReservationStatus[] = ["active", "invoiced", "cancelled"];
+
+export interface Reservation {
+  id: string;
+  reservation_no: number;
+  vehicle_id: string;
+  customer_id: string;
+  sales_agent_id: string | null;
+  price_term: "FOB" | "CNF" | "CIF";
+  shipment_type: ShipmentType | null;
+  port_of_loading: string | null;
+  port_of_discharge: string | null;
+  freight_rate_id: string | null;
+  currency: Currency;
+  exchange_rate: number;
+  sold_price: number;
+  freight: number;
+  insurance: number;
+  buying_cost_jpy: number;
+  profit_jpy: number;
+  reserved_until: string | null;
+  status: ReservationStatus;
+  invoice_id: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+}

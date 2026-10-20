@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Trash2, FileText, Car } from "lucide-react";
+import { Trash2, FileText, Car, BookmarkPlus, BookmarkCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -20,7 +20,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
   const { t, locale } = await getT();
   const supabase = await createClient();
 
-  const [{ data: vehicle }, { data: images }, { data: items }, { data: settings }] = await Promise.all([
+  const [{ data: vehicle }, { data: images }, { data: items }, { data: settings }, { data: activeRes }] = await Promise.all([
     supabase.from("vehicles").select("*").eq("id", id).maybeSingle(),
     supabase.from("vehicle_images").select("*").eq("vehicle_id", id).order("sort_order").order("created_at"),
     supabase
@@ -28,6 +28,12 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
       .select("amount, invoices(id, invoice_no, status, currency, issue_date, exchange_rate, customers(name))")
       .eq("vehicle_id", id),
     supabase.from("settings").select("exchange_rates").single(),
+    supabase
+      .from("reservations")
+      .select("id, reservation_no, sold_price, currency, price_term, profit_jpy, customers(name)")
+      .eq("vehicle_id", id)
+      .eq("status", "active")
+      .maybeSingle(),
   ]);
   if (!vehicle) notFound();
   const masters = await loadMasters();
@@ -68,8 +74,20 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
         subtitle={`${vehicleTitle(v)}${v.chassis_no ? " · " + v.chassis_no : ""}`}
         actions={
           <>
+            {v.status === "in_stock" && !activeRes && (
+              <Link href={`/reservations/new?vehicle=${v.id}`} className="btn bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md shadow-orange-500/25 hover:from-amber-500 hover:to-orange-600">
+                <BookmarkPlus className="h-4 w-4" />
+                {t("rv_reserve")}
+              </Link>
+            )}
+            {activeRes && (
+              <Link href={`/reservations/${activeRes.id}`} className="btn border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100">
+                <BookmarkCheck className="h-4 w-4" />
+                {t("rv_current")} #{activeRes.reservation_no} · {(activeRes.customers as unknown as { name: string } | null)?.name}
+              </Link>
+            )}
             {(v.status === "in_stock" || v.status === "reserved") && (
-              <Link href={`/invoices/new?vehicle=${v.id}`} className="btn-primary">
+              <Link href={activeRes ? `/invoices/new?reservation=${activeRes.id}` : `/invoices/new?vehicle=${v.id}`} className="btn-primary">
                 <FileText className="h-4 w-4" />
                 {t("va_create_invoice")}
               </Link>

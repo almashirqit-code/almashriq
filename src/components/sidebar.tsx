@@ -18,6 +18,8 @@ import {
   Banknote,
   Anchor,
   ExternalLink,
+  Ship,
+  BookmarkCheck,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -52,8 +54,10 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
     label: "grp_sales",
     items: [
       { href: "/customers", label: "nav_customers", icon: Users, grad: "from-sky-400 to-blue-600", idle: "text-sky-300" },
+      { href: "/reservations", label: "nav_reservations", icon: BookmarkCheck, grad: "from-amber-400 to-orange-500", idle: "text-orange-300" },
       { href: "/invoices", label: "nav_invoices", icon: FileText, grad: "from-fuchsia-500 to-pink-600", idle: "text-fuchsia-300" },
       { href: "/remittances", label: "nav_remittances", icon: Banknote, grad: "from-emerald-400 to-teal-600", idle: "text-emerald-300" },
+      { href: "/freight", label: "nav_freight", icon: Ship, grad: "from-blue-400 to-indigo-600", idle: "text-blue-300" },
     ],
   },
   {

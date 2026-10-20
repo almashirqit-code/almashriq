@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Eye, FileText, Globe, EyeOff, Wrench, Trash2 } from "lucide-react";
+import { ChevronDown, Eye, FileText, Globe, EyeOff, Wrench, Trash2, BookmarkCheck, BookmarkPlus } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { VehicleStatus } from "@/lib/types";
 import { deleteVehicle, setVehicleFlag } from "./actions";
@@ -20,6 +20,7 @@ export function VehicleRowActions({
   canEdit,
   canDelete,
   canInvoice,
+  reservationId = null,
 }: {
   id: string;
   status: VehicleStatus;
@@ -28,6 +29,8 @@ export function VehicleRowActions({
   canEdit: boolean;
   canDelete: boolean;
   canInvoice: boolean;
+  /** active reservation on this vehicle, if any */
+  reservationId?: string | null;
 }) {
   const { t } = useT();
   const router = useRouter();
@@ -105,8 +108,20 @@ export function VehicleRowActions({
             <Eye className="h-4 w-4 text-slate-400" />
             {t("va_view")}
           </Link>
+          {status === "in_stock" && !reservationId && (
+            <Link href={`/reservations/new?vehicle=${id}`} className={`${item} font-semibold text-amber-700`}>
+              <BookmarkPlus className="h-4 w-4 text-amber-500" />
+              {t("rv_reserve")}
+            </Link>
+          )}
+          {reservationId && (
+            <Link href={`/reservations/${reservationId}`} className={`${item} font-semibold text-amber-700`}>
+              <BookmarkCheck className="h-4 w-4 text-amber-500" />
+              {t("rv_current")}
+            </Link>
+          )}
           {canInvoice && (status === "in_stock" || status === "reserved") && (
-            <Link href={`/invoices/new?vehicle=${id}`} className={item}>
+            <Link href={reservationId ? `/invoices/new?reservation=${reservationId}` : `/invoices/new?vehicle=${id}`} className={item}>
               <FileText className="h-4 w-4 text-slate-400" />
               {t("va_create_invoice")}
             </Link>
