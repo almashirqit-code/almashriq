@@ -237,7 +237,13 @@ export default async function RemittancesPage({
                         )}
                       </td>
                       <td className="px-3 py-3 text-center">
-                        <RowActions id={r.id} canEdit={canEdit} canDelete={profile.role === "admin"} />
+                        <RowActions
+                          id={r.id}
+                          canEdit={canEdit}
+                          canDelete={profile.role === "admin"}
+                          allocations={r.remittance_allocations.length}
+                          remaining={Number(r.remaining_amount)}
+                        />
                       </td>
                     </tr>
                   );

@@ -81,6 +81,18 @@ export async function setCoverImage(imageId: string, vehicleId: string) {
   revalidatePath("/stock");
 }
 
+/** Quick on/off switches used by the Actions menu on the stock list. */
+export async function setVehicleFlag(id: string, field: "show_on_website" | "for_parts", value: boolean) {
+  await assertRole(["admin", "manager"]);
+  if (field !== "show_on_website" && field !== "for_parts") throw new Error("Invalid field");
+  const supabase = await createClient();
+  const { error } = await supabase.from("vehicles").update({ [field]: value }).eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/stock");
+  revalidatePath(`/stock/${id}`);
+  revalidatePath("/showroom");
+}
+
 export async function refreshVehicle(vehicleId: string) {
   revalidatePath(`/stock/${vehicleId}`);
   revalidatePath("/stock");

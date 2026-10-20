@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
-import { deleteRemittance } from "./actions";
+import { deleteRemittance, removeAllAllocations } from "./actions";
 
 export function PageSizeSelect({ value }: { value: number }) {
   const router = useRouter();
@@ -32,11 +32,24 @@ export function PageSizeSelect({ value }: { value: number }) {
   );
 }
 
-export function RowActions({ id, canEdit, canDelete }: { id: number; canEdit: boolean; canDelete: boolean }) {
+export function RowActions({
+  id,
+  canEdit,
+  canDelete,
+  allocations = 0,
+  remaining = 1,
+}: {
+  id: number;
+  canEdit: boolean;
+  canDelete: boolean;
+  allocations?: number;
+  remaining?: number;
+}) {
   const { t } = useT();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!open) return;
@@ -59,7 +72,7 @@ export function RowActions({ id, canEdit, canDelete }: { id: number; canEdit: bo
         {t("actions")} <ChevronDown className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="absolute right-0 z-20 mt-1 w-32 rounded-lg border border-slate-200 bg-white py-1 text-sm shadow-lg">
+        <div className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-slate-200 bg-white py-1 text-sm shadow-lg">
           <Link href={`/remittances/${id}`} className="block px-3 py-1.5 hover:bg-slate-50">
             {t("view")}
           </Link>
@@ -68,9 +81,37 @@ export function RowActions({ id, canEdit, canDelete }: { id: number; canEdit: bo
               <Link href={`/remittances/${id}/edit`} className="block px-3 py-1.5 hover:bg-slate-50">
                 {t("edit")}
               </Link>
-              <Link href={`/remittances/${id}/allocate`} className="block px-3 py-1.5 hover:bg-slate-50">
-                {t("rem_allocate")}
-              </Link>
+              {remaining > 0 && (
+                <Link href={`/remittances/${id}/allocate`} className="block px-3 py-1.5 hover:bg-slate-50">
+                  {t("rem_allocate")}
+                </Link>
+              )}
+              {allocations > 0 && (
+                <>
+                  <Link href={`/remittances/${id}#allocations`} className="block px-3 py-1.5 hover:bg-slate-50">
+                    {t("rem_unallocate_vehicle")}
+                  </Link>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    className="block w-full px-3 py-1.5 text-left text-red-600 hover:bg-red-50"
+                    onClick={async () => {
+                      if (!confirm(t("rem_unallocate_all_confirm", { count: allocations }))) return;
+                      setBusy(true);
+                      try {
+                        await removeAllAllocations(id);
+                        setOpen(false);
+                        router.refresh();
+                      } catch (e) {
+                        alert((e as Error).message);
+                      }
+                      setBusy(false);
+                    }}
+                  >
+                    {t("rem_unallocate_all")}
+                  </button>
+                </>
+              )}
             </>
           )}
           {canDelete && (

@@ -6,15 +6,15 @@ import { loadEditorData } from "../data";
 export default async function NewInvoicePage({
   searchParams,
 }: {
-  searchParams: Promise<{ customer?: string }>;
+  searchParams: Promise<{ customer?: string; vehicle?: string }>;
 }) {
   const { t } = await getT();
-  const { customer } = await searchParams;
+  const { customer, vehicle } = await searchParams;
   const data = await loadEditorData();
   return (
     <>
       <PageHeader title={t("inv_new")} back={{ href: "/invoices", label: t("inv_title") }} />
-      <InvoiceEditor {...data} initial={{ customer_id: customer ?? "" }} />
+      <InvoiceEditor {...data} initial={{ customer_id: customer ?? "" }} addVehicleId={vehicle} />
     </>
   );
 }

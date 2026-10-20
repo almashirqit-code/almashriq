@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Car, Plus, Trash2, Search } from "lucide-react";
@@ -26,6 +26,7 @@ export function InvoiceEditor({
   rates,
   defaults,
   initial,
+  addVehicleId,
 }: {
   customers: Pick<
     Customer,
@@ -35,6 +36,8 @@ export function InvoiceEditor({
   rates: Record<Currency, number>;
   defaults: { currency: Currency; tax_rate: number };
   initial?: Partial<InvoicePayload> & { id?: string; items?: InvoicePayload["items"] };
+  /** Pre-adds this vehicle (from the stock list "Create invoice" action). */
+  addVehicleId?: string;
 }) {
   const { t, locale } = useT();
   const router = useRouter();
@@ -121,6 +124,16 @@ export function InvoiceEditor({
     setSearch("");
     setShowSearch(false);
   }
+
+  // Opened from a vehicle's "Create invoice" action: add it once.
+  const autoAdded = useRef(false);
+  useEffect(() => {
+    if (autoAdded.current || !addVehicleId) return;
+    autoAdded.current = true;
+    const v = vehicleMap.get(addVehicleId);
+    if (v && !usedIds.has(v.id)) addVehicle(v);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addVehicleId]);
 
   function addCharge(desc = "") {
     setLines((ls) => [...ls, { key: newKey(), vehicle_id: null, description: desc, quantity: 1, unit_price: 0 }]);

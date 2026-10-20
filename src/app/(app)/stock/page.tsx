@@ -7,6 +7,7 @@ import { money, num, publicImageUrl, vehicleTitle } from "@/lib/format";
 import { VEHICLE_STATUSES, type Vehicle } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { PageHeader, VehicleStatusBadge, Empty, Pagination, Badge, PartsBadge } from "@/components/ui";
+import { VehicleRowActions } from "./row-actions";
 
 const PAGE_SIZE = 25;
 
@@ -48,6 +49,7 @@ export default async function StockPage({
   const vehicles = (data ?? []) as Vehicle[];
   const makes = [...new Set((makesRes.data ?? []).map((m) => m.make as string))];
   const pages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
+  const canEdit = can.editStock(profile.role);
 
   const qs = (over: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
@@ -130,6 +132,7 @@ export default async function StockPage({
                   <th className="text-right">{t("f_mileage")}</th>
                   <th className="text-right">{t("f_price")}</th>
                   <th>{t("status")}</th>
+                  <th className="text-right">{t("actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -172,6 +175,17 @@ export default async function StockPage({
                       <td className="text-right tabular-nums">{v.price != null ? money(v.price, v.price_currency, locale) : "—"}</td>
                       <td>
                         <VehicleStatusBadge status={v.status} label={t(`vs_${v.status}` as DictKey)} />
+                      </td>
+                      <td className="text-right">
+                        <VehicleRowActions
+                          id={v.id}
+                          status={v.status}
+                          showOnWebsite={!!v.show_on_website}
+                          forParts={!!v.for_parts}
+                          canEdit={canEdit}
+                          canDelete={can.deleteStock(profile.role)}
+                          canInvoice
+                        />
                       </td>
                     </tr>
                   );

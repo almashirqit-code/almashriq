@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Trash2, FileText } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -65,12 +65,20 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
         }
         subtitle={`${vehicleTitle(v)}${v.chassis_no ? " · " + v.chassis_no : ""}`}
         actions={
-          can.deleteStock(profile.role) && (
-            <ConfirmButton action={del}>
-              <Trash2 className="h-4 w-4" />
-              {t("delete")}
-            </ConfirmButton>
-          )
+          <>
+            {(v.status === "in_stock" || v.status === "reserved") && (
+              <Link href={`/invoices/new?vehicle=${v.id}`} className="btn-primary">
+                <FileText className="h-4 w-4" />
+                {t("va_create_invoice")}
+              </Link>
+            )}
+            {can.deleteStock(profile.role) && (
+              <ConfirmButton action={del}>
+                <Trash2 className="h-4 w-4" />
+                {t("delete")}
+              </ConfirmButton>
+            )}
+          </>
         }
       />
 

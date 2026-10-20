@@ -180,11 +180,76 @@ export async function allocateRemittance(
   return { ok: true };
 }
 
+/** Unallocates one vehicle. Its invoice payment (if any) is removed by cascade. */
 export async function removeAllocation(allocationId: string, remittanceId: number) {
   await assertRole(["admin", "manager"]);
   const supabase = await createClient();
-  const { error } = await supabase.from("remittance_allocations").delete().eq("id", allocationId);
+  const { error } = await supabase.from("remittance_allocations").delete().eq("id", allocationId).eq("remittance_id", remittanceId);
   if (error) throw new Error(error.message);
   refresh(remittanceId);
   revalidatePath("/invoices");
+  revalidatePath("/stock");
+}
+
+/** Unallocates every vehicle on the remittance. */
+export async function removeAllAllocations(remittanceId: number) {
+  await assertRole(["admin", "manager"]);
+  const supabase = await createClient();
+  const { error } = await supabase.from("remittance_allocations").delete().eq("remittance_id", remittanceId);
+  if (error) throw new Error(error.message);
+  refresh(remittanceId);
+  revalidatePath("/invoices");
+  revalidatePath("/stock");
+}
+
+/**
+ * Changes the amount allocated to one vehicle (partial unallocate).
+ * The linked invoice payment is scaled to match; 0 removes the allocation.
+ */
+export async function updateAllocationAmount(
+  allocationId: string,
+  remittanceId: number,
+  newAmount: number
+): Promise<{ error?: string; ok?: boolean }> {
+  const profile = await assertRole(["admin", "manager"]);
+  const supabase = await createClient();
+  const { data: alloc } = await supabase
+    .from("remittance_allocations")
+    .select("id, amount, remittances(currency), payments(id, amount, invoice_id, paid_on, method, reference, invoices(currency))")
+    .eq("id", allocationId)
+    .eq("remittance_id", remittanceId)
+    .single();
+  if (!alloc) return { error: "Allocation not found." };
+  const cur = (alloc.remittances as unknown as { currency: Currency }).currency;
+  const amount = round(Number(newAmount) || 0, cur);
+  if (amount < 0) return { error: "Amount can't be negative." };
+  if (amount === 0) {
+    await removeAllocation(allocationId, remittanceId);
+    return { ok: true };
+  }
+  const old = Number(alloc.amount);
+  const { error } = await supabase.from("remittance_allocations").update({ amount }).eq("id", allocationId);
+  if (error) return { error: error.code === "23514" || /exceeds/i.test(error.message) ? "rem_over_allocated" : error.message };
+
+  // Replace the linked invoice payment with one scaled to the new amount.
+  type Pay = { id: string; amount: number; invoice_id: string; paid_on: string; method: string | null; reference: string | null; invoices: { currency: Currency } | null };
+  for (const p of (alloc.payments ?? []) as unknown as Pay[]) {
+    const scaled = round((Number(p.amount) * amount) / old, p.invoices?.currency ?? "JPY");
+    const { error: de } = await supabase.from("payments").delete().eq("id", p.id);
+    if (de) return { error: de.message };
+    const { error: ie } = await supabase.from("payments").insert({
+      invoice_id: p.invoice_id,
+      amount: scaled,
+      paid_on: p.paid_on,
+      method: p.method,
+      reference: p.reference,
+      allocation_id: allocationId,
+      created_by: profile.id,
+    });
+    if (ie) return { error: ie.message };
+    revalidatePath(`/invoices/${p.invoice_id}`);
+  }
+  refresh(remittanceId);
+  revalidatePath("/invoices");
+  return { ok: true };
 }

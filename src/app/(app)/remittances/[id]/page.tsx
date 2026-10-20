@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil, Split, Trash2, FileText, X, Download } from "lucide-react";
+import { AllocationRowControls, UnallocateAllButton } from "./allocation-controls";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -9,7 +10,7 @@ import type { Remittance, RemittanceDocument } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { PageHeader, Stat, Badge, Empty } from "@/components/ui";
 import { ConfirmButton } from "@/components/buttons";
-import { deleteRemittance, deleteDocument, removeAllocation } from "../actions";
+import { deleteRemittance, deleteDocument } from "../actions";
 import { DocUploader } from "./doc-uploader";
 
 const STATUS_BADGE: Record<string, string> = {
@@ -82,6 +83,7 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
                 {t("rem_allocate")}
               </Link>
             )}
+            {canEdit && allocations.length > 0 && <UnallocateAllButton remittanceId={id} count={allocations.length} />}
             {canEdit && (
               <Link href={`/remittances/${id}/edit`} className="btn-secondary">
                 <Pencil className="h-4 w-4" />
@@ -192,7 +194,9 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
           </section>
 
           <section className="card overflow-hidden">
-            <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("rem_allocations")}</h2>
+            <h2 id="allocations" className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">
+              {t("rem_allocations")} <span className="text-slate-400">({allocations.length})</span>
+            </h2>
             {allocations.length === 0 ? (
               <Empty>{t("no_results")}</Empty>
             ) : (
@@ -201,9 +205,9 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
                   <tr>
                     <th>{t("rem_stock_id")}</th>
                     <th>{t("stock_details")}</th>
-                    <th className="text-right">{t("amount")}</th>
                     <th>{t("inv_title")}</th>
-                    <th></th>
+                    <th className="text-right">{t("amount")}</th>
+                    <th className="text-right">{t("actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -220,7 +224,6 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
                           <div className="font-mono text-xs text-slate-500">{a.vehicles?.chassis_no}</div>
                         </td>
                         <td>{a.vehicles ? vehicleTitle(a.vehicles) : "—"}</td>
-                        <td className="text-right tabular-nums">{money(a.amount, cur, locale)}</td>
                         <td className="text-xs">
                           {pay?.invoices ? (
                             <Link href={`/invoices/${pay.invoice_id}`} className="text-brand-700 hover:underline">
@@ -230,17 +233,15 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
                             <span className="text-slate-500">{t("rem_no_invoice")}</span>
                           )}
                         </td>
-                        <td className="text-right">
-                          {canEdit && (
-                            <ConfirmButton
-                              action={removeAllocation.bind(null, a.id, id)}
-                              className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                              message={`${t("rem_unallocate")}?`}
-                            >
-                              <X className="h-4 w-4" />
-                            </ConfirmButton>
-                          )}
-                        </td>
+                        <AllocationRowControls
+                          allocationId={a.id}
+                          remittanceId={id}
+                          amount={Number(a.amount)}
+                          maxAmount={Number(a.amount) + Number(rem.remaining_amount)}
+                          amountLabel={money(a.amount, cur, locale)}
+                          stockNo={a.vehicles?.stock_no ?? ""}
+                          canEdit={canEdit}
+                        />
                       </tr>
                     );
                   })}
