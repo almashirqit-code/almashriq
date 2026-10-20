@@ -40,7 +40,12 @@ export async function saveSettings(_prev: SettingsState, formData: FormData): Pr
       bank_details: s("bank_details"),
       invoice_terms: s("invoice_terms"),
       default_currency: CURRENCIES.includes(currency) ? currency : "USD",
-      invoice_prefix: s("invoice_prefix") ?? "AM",
+      // Blank prefix = plain invoice numbers (e.g. 1079733)
+      invoice_prefix: String(formData.get("invoice_prefix") ?? "").trim(),
+      fax: s("fax"),
+      mobile: s("mobile"),
+      stamp_url: s("stamp_url"),
+      intermediary_bank: s("intermediary_bank"),
       next_invoice_no: Number.isInteger(nextNo) && nextNo > 0 ? nextNo : 1,
       tax_rate: Math.max(0, Number(formData.get("tax_rate")) || 0),
       exchange_rates: rates,

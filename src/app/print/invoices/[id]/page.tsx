@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
-import type { Customer, Invoice, InvoiceItem, Settings } from "@/lib/types";
-import { InvoiceDocument } from "@/components/invoice-document";
+import type { Customer, Invoice, Settings } from "@/lib/types";
+import { InvoiceDocument, INVOICE_ITEM_SELECT, type InvoiceItemWithVehicle } from "@/components/invoice-document";
 import { PrintButton } from "@/components/buttons";
 import { translate } from "@/lib/i18n/dictionaries";
 
@@ -22,7 +22,7 @@ export default async function PrintInvoicePage({
   if (!inv) notFound();
   const invoice = inv as Invoice;
   const [{ data: items }, { data: customer }, { data: settings }] = await Promise.all([
-    supabase.from("invoice_items").select("*").eq("invoice_id", id).order("sort_order"),
+    supabase.from("invoice_items").select(INVOICE_ITEM_SELECT).eq("invoice_id", id).order("sort_order"),
     supabase.from("customers").select("*").eq("id", invoice.customer_id).maybeSingle(),
     supabase.from("settings").select("*").single(),
   ]);
@@ -35,7 +35,7 @@ export default async function PrintInvoicePage({
       <div className="mx-auto max-w-[210mm] shadow-lg print:max-w-none print:shadow-none">
         <InvoiceDocument
           invoice={invoice}
-          items={(items ?? []) as InvoiceItem[]}
+          items={(items ?? []) as unknown as InvoiceItemWithVehicle[]}
           customer={customer as Customer | null}
           settings={settings as Settings | null}
           lang={lang}

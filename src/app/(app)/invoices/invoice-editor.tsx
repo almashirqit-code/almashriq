@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Car, Plus, Trash2, Search } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
+import type { DictKey } from "@/lib/i18n/dictionaries";
 import { convert, money, round, vehicleTitle, num } from "@/lib/format";
-import { CURRENCIES, INCOTERMS, type Currency, type Customer, type Vehicle } from "@/lib/types";
+import { CURRENCIES, INCOTERMS, INCOTERM_LABEL, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type Customer, type ShipmentType, type Vehicle } from "@/lib/types";
 import { saveInvoice, type InvoicePayload } from "./actions";
 
 export type VehicleOption = Pick<
@@ -49,7 +50,10 @@ export function InvoiceEditor({
   const [dueDate, setDueDate] = useState(initial?.due_date ?? in7);
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [rate, setRate] = useState<number>(initial?.exchange_rate ?? rates[initialCurrency] ?? 1);
-  const [incoterm, setIncoterm] = useState(initial?.incoterm ?? "FOB");
+  const [incoterm, setIncoterm] = useState(INCOTERMS.includes(initial?.incoterm ?? "") ? (initial?.incoterm as string) : "FOB");
+  const [freight, setFreight] = useState<number>(initial?.freight ?? 0);
+  const [insurance, setInsurance] = useState<number>(initial?.insurance ?? 0);
+  const [shipmentType, setShipmentType] = useState<ShipmentType | "">(initial?.shipment_type ?? "");
   const [pol, setPol] = useState(initial?.port_of_loading ?? "");
   const [pod, setPod] = useState(initial?.port_of_discharge ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
@@ -130,13 +134,18 @@ export function InvoiceEditor({
     const conv = (x: number) => round((Number(x) || 0) * (fromRate / nextRate), next);
     setLines((ls) => ls.map((l) => ({ ...l, unit_price: conv(l.unit_price) })));
     setDiscount((d) => conv(d));
+    setFreight((x) => conv(x));
+    setInsurance((x) => conv(x));
     setCurrency(next);
     setRate(nextRate);
   }
 
   const subtotal = round(lines.reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.unit_price) || 0), 0), currency);
   const tax = round(((subtotal - (Number(discount) || 0)) * (Number(taxRate) || 0)) / 100, currency);
-  const total = round(subtotal - (Number(discount) || 0) + tax, currency);
+  const freightAmt = hasFreight(incoterm) ? Number(freight) || 0 : 0;
+  const insuranceAmt = hasInsurance(incoterm) ? Number(insurance) || 0 : 0;
+  const fobTotal = round(subtotal - (Number(discount) || 0), currency);
+  const total = round(fobTotal + freightAmt + insuranceAmt + tax, currency);
 
   function submit(issue: boolean) {
     setError("");
@@ -158,6 +167,9 @@ export function InvoiceEditor({
       notify_party: consignee.notify || null,
       notes: notes || null,
       discount: Number(discount) || 0,
+      freight: freightAmt,
+      insurance: insuranceAmt,
+      shipment_type: shipmentType || null,
       tax_rate: Number(taxRate) || 0,
       items: lines.map(({ vehicle_id, description, quantity, unit_price }) => ({ vehicle_id, description, quantity, unit_price })),
       issue,
@@ -233,13 +245,25 @@ export function InvoiceEditor({
           </div>
           <div>
             <label className="label">{t("inv_incoterm")}</label>
-            <select className="input" value={incoterm ?? ""} onChange={(e) => setIncoterm(e.target.value)}>
+            <select className="input" value={incoterm} onChange={(e) => setIncoterm(e.target.value)}>
               {INCOTERMS.map((i) => (
-                <option key={i}>{i}</option>
+                <option key={i} value={i}>
+                  {INCOTERM_LABEL[i]}
+                </option>
               ))}
             </select>
           </div>
-          <div />
+          <div>
+            <label className="label">{t("inv_shipment")}</label>
+            <select className="input" value={shipmentType} onChange={(e) => setShipmentType(e.target.value as ShipmentType | "")}>
+              <option value="">{t("inv_select_shipment")}</option>
+              {SHIPMENT_TYPES.map((s) => (
+                <option key={s} value={s}>
+                  {t(`ship_${s}` as DictKey)}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="md:col-span-2">
             <label className="label">{t("inv_pol")}</label>
             <input className="input" value={pol ?? ""} onChange={(e) => setPol(e.target.value)} placeholder="Yokohama, Japan" />
@@ -303,9 +327,7 @@ export function InvoiceEditor({
               }}
             >
               <option value="">+ {t("inv_add_charge")}</option>
-              <option value={t("inv_charge_freight")}>{t("inv_charge_freight")}</option>
               <option value={t("inv_charge_inspection")}>{t("inv_charge_inspection")}</option>
-              <option value={t("inv_charge_insurance")}>{t("inv_charge_insurance")}</option>
               <option value="__custom">…</option>
             </select>
           </div>
@@ -458,8 +480,43 @@ export function InvoiceEditor({
               }
             />
             {tax > 0 && <Row label={t("inv_tax")} value={money(tax, currency, locale)} />}
+            <Row label={`${t("inv_total_fob")}`} value={money(fobTotal, currency, locale)} />
+            {hasFreight(incoterm) ? (
+              <Row
+                label={`${t("inv_freight")}${shipmentType ? ` (${t(`ship_${shipmentType}` as DictKey)})` : ""}`}
+                value={
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    className="input w-36 text-right"
+                    value={freight}
+                    onChange={(e) => setFreight(Number(e.target.value))}
+                  />
+                }
+              />
+            ) : (
+              <p className="text-right text-xs text-slate-400">{t("inv_freight_help")}</p>
+            )}
+            {hasInsurance(incoterm) && (
+              <Row
+                label={t("inv_insurance")}
+                value={
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    className="input w-36 text-right"
+                    value={insurance}
+                    onChange={(e) => setInsurance(Number(e.target.value))}
+                  />
+                }
+              />
+            )}
             <div className="flex items-center justify-between border-t border-slate-200 pt-3 text-base font-semibold">
-              <span>{t("inv_total")}</span>
+              <span>
+                {t("inv_total")} {INCOTERM_LABEL[incoterm]}
+              </span>
               <span className="tabular-nums">{money(total, currency, locale)}</span>
             </div>
             {currency !== "JPY" && (

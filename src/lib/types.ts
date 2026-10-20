@@ -7,7 +7,13 @@ export const CURRENCIES: Currency[] = ["JPY", "USD", "EUR", "GBP"];
 export const VEHICLE_STATUSES: VehicleStatus[] = ["in_stock", "reserved", "sold", "shipped"];
 export const INVOICE_STATUSES: InvoiceStatus[] = ["draft", "issued", "partially_paid", "paid", "cancelled"];
 export const ROLES: Role[] = ["admin", "manager", "sales"];
-export const INCOTERMS = ["FOB", "CNF", "CIF", "EXW", "DDP"];
+/** Shipment terms. CNF is shown as "C&F". FOB: no freight; C&F: + freight; CIF: + freight + insurance. */
+export const INCOTERMS = ["FOB", "CNF", "CIF"];
+export const INCOTERM_LABEL: Record<string, string> = { FOB: "FOB", CNF: "C&F", CIF: "CIF" };
+export const hasFreight = (incoterm: string | null | undefined) => incoterm === "CNF" || incoterm === "CIF";
+export const hasInsurance = (incoterm: string | null | undefined) => incoterm === "CIF";
+export type ShipmentType = "roro" | "container_20" | "container_40";
+export const SHIPMENT_TYPES: ShipmentType[] = ["roro", "container_20", "container_40"];
 
 export interface Profile {
   id: string;
@@ -36,6 +42,10 @@ export interface Settings {
   exchange_rates: Record<Currency, number>;
   offices: string[];
   shifts: string[];
+  fax: string | null;
+  mobile: string | null;
+  stamp_url: string | null;
+  intermediary_bank: string | null;
 }
 
 export interface Customer {
@@ -128,6 +138,9 @@ export interface Invoice {
   notes: string | null;
   subtotal: number;
   discount: number;
+  freight: number;
+  insurance: number;
+  shipment_type: ShipmentType | null;
   tax_rate: number;
   tax: number;
   total: number;

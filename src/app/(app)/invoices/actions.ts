@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole, getProfile } from "@/lib/auth";
 import { round } from "@/lib/format";
-import { CURRENCIES, type Currency } from "@/lib/types";
+import { CURRENCIES, INCOTERMS, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type ShipmentType } from "@/lib/types";
 
 export type InvoicePayload = {
   id?: string;
@@ -23,6 +23,9 @@ export type InvoicePayload = {
   notify_party: string | null;
   notes: string | null;
   discount: number;
+  freight: number;
+  insurance: number;
+  shipment_type: ShipmentType | null;
   tax_rate: number;
   items: { vehicle_id: string | null; description: string; quantity: number; unit_price: number }[];
   issue: boolean;
@@ -47,9 +50,14 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
   const lines = items.map((it, i) => ({ ...it, amount: round(it.quantity * it.unit_price, p.currency), sort_order: i }));
   const subtotal = round(lines.reduce((s, l) => s + l.amount, 0), p.currency);
   const discount = round(Math.max(0, Number(p.discount) || 0), p.currency);
+  const incoterm = INCOTERMS.includes(p.incoterm ?? "") ? (p.incoterm as string) : "FOB";
+  // FOB: no freight. C&F: freight. CIF: freight + insurance.
+  const freight = hasFreight(incoterm) ? round(Math.max(0, Number(p.freight) || 0), p.currency) : 0;
+  const insurance = hasInsurance(incoterm) ? round(Math.max(0, Number(p.insurance) || 0), p.currency) : 0;
+  const shipmentType = SHIPMENT_TYPES.includes(p.shipment_type as ShipmentType) ? p.shipment_type : null;
   const taxRate = Math.max(0, Number(p.tax_rate) || 0);
   const tax = round(((subtotal - discount) * taxRate) / 100, p.currency);
-  const total = round(subtotal - discount + tax, p.currency);
+  const total = round(subtotal - discount + freight + insurance + tax, p.currency);
 
   // A vehicle can only be on one live invoice.
   const vehicleIds = lines.map((l) => l.vehicle_id).filter(Boolean) as string[];
@@ -74,7 +82,10 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
     due_date: p.due_date || null,
     currency: p.currency,
     exchange_rate: Number(p.exchange_rate) || 1,
-    incoterm: p.incoterm || null,
+    incoterm,
+    freight,
+    insurance,
+    shipment_type: shipmentType,
     port_of_loading: p.port_of_loading || null,
     port_of_discharge: p.port_of_discharge || null,
     consignee_name: p.consignee_name?.trim() || null,

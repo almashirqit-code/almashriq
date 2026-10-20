@@ -41,6 +41,9 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
           notify_party: invoice.notify_party,
           notes: invoice.notes,
           discount: Number(invoice.discount),
+          freight: Number(invoice.freight ?? 0),
+          insurance: Number(invoice.insurance ?? 0),
+          shipment_type: invoice.shipment_type ?? null,
           tax_rate: Number(invoice.tax_rate),
           items: lines.map((l) => ({
             vehicle_id: l.vehicle_id,

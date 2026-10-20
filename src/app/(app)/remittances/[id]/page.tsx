@@ -112,7 +112,7 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
         <section className="card xl:col-span-1">
           <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("rem_remittance_details")}</h2>
-          <dl className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-2 p-5 text-sm">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 p-5 text-sm">
             {(
               [
                 ["rem_customer", rem.customers ? `${rem.customers.customer_no} · ${rem.customers.name}` : "—"],

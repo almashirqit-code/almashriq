@@ -5,11 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { money, date } from "@/lib/format";
-import type { Customer, Invoice, InvoiceItem, Payment, Settings } from "@/lib/types";
+import type { Customer, Invoice, Payment, Settings } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { PageHeader, InvoiceStatusBadge } from "@/components/ui";
 import { ConfirmButton } from "@/components/buttons";
-import { InvoiceDocument } from "@/components/invoice-document";
+import { InvoiceDocument, INVOICE_ITEM_SELECT, type InvoiceItemWithVehicle } from "@/components/invoice-document";
 import { issueInvoice, cancelInvoice, deleteInvoice, addPayment, deletePayment } from "../actions";
 import { PaymentForm } from "./payment-form";
 
@@ -24,7 +24,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const invoice = inv as Invoice;
 
   const [{ data: items }, { data: payments }, { data: customer }, { data: settings }] = await Promise.all([
-    supabase.from("invoice_items").select("*").eq("invoice_id", id).order("sort_order"),
+    supabase.from("invoice_items").select(INVOICE_ITEM_SELECT).eq("invoice_id", id).order("sort_order"),
     supabase.from("payments").select("*").eq("invoice_id", id).order("paid_on"),
     supabase.from("customers").select("*").eq("id", invoice.customer_id).maybeSingle(),
     supabase.from("settings").select("*").single(),
@@ -86,7 +86,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         <div className="card overflow-hidden xl:col-span-2">
           <InvoiceDocument
             invoice={invoice}
-            items={(items ?? []) as InvoiceItem[]}
+            items={(items ?? []) as unknown as InvoiceItemWithVehicle[]}
             customer={customer as Customer | null}
             settings={settings as Settings | null}
             lang={locale}

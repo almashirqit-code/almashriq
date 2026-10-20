@@ -59,6 +59,8 @@
   }
   body {
     background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   @page {
     size: A4;

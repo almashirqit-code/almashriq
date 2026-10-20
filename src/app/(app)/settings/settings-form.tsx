@@ -13,8 +13,28 @@ export function SettingsForm({ settings }: { settings: Settings }) {
   const { t } = useT();
   const [state, action] = useActionState(saveSettings, {} as SettingsState);
   const [logo, setLogo] = useState(settings.logo_url ?? "");
+  const [stamp, setStamp] = useState(settings.stamp_url ?? "");
+  const stampRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  async function uploadStamp(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const supabase = createClient();
+      const body = await resizeImage(file, 900, 0.92);
+      const ext = body.type === "image/png" ? "png" : "jpg";
+      const path = `company/stamp-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("vehicle-images").upload(path, body, { contentType: body.type || file.type });
+      if (error) throw error;
+      setStamp(supabase.storage.from("vehicle-images").getPublicUrl(path).data.publicUrl);
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function uploadLogo(file: File | undefined) {
     if (!file) return;
@@ -50,6 +70,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
   return (
     <form action={action} className="space-y-5">
       <input type="hidden" name="logo_url" value={logo} />
+      <input type="hidden" name="stamp_url" value={stamp} />
 
       <section className="card">
         <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("settings_company")}</h2>
@@ -58,11 +79,17 @@ export function SettingsForm({ settings }: { settings: Settings }) {
           {text("company_name_ja", t("settings_company_name_ja"))}
           {text("address", t("settings_address"), { area: true, span: true })}
           {text("phone", t("settings_phone"))}
+          {text("fax", t("settings_fax"))}
+          {text("mobile", t("settings_mobile"))}
           {text("email", t("settings_email"), { type: "email" })}
           {text("website", t("settings_website"))}
           <div>
             <label className="label">{t("settings_logo")}</label>
             <div className="flex items-center gap-3">
+              {!logo && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/brand/logo.png" alt="" className="h-14 w-auto rounded border border-dashed border-slate-200 bg-white object-contain p-1 opacity-70" />
+              )}
               {logo ? (
                 <div className="relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -83,6 +110,24 @@ export function SettingsForm({ settings }: { settings: Settings }) {
       </section>
 
       <section className="card">
+        <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("settings_stamp")}</h2>
+        <div className="flex flex-wrap items-center gap-4 p-5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={stamp || "/brand/stamp.png"} alt="" className="h-16 w-auto rounded border border-slate-200 bg-white object-contain p-1" />
+          <input ref={stampRef} type="file" accept="image/*" className="hidden" onChange={(e) => uploadStamp(e.target.files?.[0])} />
+          <button type="button" className="btn-secondary" disabled={uploading} onClick={() => stampRef.current?.click()}>
+            <ImagePlus className="h-4 w-4" />
+            {uploading ? "…" : t("upload")}
+          </button>
+          {stamp && (
+            <button type="button" className="btn-ghost text-xs" onClick={() => setStamp("")}>
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </section>
+
+      <section className="card">
         <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("settings_invoicing")}</h2>
         <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-4">
           <div>
@@ -96,6 +141,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
           <div>
             <label className="label">{t("settings_prefix")}</label>
             <input name="invoice_prefix" defaultValue={settings.invoice_prefix} className="input" />
+            <p className="mt-1 text-xs text-slate-400">{t("settings_prefix_help")}</p>
           </div>
           <div>
             <label className="label">{t("settings_next_no")}</label>
@@ -108,6 +154,10 @@ export function SettingsForm({ settings }: { settings: Settings }) {
           <div className="sm:col-span-2">
             <label className="label">{t("settings_bank")}</label>
             <textarea name="bank_details" rows={5} defaultValue={settings.bank_details ?? ""} className="input" placeholder={"Bank: MUFG Bank\nBranch: Yokohama\nSWIFT: BOTKJPJT\nAccount: 1234567\nBeneficiary: Al Mashriq Trading"} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label">{t("settings_intermediary")}</label>
+            <textarea name="intermediary_bank" rows={5} defaultValue={settings.intermediary_bank ?? ""} className="input" />
           </div>
           <div className="sm:col-span-2">
             <label className="label">{t("settings_terms")}</label>
