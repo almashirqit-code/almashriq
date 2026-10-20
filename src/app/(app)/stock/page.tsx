@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Upload, Download, Car } from "lucide-react";
+import { Plus, Upload, Download, Car, Globe } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -83,6 +83,10 @@ export default async function StockPage({
             </a>
             {can.editStock(profile.role) && (
               <>
+                <Link href="/stock/import-site" className="btn-secondary">
+                  <Globe className="h-4 w-4" />
+                  Import from website
+                </Link>
                 <Link href="/stock/import" className="btn-secondary">
                   <Upload className="h-4 w-4" />
                   {t("nav_import")}

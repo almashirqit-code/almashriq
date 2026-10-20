@@ -1,7 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const PUBLIC_HOSTS = (process.env.PUBLIC_SITE_HOSTS ?? "almashriqtrading.site,www.almashriqtrading.site")
+  .split(",")
+  .map((h) => h.trim().toLowerCase())
+  .filter(Boolean);
+
 export async function middleware(request: NextRequest) {
+  // Public website domain: serve the showroom at the root, no staff login involved.
+  const host = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "").split(":")[0].toLowerCase();
+  if (PUBLIC_HOSTS.includes(host)) {
+    const path = request.nextUrl.pathname;
+    if (path.startsWith("/showroom") || path.startsWith("/api/public") || path.startsWith("/brand/")) return NextResponse.next();
+    const url = request.nextUrl.clone();
+    url.pathname = path === "/" ? "/showroom" : `/showroom${path}`;
+    return NextResponse.rewrite(url);
+  }
+
   let response = NextResponse.next({ request });
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
