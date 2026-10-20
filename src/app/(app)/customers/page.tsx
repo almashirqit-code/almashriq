@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Pencil, Users } from "lucide-react";
+import { Plus, Pencil, Users, Mail, Phone, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { num } from "@/lib/format";
@@ -61,40 +61,75 @@ export default async function CustomersPage({
             <table className="table">
               <thead>
                 <tr>
-                  <th>{t("c_customer_no")}</th>
+                  <th className="w-16">{t("c_customer_no")}</th>
                   <th>{t("c_name")}</th>
-                  <th>{t("c_company")}</th>
                   <th>{t("c_country")}</th>
-                  <th>{t("c_port")}</th>
-                  <th>{t("c_email")}</th>
-                  <th>{t("c_phone")}</th>
+                  <th>{t("c_email")} / {t("c_phone")}</th>
                   <th>{t("rem_tagged_with")}</th>
-                  <th className="text-right">{t("actions")}</th>
+                  <th className="w-16"></th>
                 </tr>
               </thead>
               <tbody>
-                {customers.map((c) => (
-                  <tr key={c.id}>
-                    <td className="tabular-nums text-slate-500">{c.customer_no}</td>
-                    <td>
-                      <Link href={`/customers/${c.id}`} className="font-medium text-brand-700 hover:underline">
-                        {c.name}
-                      </Link>
-                    </td>
-                    <td>{c.company ?? "—"}</td>
-                    <td>{c.country ?? "—"}</td>
-                    <td>{c.port ?? "—"}</td>
-                    <td className="text-slate-600">{c.email ?? "—"}</td>
-                    <td className="text-slate-600">{c.phone ?? c.whatsapp ?? "—"}</td>
-                    <td className="text-slate-600">{c.assigned_to ? staffName.get(c.assigned_to) : "—"}</td>
-                    <td className="text-right">
-                      <Link href={`/customers/${c.id}/edit`} className="btn-secondary py-1 text-xs">
-                        <Pencil className="h-3.5 w-3.5" />
-                        {t("edit")}
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                {customers.map((c) => {
+                  const phone = c.phone ?? c.whatsapp;
+                  const staff = c.assigned_to ? staffName.get(c.assigned_to) : null;
+                  return (
+                    <tr key={c.id}>
+                      <td>
+                        <span className="inline-flex min-w-8 justify-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold tabular-nums text-slate-600">{c.customer_no}</span>
+                      </td>
+                      <td className="max-w-[16rem]">
+                        <Link href={`/customers/${c.id}`} className="block truncate font-semibold text-brand-700 hover:underline">
+                          {c.name}
+                        </Link>
+                        {c.company && <div className="truncate text-xs text-slate-500">{c.company}</div>}
+                      </td>
+                      <td className="whitespace-nowrap">
+                        <div className="font-medium uppercase text-slate-800">{c.country ?? "—"}</div>
+                        {c.port && (
+                          <div className="flex items-center gap-1 text-xs text-slate-500">
+                            <MapPin className="h-3 w-3 text-cyan-500" />
+                            {c.port}
+                          </div>
+                        )}
+                      </td>
+                      <td className="max-w-[18rem]">
+                        {c.email && (
+                          <a href={`mailto:${c.email}`} className="flex items-center gap-1.5 truncate text-slate-600 hover:text-brand-700" title={c.email}>
+                            <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                            <span className="truncate">{c.email}</span>
+                          </a>
+                        )}
+                        {phone && (
+                          <a href={`tel:${phone}`} className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-brand-700">
+                            <Phone className="h-3 w-3 shrink-0 text-slate-400" />
+                            {phone}
+                          </a>
+                        )}
+                        {!c.email && !phone && "—"}
+                      </td>
+                      <td>
+                        {staff ? (
+                          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700 ring-1 ring-inset ring-violet-600/20">
+                            {staff}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="text-right">
+                        <Link
+                          href={`/customers/${c.id}/edit`}
+                          className="inline-flex rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-brand-700"
+                          title={t("edit")}
+                          aria-label={t("edit")}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

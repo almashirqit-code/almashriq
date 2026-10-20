@@ -2,11 +2,13 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Anchor, Gavel, Warehouse, Pencil, Trash2, Plus, Check, X, Search } from "lucide-react";
+import { Anchor, Gavel, Warehouse, Pencil, Trash2, Plus, Check, Search } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import { en, type DictKey } from "@/lib/i18n/dictionaries";
 import { SHIPMENT_MODES, type AuctionHouse, type Port, type ShipmentMode, type Yard } from "@/lib/types";
 import { saveMaster, deleteMaster, type MasterKind } from "./actions";
+import { Modal } from "@/components/modal";
+import { IconChip } from "@/components/ui";
 
 type Tab = "ports" | "auctions" | "yards";
 type Draft = Record<string, unknown>;
@@ -86,10 +88,19 @@ export function MastersManager({
 
   const set = (k: string, v: unknown) => setDraft((d) => ({ ...d, [k]: v }));
   const input = (k: string, placeholder?: string) => (
-    <input className="input py-1.5" value={String(draft[k] ?? "")} placeholder={placeholder} onChange={(e) => set(k, e.target.value)} />
+    <input className="input" value={String(draft[k] ?? "")} placeholder={placeholder} onChange={(e) => set(k, e.target.value)} />
+  );
+  const fld = (label: string, el: React.ReactNode, wide = false, required = false) => (
+    <div className={wide ? "sm:col-span-2" : ""}>
+      <label className="label">
+        {label}
+        {required && <span className="text-brand-600"> *</span>}
+      </label>
+      {el}
+    </div>
   );
   const portSelect = () => (
-    <select className="input py-1.5" value={String(draft.port_id ?? "")} onChange={(e) => set("port_id", e.target.value)}>
+    <select className="input" value={String(draft.port_id ?? "")} onChange={(e) => set("port_id", e.target.value)}>
       <option value="">{t("m_no_port")}</option>
       {ports.map((p) => (
         <option key={p.id} value={p.id}>
@@ -99,20 +110,10 @@ export function MastersManager({
     </select>
   );
   const activeToggle = () => (
-    <label className="flex items-center gap-1.5 text-xs">
-      <input type="checkbox" checked={draft.active !== false} onChange={(e) => set("active", e.target.checked)} />
+    <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+      <input type="checkbox" className="h-4 w-4 accent-brand-600" checked={draft.active !== false} onChange={(e) => set("active", e.target.checked)} />
       {t("m_active")}
     </label>
-  );
-  const editActions = () => (
-    <div className="flex justify-end gap-1">
-      <button className="rounded bg-emerald-600 p-1.5 text-white hover:bg-emerald-700" disabled={pending} onClick={save} title={t("save")}>
-        <Check className="h-4 w-4" />
-      </button>
-      <button className="rounded p-1.5 text-slate-500 hover:bg-slate-100" onClick={cancel} title={t("cancel")}>
-        <X className="h-4 w-4" />
-      </button>
-    </div>
   );
   const rowActions = (id: string, name: string, initial: Draft) =>
     canEdit && (
@@ -183,8 +184,7 @@ export function MastersManager({
         )}
       </div>
 
-      {error && <p className="border-b border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>}
-
+      
       <div className="overflow-x-auto">
         {/* PORTS */}
         {tab === "ports" && (
@@ -200,36 +200,7 @@ export function MastersManager({
               </tr>
             </thead>
             <tbody>
-              {[...(editing === "new" ? [{ id: "new" } as Port] : []), ...(rows as Port[])].map((p) =>
-                editing === p.id ? (
-                  <tr key={p.id} className="bg-brand-50/40 align-top">
-                    <td>{input("name", t("m_name"))}</td>
-                    <td>
-                      <div className="flex flex-col gap-1 text-xs">
-                        {SHIPMENT_MODES.map((m) => {
-                          const modes = (draft.shipment_modes as ShipmentMode[]) ?? [];
-                          return (
-                            <label key={m} className="flex items-center gap-1.5">
-                              <input
-                                type="checkbox"
-                                checked={modes.includes(m)}
-                                onChange={(e) => set("shipment_modes", e.target.checked ? [...modes, m] : modes.filter((x) => x !== m))}
-                              />
-                              {t(`m_mode_${m}` as DictKey)}
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </td>
-                    <td>{input("region")}</td>
-                    <td className="text-slate-400">—</td>
-                    <td>
-                      {input("notes")}
-                      <div className="mt-1.5">{activeToggle()}</div>
-                    </td>
-                    <td>{editActions()}</td>
-                  </tr>
-                ) : (
+              {(rows as Port[]).map((p) => (
                   <tr key={p.id}>
                     <td className="font-medium">
                       {p.name}
@@ -259,8 +230,7 @@ export function MastersManager({
                     <td className="max-w-xs text-xs text-slate-500">{p.notes}</td>
                     <td>{rowActions(p.id, p.name, { ...p })}</td>
                   </tr>
-                )
-              )}
+              ))}
             </tbody>
           </table>
         )}
@@ -278,20 +248,9 @@ export function MastersManager({
               </tr>
             </thead>
             <tbody>
-              {[...(editing === "new" ? [{ id: "new" } as AuctionHouse] : []), ...(rows as AuctionHouse[])].map((a) => {
+              {(rows as AuctionHouse[]).map((a) => {
                 const port = a.port_id ? portById.get(a.port_id) : undefined;
-                return editing === a.id ? (
-                  <tr key={a.id} className="bg-brand-50/40 align-top">
-                    <td>{input("name", t("m_name"))}</td>
-                    <td>{portSelect()}</td>
-                    <td className="text-slate-400">—</td>
-                    <td>
-                      {input("notes")}
-                      <div className="mt-1.5">{activeToggle()}</div>
-                    </td>
-                    <td>{editActions()}</td>
-                  </tr>
-                ) : (
+                return (
                   <tr key={a.id}>
                     <td className="font-medium">
                       {a.name}
@@ -333,21 +292,7 @@ export function MastersManager({
               </tr>
             </thead>
             <tbody>
-              {[...(editing === "new" ? [{ id: "new" } as Yard] : []), ...(rows as Yard[])].map((y) =>
-                editing === y.id ? (
-                  <tr key={y.id} className="bg-brand-50/40 align-top">
-                    <td>{input("name", t("m_name"))}</td>
-                    <td>{portSelect()}</td>
-                    <td>{input("address")}</td>
-                    <td>{input("contact")}</td>
-                    <td>{input("phone")}</td>
-                    <td>
-                      {input("notes")}
-                      <div className="mt-1.5">{activeToggle()}</div>
-                    </td>
-                    <td>{editActions()}</td>
-                  </tr>
-                ) : (
+              {(rows as Yard[]).map((y) => (
                   <tr key={y.id}>
                     <td className="font-medium">
                       {y.name}
@@ -360,14 +305,80 @@ export function MastersManager({
                     <td className="max-w-xs text-xs text-slate-500">{y.notes}</td>
                     <td>{rowActions(y.id, y.name, { ...y, port_id: y.port_id ?? "" })}</td>
                   </tr>
-                )
-              )}
+              ))}
             </tbody>
           </table>
         )}
 
-        {rows.length === 0 && editing !== "new" && <p className="px-4 py-10 text-center text-sm text-slate-500">{t("no_results")}</p>}
+        {rows.length === 0 && <p className="px-4 py-10 text-center text-sm text-slate-500">{t("no_results")}</p>}
       </div>
+      <Modal
+        open={editing !== null}
+        onClose={cancel}
+        title={`${editing === "new" ? t("m_add") : t("edit")} · ${tab === "ports" ? t("m_ports") : tab === "auctions" ? t("m_auctions") : t("m_yards")}`}
+        icon={
+          <IconChip tone="cyan" size="sm">
+            {tab === "ports" ? <Anchor /> : tab === "auctions" ? <Gavel /> : <Warehouse />}
+          </IconChip>
+        }
+        footer={
+          <>
+            <button type="button" className="btn-secondary" onClick={cancel}>
+              {t("cancel")}
+            </button>
+            <button type="button" className="btn-primary" disabled={pending} onClick={save}>
+              <Check className="h-4 w-4" />
+              {pending ? t("saving") : t("save")}
+            </button>
+          </>
+        }
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {fld(t("m_name"), input("name"), tab === "ports", true)}
+          {tab === "ports" && (
+            <>
+              {fld(
+                t("m_modes"),
+                <div className="flex gap-2">
+                  {SHIPMENT_MODES.map((m) => {
+                    const modes = (draft.shipment_modes as ShipmentMode[]) ?? [];
+                    const on = modes.includes(m);
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => set("shipment_modes", on ? modes.filter((x) => x !== m) : [...modes, m])}
+                        className={`flex-1 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+                          on ? "border-cyan-300 bg-cyan-50 text-cyan-800" : "border-slate-200 bg-white text-slate-400"
+                        }`}
+                      >
+                        {on ? "✓ " : ""}
+                        {t(`m_mode_${m}` as DictKey)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {fld(t("m_region"), input("region"))}
+            </>
+          )}
+          {tab !== "ports" && fld(t("m_port"), portSelect())}
+          {tab === "yards" && (
+            <>
+              {fld(t("m_contact"), input("contact"))}
+              {fld(t("m_phone"), input("phone"))}
+              {fld(
+                t("m_address"),
+                <textarea className="input" rows={2} value={String(draft.address ?? "")} onChange={(e) => set("address", e.target.value)} />,
+                true
+              )}
+            </>
+          )}
+          {fld(t("m_notes"), <textarea className="input" rows={2} value={String(draft.notes ?? "")} onChange={(e) => set("notes", e.target.value)} />, true)}
+          <div>{activeToggle()}</div>
+          {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 sm:col-span-2">{error}</p>}
+        </div>
+      </Modal>
     </div>
   );
 }

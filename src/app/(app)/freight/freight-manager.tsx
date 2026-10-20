@@ -2,12 +2,13 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Check, X, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, Search, Ship } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { money } from "@/lib/format";
 import { CURRENCIES, SHIPMENT_TYPES, type FreightRate, type Port, type ShipmentType } from "@/lib/types";
-import { Badge, Empty } from "@/components/ui";
+import { Badge, Empty, IconChip } from "@/components/ui";
+import { Modal } from "@/components/modal";
 import { saveFreightRate, deleteFreightRate, type FreightInput } from "./actions";
 
 const blank = (): FreightInput => ({
@@ -52,8 +53,8 @@ export function FreightManager({ rates, ports, canEdit }: { rates: FreightRate[]
   const save = () =>
     start(async () => {
       const res = await saveFreightRate(editing === "new" ? null : editing, form);
-      if (res.error) return err(res.error);
-      setEditing(null);
+      if (res.error) return setFormError(res.error.startsWith("fr_") ? t(res.error as DictKey) : res.error);
+      close();
       router.refresh();
     });
   const remove = (id: string) => {
@@ -66,10 +67,16 @@ export function FreightManager({ rates, ports, canEdit }: { rates: FreightRate[]
   };
   const set = <K extends keyof FreightInput>(k: K, v: FreightInput[K]) => setForm((f) => ({ ...f, [k]: v }));
 
-  const editRow = (key: string) => (
-    <tr key={key} className="bg-sky-50/50">
-      <td>
-        <select className="input py-1.5" value={form.port_id ?? ""} onChange={(e) => set("port_id", e.target.value || null)}>
+  const [formError, setFormError] = useState("");
+  const close = () => {
+    setEditing(null);
+    setFormError("");
+  };
+  const formBody = (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label className="label">{t("fr_loading")}</label>
+        <select className="input" value={form.port_id ?? ""} onChange={(e) => set("port_id", e.target.value || null)}>
           <option value="">{t("fr_any_port")}</option>
           {ports.map((p) => (
             <option key={p.id} value={p.id}>
@@ -77,61 +84,70 @@ export function FreightManager({ rates, ports, canEdit }: { rates: FreightRate[]
             </option>
           ))}
         </select>
-      </td>
-      <td>
-        <input className="input py-1.5" autoFocus value={form.destination} onChange={(e) => set("destination", e.target.value)} placeholder="Karachi" />
-      </td>
-      <td>
-        <input className="input py-1.5" value={form.country ?? ""} onChange={(e) => set("country", e.target.value)} placeholder="Pakistan" />
-      </td>
-      <td>
-        <select className="input py-1.5" value={form.shipment_type} onChange={(e) => set("shipment_type", e.target.value as ShipmentType)}>
-          {SHIPMENT_TYPES.map((s) => (
-            <option key={s} value={s}>
-              {t(`ship_${s}` as DictKey)}
-            </option>
+      </div>
+      <div>
+        <label className="label">{t("fr_shipment")}</label>
+        <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+          {SHIPMENT_TYPES.map((x) => (
+            <button
+              key={x}
+              type="button"
+              onClick={() => set("shipment_type", x)}
+              className={`flex-1 whitespace-nowrap rounded-lg px-2 py-1.5 text-xs font-semibold transition ${
+                form.shipment_type === x ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              {t(`ship_${x}` as DictKey)}
+            </button>
           ))}
-        </select>
-      </td>
-      <td>
-        <div className="flex gap-1">
+        </div>
+      </div>
+      <div>
+        <label className="label">
+          {t("fr_destination")} <span className="text-brand-600">*</span>
+        </label>
+        <input className="input" autoFocus value={form.destination} onChange={(e) => set("destination", e.target.value)} placeholder="Karachi" />
+      </div>
+      <div>
+        <label className="label">{t("fr_country")}</label>
+        <input className="input" value={form.country ?? ""} onChange={(e) => set("country", e.target.value)} placeholder="Pakistan" />
+      </div>
+      <div>
+        <label className="label">
+          {t("fr_amount")} <span className="text-brand-600">*</span>
+        </label>
+        <div className="flex gap-2">
           <input
             type="number"
             min={0}
             step="any"
-            className="input w-28 py-1.5 text-right"
-            value={form.amount}
+            className="input text-right text-base font-semibold"
+            value={form.amount || ""}
+            placeholder="0"
             onChange={(e) => set("amount", Number(e.target.value))}
             onKeyDown={(e) => e.key === "Enter" && save()}
           />
-          <select className="input w-20 py-1.5" value={form.currency} onChange={(e) => set("currency", e.target.value as FreightInput["currency"])}>
+          <select className="input w-24" value={form.currency} onChange={(e) => set("currency", e.target.value as FreightInput["currency"])}>
             {CURRENCIES.map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
         </div>
-      </td>
-      <td>
-        <input type="date" className="input py-1.5" value={form.valid_until ?? ""} onChange={(e) => set("valid_until", e.target.value || null)} />
-      </td>
-      <td>
-        <input className="input py-1.5" value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} />
-      </td>
-      <td>
-        <label className="inline-flex items-center gap-1.5 text-xs">
-          <input type="checkbox" checked={form.active} onChange={(e) => set("active", e.target.checked)} className="h-4 w-4 accent-brand-600" />
-          {t("m_active")}
-        </label>
-      </td>
-      <td className="whitespace-nowrap text-right">
-        <button type="button" onClick={save} disabled={pending} className="rounded-lg p-1.5 text-emerald-600 hover:bg-emerald-50" title={t("save")}>
-          <Check className="h-4 w-4" />
-        </button>
-        <button type="button" onClick={() => setEditing(null)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100" title={t("cancel")}>
-          <X className="h-4 w-4" />
-        </button>
-      </td>
-    </tr>
+      </div>
+      <div>
+        <label className="label">{t("fr_valid_until")}</label>
+        <input type="date" className="input" value={form.valid_until ?? ""} onChange={(e) => set("valid_until", e.target.value || null)} />
+      </div>
+      <div className="sm:col-span-2">
+        <label className="label">{t("m_notes")}</label>
+        <textarea className="input" rows={2} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} />
+      </div>
+      <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+        <input type="checkbox" checked={form.active} onChange={(e) => set("active", e.target.checked)} className="h-4 w-4 accent-brand-600" />
+        {t("m_active")}
+      </label>
+      {formError && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 sm:col-span-2">{formError}</p>}
+    </div>
   );
 
   return (
@@ -189,11 +205,7 @@ export function FreightManager({ rates, ports, canEdit }: { rates: FreightRate[]
             </tr>
           </thead>
           <tbody>
-            {editing === "new" && editRow("new")}
-            {rows.map((r) =>
-              editing === r.id ? (
-                editRow(r.id)
-              ) : (
+            {rows.map((r) => (
                 <tr key={r.id} className={r.active ? "" : "opacity-50"}>
                   <td className="whitespace-nowrap">{r.port_id ? portName.get(r.port_id) : <span className="text-slate-400">{t("fr_any_port")}</span>}</td>
                   <td className="font-semibold text-slate-800">{r.destination}</td>
@@ -256,12 +268,34 @@ export function FreightManager({ rates, ports, canEdit }: { rates: FreightRate[]
                     )}
                   </td>
                 </tr>
-              )
-            )}
+            ))}
           </tbody>
         </table>
       </div>
-      {rows.length === 0 && editing !== "new" && <Empty>{t("fr_none")}</Empty>}
+      {rows.length === 0 && <Empty>{t("fr_none")}</Empty>}
+      <Modal
+        open={editing !== null}
+        onClose={close}
+        title={editing === "new" ? t("fr_add") : `${t("edit")} · ${form.destination}`}
+        icon={
+          <IconChip tone="sky" size="sm">
+            <Ship />
+          </IconChip>
+        }
+        footer={
+          <>
+            <button type="button" className="btn-secondary" onClick={close}>
+              {t("cancel")}
+            </button>
+            <button type="button" className="btn-primary" disabled={pending} onClick={save}>
+              <Check className="h-4 w-4" />
+              {pending ? t("saving") : t("save")}
+            </button>
+          </>
+        }
+      >
+        {formBody}
+      </Modal>
     </div>
   );
 }
