@@ -109,6 +109,8 @@ export interface Vehicle {
   expense_items: ExpenseItem[];
   fob_fx_rate: number | null;
   fob_usd: number | null;
+  auction_house_id: string | null;
+  yard_id: string | null;
   created_at: string;
   updated_at: string;
   vehicle_images?: VehicleImage[];
@@ -225,6 +227,8 @@ export const VEHICLE_FIELDS = [
   "purchase_tax_rate",
   "fob_fx_rate",
   "expense_items",
+  "auction_house_id",
+  "yard_id",
 ] as const;
 
 export type VehicleField = (typeof VEHICLE_FIELDS)[number];
@@ -299,3 +303,37 @@ export interface RemittanceAllocation {
   amount: number;
   created_at: string;
 }
+
+export type ShipmentMode = "roro" | "container";
+export const SHIPMENT_MODES: ShipmentMode[] = ["roro", "container"];
+
+export interface Port {
+  id: string;
+  name: string;
+  shipment_modes: ShipmentMode[];
+  region: string | null;
+  notes: string | null;
+  active: boolean;
+}
+
+export interface AuctionHouse {
+  id: string;
+  name: string;
+  port_id: string | null;
+  notes: string | null;
+  active: boolean;
+}
+
+export interface Yard {
+  id: string;
+  name: string;
+  port_id: string | null;
+  address: string | null;
+  contact: string | null;
+  phone: string | null;
+  notes: string | null;
+  active: boolean;
+}
+
+/** RoRo is only possible when the port allows it. */
+export const portAllowsRoro = (p: Pick<Port, "shipment_modes"> | null | undefined) => !p || p.shipment_modes.includes("roro");

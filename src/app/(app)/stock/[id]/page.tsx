@@ -12,6 +12,7 @@ import { ConfirmButton } from "@/components/buttons";
 import { VehicleForm } from "../vehicle-form";
 import { updateVehicle, deleteVehicle } from "../actions";
 import { ImageManager } from "./image-manager";
+import { loadMasters } from "../masters-data";
 
 export default async function VehiclePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,6 +30,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
     supabase.from("settings").select("exchange_rates").single(),
   ]);
   if (!vehicle) notFound();
+  const masters = await loadMasters();
   const v = vehicle as Vehicle;
   const canEdit = can.editStock(profile.role);
   const seeCost = can.seeCost(profile.role);
@@ -90,7 +92,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
         <div className="xl:col-span-3">
-          <VehicleForm vehicle={v} action={update} showCost={seeCost} readOnly={!canEdit} defaultFx={Number(rates.USD ?? 0)} />
+          <VehicleForm vehicle={v} action={update} showCost={seeCost} readOnly={!canEdit} defaultFx={Number(rates.USD ?? 0)} masters={masters} />
         </div>
         <div className="space-y-5 xl:col-span-2">
           <ImageManager vehicleId={id} images={(images ?? []) as VehicleImage[]} canEdit={canEdit} />

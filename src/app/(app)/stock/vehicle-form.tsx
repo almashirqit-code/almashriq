@@ -6,6 +6,7 @@ import type { DictKey } from "@/lib/i18n/dictionaries";
 import { CURRENCIES, VEHICLE_STATUSES, type Vehicle, type VehicleField } from "@/lib/types";
 import { SubmitButton } from "@/components/buttons";
 import { CostCalculator } from "./cost-calculator";
+import { OriginPicker, type Masters } from "./origin-picker";
 import type { FormState } from "./actions";
 
 type FieldDef = {
@@ -56,7 +57,9 @@ export function VehicleForm({
   showCost,
   readOnly = false,
   defaultFx = 0,
+  masters,
 }: {
+  masters?: Masters;
   vehicle?: Partial<Vehicle>;
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
   showCost: boolean;
@@ -226,6 +229,17 @@ export function VehicleForm({
         <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("stock_specs")}</h2>
         <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-3">{SPECS.map(render)}</div>
       </section>
+
+      {masters && (
+        <section className="card">
+          <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">
+            {t("f_auction_house")} · {t("f_yard")}
+          </h2>
+          <div className="p-5">
+            <OriginPicker vehicle={vehicle} masters={masters} readOnly={readOnly} />
+          </div>
+        </section>
+      )}
 
       {showCost && <CostCalculator vehicle={vehicle} defaultFx={defaultFx} readOnly={readOnly} />}
 

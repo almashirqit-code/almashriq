@@ -13,7 +13,7 @@ import { saveInvoice, type InvoicePayload } from "./actions";
 export type VehicleOption = Pick<
   Vehicle,
   "id" | "stock_no" | "chassis_no" | "make" | "model" | "grade" | "year" | "color" | "mileage" | "engine_cc" | "transmission" | "fuel" | "price" | "price_currency" | "status"
->;
+> & { port?: { name: string; shipment_modes: string[] } | null };
 
 type Line = { key: string; vehicle_id: string | null; description: string; quantity: number; unit_price: number };
 
@@ -116,6 +116,8 @@ export function InvoiceEditor({
   function addVehicle(v: VehicleOption) {
     const price = v.price != null ? convert(Number(v.price), v.price_currency, currency, effectiveRates) : 0;
     setLines((ls) => [...ls, { key: newKey(), vehicle_id: v.id, description: describe(v), quantity: 1, unit_price: price }]);
+    if (!pol && v.port?.name) setPol(`${v.port.name}, Japan`);
+    if (v.port && !v.port.shipment_modes.includes("roro") && shipmentType === "") setShipmentType("container_20");
     setSearch("");
     setShowSearch(false);
   }
@@ -142,6 +144,14 @@ export function InvoiceEditor({
 
   const subtotal = round(lines.reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.unit_price) || 0), 0), currency);
   const tax = round(((subtotal - (Number(discount) || 0)) * (Number(taxRate) || 0)) / 100, currency);
+  // Container-only ports (e.g. NS Kyushu) can't ship RoRo.
+  const roroBlocked =
+    shipmentType === "roro"
+      ? lines
+          .map((l) => (l.vehicle_id ? vehicleMap.get(l.vehicle_id) : undefined))
+          .filter((v): v is VehicleOption => !!v && !!v.port && !v.port.shipment_modes.includes("roro"))
+      : [];
+
   const freightAmt = hasFreight(incoterm) ? Number(freight) || 0 : 0;
   const insuranceAmt = hasInsurance(incoterm) ? Number(insurance) || 0 : 0;
   const fobTotal = round(subtotal - (Number(discount) || 0), currency);
@@ -151,6 +161,7 @@ export function InvoiceEditor({
     setError("");
     if (!customerId) return setError(t("inv_no_customer"));
     if (!lines.some((l) => l.description.trim())) return setError(t("inv_no_items"));
+    if (roroBlocked.length) return setError(t("m_roro_blocked", { stock: roroBlocked[0].stock_no, port: roroBlocked[0].port!.name }));
     const payload: InvoicePayload = {
       id: initial?.id,
       customer_id: customerId,
@@ -263,6 +274,11 @@ export function InvoiceEditor({
                 </option>
               ))}
             </select>
+            {roroBlocked.map((v) => (
+              <p key={v.id} className="mt-1 text-xs font-medium text-amber-700">
+                ⚠ {t("m_roro_blocked", { stock: v.stock_no, port: v.port!.name })}
+              </p>
+            ))}
           </div>
           <div className="md:col-span-2">
             <label className="label">{t("inv_pol")}</label>

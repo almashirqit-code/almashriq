@@ -197,8 +197,30 @@ export function Importer() {
     let uploaded = 0;
     setResult(null);
 
+    // 0) Auction house / yard names → ids
+    const [{ data: ahs }, { data: yds }] = await Promise.all([
+      supabase.from("auction_houses").select("id, name").limit(5000),
+      supabase.from("yards").select("id, name").limit(5000),
+    ]);
+    const ahByName = new Map<string, string>((ahs ?? []).map((a): [string, string] => [String(a.name).toLowerCase().trim(), a.id as string]));
+    const ydByName = new Map<string, string>((yds ?? []).map((y): [string, string] => [String(y.name).toLowerCase().trim(), y.id as string]));
+    const isUuid = (s: string) => /^[0-9a-f-]{36}$/i.test(s);
+    const resolve = (value: unknown, map: Map<string, string>, label: string, stock: unknown) => {
+      if (value === null || value === undefined || value === "") return value as null;
+      const s = String(value).trim();
+      if (isUuid(s)) return s;
+      const id = map.get(s.toLowerCase());
+      if (!id) errors.push(`${stock}: ${label} "${s}" not found — left empty`);
+      return id ?? null;
+    };
+
     // 1) Upsert vehicles
-    const data = validRows.map((r) => r.data);
+    const data = validRows.map((r) => {
+      const d = { ...r.data };
+      if ("auction_house_id" in d) d.auction_house_id = resolve(d.auction_house_id, ahByName, "auction house", d.stock_no);
+      if ("yard_id" in d) d.yard_id = resolve(d.yard_id, ydByName, "yard", d.stock_no);
+      return d;
+    });
     const returned: DbVehicle[] = [];
     setProgress({ label: t("import_vehicles_saved"), done: 0, total: data.length });
     for (let i = 0; i < data.length; i += 100) {

@@ -76,7 +76,14 @@ const ALIASES: Record<string, VehicleField> = {
   score: "auction_grade",
   評価点: "auction_grade",
   location: "location",
-  yard: "location",
+  yard: "yard_id",
+  yardname: "yard_id",
+  ヤード: "yard_id",
+  auction: "auction_house_id",
+  auctionhouse: "auction_house_id",
+  auctionname: "auction_house_id",
+  auctionyard: "auction_house_id",
+  オークション会場: "auction_house_id",
   保管場所: "location",
   purchasedate: "purchase_date",
   仕入日: "purchase_date",
@@ -286,7 +293,8 @@ export function parseVehicle(raw: Record<string, unknown>): { data: VehicleInput
   return { data, errors };
 }
 
-export const TEMPLATE_HEADERS: VehicleField[] = [
+/** Column names for the downloadable CSV template (aliases are resolved on import). */
+export const TEMPLATE_HEADERS: string[] = [
   "stock_no",
   "chassis_no",
   "make",
@@ -322,9 +330,11 @@ export const TEMPLATE_HEADERS: VehicleField[] = [
   "for_parts",
   "purchase_tax_rate",
   "fob_fx_rate",
+  "auction_house",
+  "yard",
 ];
 
 export const TEMPLATE_SAMPLE = [
-  "A1023,ZVW50-8012345,Toyota,Prius,S Touring,2018,5,62000,Pearl White,1800,Hybrid,AT,2WD,RHD,5,5,Hatchback,4.5,Yokohama,2026-09-12,980000,85000,8900,USD,in_stock,Sunroof,own,,,,,yes,no,10,150",
-  "P2001,NHP10-6123456,Toyota,Aqua,G,2017,11,78000,Silver,1500,Hybrid,AT,2WD,RHD,5,5,Hatchback,4,Kobe,,,,5600,USD,in_stock,Partner car,third_party,Sakura Motors,+81 90 1234 5678,700000,JPY,yes,no,10,150",
+  "A1023,ZVW50-8012345,Toyota,Prius,S Touring,2018,5,62000,Pearl White,1800,Hybrid,AT,2WD,RHD,5,5,Hatchback,4.5,Yokohama,2026-09-12,980000,85000,8900,USD,in_stock,Sunroof,own,,,,,yes,no,10,150,USS Tokyo,",
+  "P2001,NHP10-6123456,Toyota,Aqua,G,2017,11,78000,Silver,1500,Hybrid,AT,2WD,RHD,5,5,Hatchback,4,Kobe,,,,5600,USD,in_stock,Partner car,third_party,Sakura Motors,+81 90 1234 5678,700000,JPY,yes,no,10,150,USS Kobe,",
 ];

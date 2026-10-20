@@ -4,7 +4,8 @@ import type { Currency, Settings } from "@/lib/types";
 import type { VehicleOption } from "./invoice-editor";
 
 const VEHICLE_COLS =
-  "id, stock_no, chassis_no, make, model, grade, year, color, mileage, engine_cc, transmission, fuel, price, price_currency, status";
+  "id, stock_no, chassis_no, make, model, grade, year, color, mileage, engine_cc, transmission, fuel, price, price_currency, status, " +
+  "auction_houses(ports(name, shipment_modes)), yards(ports(name, shipment_modes))";
 
 export async function loadEditorData(includeVehicleIds: string[] = []) {
   const supabase = await createClient();
@@ -21,7 +22,14 @@ export async function loadEditorData(includeVehicleIds: string[] = []) {
     supabase.from("settings").select("*").single(),
   ]);
   const map = new Map<string, VehicleOption>();
-  for (const v of [...((available.data ?? []) as VehicleOption[]), ...((included.data ?? []) as VehicleOption[])]) map.set(v.id, v);
+  type Raw = VehicleOption & {
+    auction_houses?: { ports: VehicleOption["port"] } | null;
+    yards?: { ports: VehicleOption["port"] } | null;
+  };
+  for (const raw of [...((available.data ?? []) as unknown as Raw[]), ...((included.data ?? []) as unknown as Raw[])]) {
+    const { auction_houses, yards, ...v } = raw;
+    map.set(v.id, { ...v, port: auction_houses?.ports ?? yards?.ports ?? null });
+  }
   const s = settings.data as Settings | null;
   return {
     customers: customers.data ?? [],

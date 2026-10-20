@@ -76,6 +76,22 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
     }
   }
 
+  // Container-only ports (e.g. NS Kyushu): RoRo is not allowed.
+  if (shipmentType === "roro" && vehicleIds.length) {
+    const { data: vs } = await supabase
+      .from("vehicles")
+      .select("stock_no, auction_houses(ports(name, shipment_modes)), yards(ports(name, shipment_modes))")
+      .in("id", vehicleIds);
+    type P = { name: string; shipment_modes: string[] } | null;
+    for (const v of vs ?? []) {
+      const r = v as unknown as { stock_no: string; auction_houses: { ports: P } | null; yards: { ports: P } | null };
+      const port = r.auction_houses?.ports ?? r.yards?.ports ?? null;
+      if (port && !port.shipment_modes.includes("roro")) {
+        return { error: `${r.stock_no} is at ${port.name} — container shipment only. RoRo isn't available.` };
+      }
+    }
+  }
+
   const header = {
     customer_id: p.customer_id,
     issue_date: p.issue_date || new Date().toISOString().slice(0, 10),
