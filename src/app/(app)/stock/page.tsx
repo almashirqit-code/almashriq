@@ -6,14 +6,14 @@ import { getT } from "@/lib/i18n/server";
 import { money, num, publicImageUrl, vehicleTitle } from "@/lib/format";
 import { VEHICLE_STATUSES, type Vehicle } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
-import { PageHeader, VehicleStatusBadge, Empty, Pagination } from "@/components/ui";
+import { PageHeader, VehicleStatusBadge, Empty, Pagination, Badge, PartsBadge } from "@/components/ui";
 
 const PAGE_SIZE = 25;
 
 export default async function StockPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; make?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; make?: string; own?: string; page?: string }>;
 }) {
   const sp = await searchParams;
   const profile = await getProfile();
@@ -33,6 +33,7 @@ export default async function StockPage({
 
   if (sp.status && (VEHICLE_STATUSES as string[]).includes(sp.status)) query = query.eq("status", sp.status);
   if (sp.make) query = query.eq("make", sp.make);
+  if (sp.own === "own" || sp.own === "third_party") query = query.eq("ownership", sp.own);
   if (q) {
     const s = q.replace(/[%,()]/g, " ");
     query = query.or(
@@ -50,7 +51,7 @@ export default async function StockPage({
 
   const qs = (over: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
-    const merged = { q: sp.q, status: sp.status, make: sp.make, page: String(page), ...over };
+    const merged = { q: sp.q, status: sp.status, make: sp.make, own: sp.own, page: String(page), ...over };
     for (const [k, v] of Object.entries(merged)) if (v !== undefined && v !== "") p.set(k, String(v));
     return `/stock?${p.toString()}`;
   };
@@ -62,7 +63,7 @@ export default async function StockPage({
         subtitle={t("total_records", { count: num(count ?? 0, locale) })}
         actions={
           <>
-            <a href={`/stock/export?${new URLSearchParams({ q, status: sp.status ?? "", make: sp.make ?? "" })}`} className="btn-secondary">
+            <a href={`/stock/export?${new URLSearchParams({ q, status: sp.status ?? "", make: sp.make ?? "", own: sp.own ?? "" })}`} className="btn-secondary">
               <Download className="h-4 w-4" />
               {t("stock_export_csv")}
             </a>
@@ -105,6 +106,13 @@ export default async function StockPage({
               </option>
             ))}
           </select>
+          <select name="own" defaultValue={sp.own ?? ""} className="input w-auto">
+            <option value="">
+              {t("f_ownership")}: {t("all")}
+            </option>
+            <option value="own">{t("own_own")}</option>
+            <option value="third_party">{t("own_third_party")}</option>
+          </select>
           <button className="btn-secondary">{t("search")}</button>
         </form>
 
@@ -145,6 +153,13 @@ export default async function StockPage({
                         <Link href={`/stock/${v.id}`} className="font-medium text-brand-700 hover:underline">
                           {v.stock_no}
                         </Link>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {v.ownership === "third_party" && (
+                            <Badge className="bg-amber-50 text-amber-800 ring-amber-600/20">{t("own_third_party_short")}</Badge>
+                          )}
+                          {v.for_parts && <PartsBadge label={t("parts_badge")} />}
+                          {v.show_on_website && <Badge className="bg-sky-50 text-sky-700 ring-sky-600/20">Web</Badge>}
+                        </div>
                       </td>
                       <td>
                         <div className="font-medium">{vehicleTitle(v)}</div>

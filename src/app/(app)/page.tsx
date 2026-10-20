@@ -27,7 +27,7 @@ export default async function DashboardPage() {
     await Promise.all([
       countStatus("in_stock"),
       countStatus("reserved"),
-      supabase.from("vehicles").select("make, purchase_price, expenses").in("status", ["in_stock", "reserved"]).limit(20000),
+      supabase.from("vehicles").select("make, purchase_price, expenses, ownership, status").in("status", ["in_stock", "reserved"]).limit(20000),
       supabase
         .from("invoices")
         .select("issue_date, total, currency, exchange_rate")
@@ -57,8 +57,13 @@ export default async function DashboardPage() {
   // Stock value + makes
   let stockValue = 0;
   const makes = new Map<string, number>();
+  let thirdPartyInStock = 0;
   for (const v of stockRows.data ?? []) {
-    stockValue += Number(v.purchase_price || 0) + Number(v.expenses || 0);
+    if (v.ownership === "third_party") {
+      if (v.status === "in_stock") thirdPartyInStock++;
+    } else {
+      stockValue += Number(v.purchase_price || 0) + Number(v.expenses || 0);
+    }
     makes.set(v.make, (makes.get(v.make) ?? 0) + 1);
   }
   const topMakes = [...makes.entries()]
@@ -111,7 +116,12 @@ export default async function DashboardPage() {
       <PageHeader title={t("dash_title")} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label={t("dash_in_stock")} value={num(inStock.count ?? 0, locale)} icon={<Car className="h-5 w-5" />} />
+        <Stat
+          label={t("dash_in_stock")}
+          value={num(inStock.count ?? 0, locale)}
+          hint={thirdPartyInStock ? t("dash_third_party", { count: num(thirdPartyInStock, locale) }) : undefined}
+          icon={<Car className="h-5 w-5" />}
+        />
         <Stat label={t("dash_reserved")} value={num(reserved.count ?? 0, locale)} icon={<Clock className="h-5 w-5" />} />
         <Stat label={t("dash_sold_month")} value={num(soldThisMonth, locale)} icon={<Package className="h-5 w-5" />} />
         {can.seeCost(profile.role) ? (

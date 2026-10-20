@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { CURRENCIES, VEHICLE_STATUSES, type Vehicle, type VehicleField } from "@/lib/types";
@@ -62,6 +62,7 @@ export function VehicleForm({
 }) {
   const { t } = useT();
   const [state, formAction] = useActionState(action, {});
+  const [ownership, setOwnership] = useState(vehicle?.ownership ?? "own");
 
   const render = (f: FieldDef) => {
     const value = vehicle?.[f.name as keyof Vehicle];
@@ -113,6 +114,110 @@ export function VehicleForm({
           <option key={m} value={m} />
         ))}
       </datalist>
+
+      <section className="card">
+        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-3">
+          <div>
+            <label className="label" htmlFor="ownership">
+              {t("f_ownership")}
+            </label>
+            <select
+              id="ownership"
+              name="ownership"
+              className="input"
+              value={ownership}
+              disabled={readOnly}
+              onChange={(e) => setOwnership(e.target.value as "own" | "third_party")}
+            >
+              <option value="own">{t("own_own")}</option>
+              <option value="third_party">{t("own_third_party")}</option>
+            </select>
+          </div>
+          <div>
+            <span className="label">{t("f_for_parts")}</span>
+            <input type="hidden" name="for_parts" value="false" />
+            <label className="flex items-start gap-2.5 rounded-lg border border-slate-200 px-3 py-2.5 text-sm">
+              <input
+                type="checkbox"
+                name="for_parts"
+                value="true"
+                defaultChecked={vehicle?.for_parts ?? false}
+                disabled={readOnly}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-rose-600"
+              />
+              <span className="text-slate-600">{t("stock_parts_help")}</span>
+            </label>
+          </div>
+          <div>
+            <span className="label">{t("f_show_on_website")}</span>
+            {/* Hidden "false" first so an unchecked box still submits a value; the checkbox overrides it. */}
+            <input type="hidden" name="show_on_website" value="false" />
+            <label className="flex items-start gap-2.5 rounded-lg border border-slate-200 px-3 py-2.5 text-sm">
+              <input
+                type="checkbox"
+                name="show_on_website"
+                value="true"
+                defaultChecked={vehicle?.show_on_website ?? true}
+                disabled={readOnly}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600"
+              />
+              <span className="text-slate-600">{t("stock_website_help")}</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      {ownership === "third_party" && (
+        <section className="card border-amber-200">
+          <div className="border-b border-amber-100 bg-amber-50/60 px-5 py-3.5">
+            <h2 className="text-sm font-semibold text-amber-900">{t("stock_third_party")}</h2>
+            <p className="mt-0.5 text-xs text-amber-800/80">{t("stock_third_party_help")}</p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-3">
+            <div>
+              <label className="label" htmlFor="supplier_name">
+                {t("f_supplier_name")}
+              </label>
+              <input id="supplier_name" name="supplier_name" defaultValue={vehicle?.supplier_name ?? ""} disabled={readOnly} className="input" />
+            </div>
+            <div>
+              <label className="label" htmlFor="supplier_contact">
+                {t("f_supplier_contact")}
+              </label>
+              <input id="supplier_contact" name="supplier_contact" defaultValue={vehicle?.supplier_contact ?? ""} disabled={readOnly} className="input" />
+            </div>
+            {showCost && (
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-2">
+                  <label className="label" htmlFor="supplier_price">
+                    {t("f_supplier_price")}
+                  </label>
+                  <input
+                    id="supplier_price"
+                    name="supplier_price"
+                    type="number"
+                    step="any"
+                    min={0}
+                    defaultValue={vehicle?.supplier_price ?? ""}
+                    disabled={readOnly}
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="supplier_currency">
+                    &nbsp;
+                  </label>
+                  <select id="supplier_currency" name="supplier_currency" defaultValue={vehicle?.supplier_currency ?? "JPY"} disabled={readOnly} className="input">
+                    {CURRENCIES.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="card">
         <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("stock_specs")}</h2>

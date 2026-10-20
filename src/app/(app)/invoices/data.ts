@@ -9,7 +9,11 @@ const VEHICLE_COLS =
 export async function loadEditorData(includeVehicleIds: string[] = []) {
   const supabase = await createClient();
   const [customers, available, included, settings] = await Promise.all([
-    supabase.from("customers").select("id, name, company, country, port").order("name").limit(5000),
+    supabase
+      .from("customers")
+      .select("id, name, company, country, port, address, phone, email, consignee_name, consignee_address, consignee_phone, notify_party")
+      .order("name")
+      .limit(5000),
     supabase.from("vehicles").select(VEHICLE_COLS).in("status", ["in_stock", "reserved"]).order("stock_no").limit(5000),
     includeVehicleIds.length
       ? supabase.from("vehicles").select(VEHICLE_COLS).in("id", includeVehicleIds)

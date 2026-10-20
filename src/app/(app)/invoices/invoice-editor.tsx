@@ -26,7 +26,10 @@ export function InvoiceEditor({
   defaults,
   initial,
 }: {
-  customers: Pick<Customer, "id" | "name" | "company" | "country" | "port">[];
+  customers: Pick<
+    Customer,
+    "id" | "name" | "company" | "country" | "port" | "address" | "phone" | "email" | "consignee_name" | "consignee_address" | "consignee_phone" | "notify_party"
+  >[];
   vehicles: VehicleOption[];
   rates: Record<Currency, number>;
   defaults: { currency: Currency; tax_rate: number };
@@ -50,6 +53,19 @@ export function InvoiceEditor({
   const [pol, setPol] = useState(initial?.port_of_loading ?? "");
   const [pod, setPod] = useState(initial?.port_of_discharge ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [consignee, setConsignee] = useState(() => {
+    const has = initial?.consignee_name || initial?.consignee_address || initial?.consignee_phone || initial?.notify_party;
+    if (has) {
+      return {
+        name: initial?.consignee_name ?? "",
+        address: initial?.consignee_address ?? "",
+        phone: initial?.consignee_phone ?? "",
+        notify: initial?.notify_party ?? "",
+      };
+    }
+    const c = customers.find((x) => x.id === initial?.customer_id);
+    return c ? consigneeFrom(c) : { name: "", address: "", phone: "", notify: "" };
+  });
   const [discount, setDiscount] = useState<number>(initial?.discount ?? 0);
   const [taxRate, setTaxRate] = useState<number>(initial?.tax_rate ?? defaults.tax_rate);
   const [lines, setLines] = useState<Line[]>(
@@ -136,6 +152,10 @@ export function InvoiceEditor({
       incoterm,
       port_of_loading: pol || null,
       port_of_discharge: pod || null,
+      consignee_name: consignee.name || null,
+      consignee_address: consignee.address || null,
+      consignee_phone: consignee.phone || null,
+      notify_party: consignee.notify || null,
       notes: notes || null,
       discount: Number(discount) || 0,
       tax_rate: Number(taxRate) || 0,
@@ -165,6 +185,7 @@ export function InvoiceEditor({
                   setCustomerId(e.target.value);
                   const c = customers.find((x) => x.id === e.target.value);
                   if (c?.port && !pod) setPod(c.port);
+                  if (c) setConsignee(consigneeFrom(c));
                 }}
               >
                 <option value="">{t("inv_select_customer")}</option>
@@ -226,6 +247,41 @@ export function InvoiceEditor({
           <div className="md:col-span-2">
             <label className="label">{t("inv_pod")}</label>
             <input className="input" value={pod ?? ""} onChange={(e) => setPod(e.target.value)} />
+          </div>
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="border-b border-slate-100 px-5 py-3.5">
+          <h2 className="text-sm font-semibold">{t("inv_consignee")}</h2>
+          <p className="mt-0.5 text-xs text-slate-500">{t("inv_consignee_help")}</p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2">
+          <div>
+            <label className="label">{t("c_consignee_name")}</label>
+            <input className="input" value={consignee.name} onChange={(e) => setConsignee({ ...consignee, name: e.target.value })} />
+          </div>
+          <div>
+            <label className="label">{t("c_consignee_phone")}</label>
+            <input className="input" value={consignee.phone} onChange={(e) => setConsignee({ ...consignee, phone: e.target.value })} />
+          </div>
+          <div>
+            <label className="label">{t("c_consignee_address")}</label>
+            <textarea
+              className="input"
+              rows={2}
+              value={consignee.address}
+              onChange={(e) => setConsignee({ ...consignee, address: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label">{t("c_notify_party")}</label>
+            <textarea
+              className="input"
+              rows={2}
+              value={consignee.notify}
+              onChange={(e) => setConsignee({ ...consignee, notify: e.target.value })}
+            />
           </div>
         </div>
       </section>
@@ -424,6 +480,26 @@ export function InvoiceEditor({
       </div>
     </div>
   );
+}
+
+/** Customer's saved consignee, falling back to the customer's own details. */
+function consigneeFrom(c: {
+  name: string;
+  company: string | null;
+  address: string | null;
+  country: string | null;
+  phone: string | null;
+  consignee_name: string | null;
+  consignee_address: string | null;
+  consignee_phone: string | null;
+  notify_party: string | null;
+}) {
+  return {
+    name: c.consignee_name ?? [c.name, c.company].filter(Boolean).join(" / "),
+    address: c.consignee_address ?? [c.address, c.country].filter(Boolean).join("\n"),
+    phone: c.consignee_phone ?? c.phone ?? "",
+    notify: c.notify_party ?? "",
+  };
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {

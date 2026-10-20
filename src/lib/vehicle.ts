@@ -98,6 +98,33 @@ const ALIASES: Record<string, VehicleField> = {
   remarks: "notes",
   comment: "notes",
   備考: "notes",
+  ownership: "ownership",
+  owner: "ownership",
+  type: "ownership",
+  所有: "ownership",
+  supplier: "supplier_name",
+  suppliername: "supplier_name",
+  partner: "supplier_name",
+  dealer: "supplier_name",
+  仕入先: "supplier_name",
+  suppliercontact: "supplier_contact",
+  supplierphone: "supplier_contact",
+  supplierprice: "supplier_price",
+  dealerprice: "supplier_price",
+  partnerprice: "supplier_price",
+  仕入先価格: "supplier_price",
+  suppliercurrency: "supplier_currency",
+  showonwebsite: "show_on_website",
+  website: "show_on_website",
+  publish: "show_on_website",
+  published: "show_on_website",
+  web: "show_on_website",
+  サイト掲載: "show_on_website",
+  forparts: "for_parts",
+  parts: "for_parts",
+  partscar: "for_parts",
+  partsonly: "for_parts",
+  部品取り: "for_parts",
 };
 
 export function normalizeHeader(h: string): VehicleField | null {
@@ -120,6 +147,32 @@ const STATUS_ALIASES: Record<string, VehicleStatus> = {
   船積済: "shipped",
 };
 
+const OWNERSHIP_ALIASES: Record<string, "own" | "third_party"> = {
+  own: "own",
+  owned: "own",
+  stock: "own",
+  ownstock: "own",
+  自社: "own",
+  自社在庫: "own",
+  thirdparty: "third_party",
+  "3rdparty": "third_party",
+  consignment: "third_party",
+  partner: "third_party",
+  supplier: "third_party",
+  dealer: "third_party",
+  委託: "third_party",
+  委託車両: "third_party",
+};
+
+function toBool(v: unknown, fallback: boolean): boolean {
+  if (v === null || v === undefined || v === "") return fallback;
+  if (typeof v === "boolean") return v;
+  const s = String(v).trim().toLowerCase();
+  if (["1", "true", "yes", "y", "on", "はい", "掲載"].includes(s)) return true;
+  if (["0", "false", "no", "n", "off", "いいえ", "非掲載"].includes(s)) return false;
+  return fallback;
+}
+
 function toNumber(v: unknown): number | null {
   if (v === null || v === undefined || v === "") return null;
   if (typeof v === "number") return Number.isFinite(v) ? v : null;
@@ -137,7 +190,7 @@ function toDate(v: unknown): string | null {
   return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
 }
 
-export type VehicleInput = Partial<Record<VehicleField, string | number | null>>;
+export type VehicleInput = Partial<Record<VehicleField, string | number | boolean | null>>;
 
 /**
  * Normalizes raw values (from a form or spreadsheet row) into a DB-ready vehicle record.
@@ -153,7 +206,17 @@ export function parseVehicle(raw: Record<string, unknown>): { data: VehicleInput
     if (NUMERIC_VEHICLE_FIELDS.includes(field)) {
       const n = toNumber(v);
       if (v !== "" && v !== null && v !== undefined && n === null) errors.push(`${field}: not a number`);
-      data[field] = n === null ? null : field === "price" || field === "purchase_price" || field === "expenses" ? n : Math.round(n);
+      data[field] = n === null ? null : ["price", "purchase_price", "expenses", "supplier_price"].includes(field) ? n : Math.round(n);
+    } else if (field === "ownership") {
+      const k = String(v ?? "").trim().toLowerCase().replace(/[\s_\-]/g, "");
+      data.ownership = OWNERSHIP_ALIASES[k] ?? OWNERSHIP_ALIASES[String(v ?? "").trim()] ?? "own";
+    } else if (field === "show_on_website") {
+      data.show_on_website = toBool(v, true);
+    } else if (field === "for_parts") {
+      data.for_parts = toBool(v, false);
+    } else if (field === "supplier_currency") {
+      const c = String(v ?? "").trim().toUpperCase();
+      data.supplier_currency = (CURRENCIES as string[]).includes(c) ? c : "JPY";
     } else if (field === "purchase_date") {
       data[field] = toDate(v);
     } else if (field === "status") {
@@ -209,9 +272,16 @@ export const TEMPLATE_HEADERS: VehicleField[] = [
   "price_currency",
   "status",
   "notes",
+  "ownership",
+  "supplier_name",
+  "supplier_contact",
+  "supplier_price",
+  "supplier_currency",
+  "show_on_website",
+  "for_parts",
 ];
 
 export const TEMPLATE_SAMPLE = [
-  "A1023,ZVW50-8012345,Toyota,Prius,S Touring,2018,5,62000,Pearl White,1800,Hybrid,AT,2WD,RHD,5,5,Hatchback,4.5,Yokohama,2026-09-12,980000,85000,8900,USD,in_stock,Sunroof",
-  "A1024,NHP10-6123456,Toyota,Aqua,G,2017,11,78000,Silver,1500,Hybrid,AT,2WD,RHD,5,5,Hatchback,4,Kobe,2026-09-20,620000,60000,5600,USD,in_stock,",
+  "A1023,ZVW50-8012345,Toyota,Prius,S Touring,2018,5,62000,Pearl White,1800,Hybrid,AT,2WD,RHD,5,5,Hatchback,4.5,Yokohama,2026-09-12,980000,85000,8900,USD,in_stock,Sunroof,own,,,,,yes,no",
+  "P2001,NHP10-6123456,Toyota,Aqua,G,2017,11,78000,Silver,1500,Hybrid,AT,2WD,RHD,5,5,Hatchback,4,Kobe,,,,5600,USD,in_stock,Partner car,third_party,Sakura Motors,+81 90 1234 5678,700000,JPY,yes,no",
 ];

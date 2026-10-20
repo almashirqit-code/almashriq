@@ -14,13 +14,14 @@ import {
   LogOut,
   Menu,
   X,
+  Store,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import type { Role } from "@/lib/types";
 import { signOut } from "@/app/actions";
 
-type Item = { href: string; label: DictKey; icon: React.ElementType; roles?: Role[] };
+type Item = { href: string; label: DictKey; icon: React.ElementType; roles?: Role[]; newTab?: boolean };
 
 const ITEMS: Item[] = [
   { href: "/", label: "nav_dashboard", icon: LayoutDashboard },
@@ -30,6 +31,7 @@ const ITEMS: Item[] = [
   { href: "/invoices", label: "nav_invoices", icon: FileText },
   { href: "/users", label: "nav_users", icon: UserCog, roles: ["admin"] },
   { href: "/settings", label: "nav_settings", icon: Settings, roles: ["admin"] },
+  { href: "/showroom", label: "nav_showroom", icon: Store, newTab: true },
 ];
 
 export function Sidebar({
@@ -67,11 +69,12 @@ export function Sidebar({
       <ul className="flex-1 space-y-0.5 px-3">
         {ITEMS.filter((i) => !i.roles || i.roles.includes(role)).map((i) => {
           const Icon = i.icon;
-          const active = isActive(i.href);
+          const active = !i.newTab && isActive(i.href);
           return (
             <li key={i.href}>
               <Link
                 href={i.href}
+                target={i.newTab ? "_blank" : undefined}
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
                   active ? "bg-white/10 text-white" : "text-slate-300 hover:bg-white/5 hover:text-white"

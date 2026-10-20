@@ -17,6 +17,10 @@ export type InvoicePayload = {
   incoterm: string | null;
   port_of_loading: string | null;
   port_of_discharge: string | null;
+  consignee_name: string | null;
+  consignee_address: string | null;
+  consignee_phone: string | null;
+  notify_party: string | null;
   notes: string | null;
   discount: number;
   tax_rate: number;
@@ -73,6 +77,10 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
     incoterm: p.incoterm || null,
     port_of_loading: p.port_of_loading || null,
     port_of_discharge: p.port_of_discharge || null,
+    consignee_name: p.consignee_name?.trim() || null,
+    consignee_address: p.consignee_address?.trim() || null,
+    consignee_phone: p.consignee_phone?.trim() || null,
+    notify_party: p.notify_party?.trim() || null,
     notes: p.notes || null,
     subtotal,
     discount,

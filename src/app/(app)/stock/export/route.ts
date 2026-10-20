@@ -19,6 +19,8 @@ export async function GET(req: NextRequest) {
   const status = sp.get("status");
   if (status && (VEHICLE_STATUSES as string[]).includes(status)) query = query.eq("status", status);
   if (sp.get("make")) query = query.eq("make", sp.get("make")!);
+  const own = sp.get("own");
+  if (own === "own" || own === "third_party") query = query.eq("ownership", own);
   const q = (sp.get("q") ?? "").trim().replace(/[%,()]/g, " ");
   if (q) query = query.or(`stock_no.ilike.%${q}%,chassis_no.ilike.%${q}%,make.ilike.%${q}%,model.ilike.%${q}%`);
 

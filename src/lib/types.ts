@@ -47,6 +47,11 @@ export interface Customer {
   whatsapp: string | null;
   address: string | null;
   notes: string | null;
+  consignee_name: string | null;
+  consignee_address: string | null;
+  consignee_phone: string | null;
+  consignee_email: string | null;
+  notify_party: string | null;
   created_at: string;
 }
 
@@ -78,10 +83,20 @@ export interface Vehicle {
   price_currency: Currency;
   status: VehicleStatus;
   notes: string | null;
+  ownership: Ownership;
+  supplier_name: string | null;
+  supplier_contact: string | null;
+  supplier_price: number | null;
+  supplier_currency: Currency;
+  show_on_website: boolean;
+  for_parts: boolean;
   created_at: string;
   updated_at: string;
   vehicle_images?: VehicleImage[];
 }
+
+export type Ownership = "own" | "third_party";
+export const OWNERSHIPS: Ownership[] = ["own", "third_party"];
 
 export interface VehicleImage {
   id: string;
@@ -102,6 +117,10 @@ export interface Invoice {
   incoterm: string | null;
   port_of_loading: string | null;
   port_of_discharge: string | null;
+  consignee_name: string | null;
+  consignee_address: string | null;
+  consignee_phone: string | null;
+  notify_party: string | null;
   notes: string | null;
   subtotal: number;
   discount: number;
@@ -161,6 +180,13 @@ export const VEHICLE_FIELDS = [
   "price_currency",
   "status",
   "notes",
+  "ownership",
+  "supplier_name",
+  "supplier_contact",
+  "supplier_price",
+  "supplier_currency",
+  "show_on_website",
+  "for_parts",
 ] as const;
 
 export type VehicleField = (typeof VEHICLE_FIELDS)[number];
@@ -175,7 +201,8 @@ export const NUMERIC_VEHICLE_FIELDS: VehicleField[] = [
   "purchase_price",
   "expenses",
   "price",
+  "supplier_price",
 ];
 
 /** Cost fields hidden from the sales role. */
-export const COST_FIELDS: VehicleField[] = ["purchase_price", "expenses", "purchase_date"];
+export const COST_FIELDS: VehicleField[] = ["purchase_price", "expenses", "purchase_date", "supplier_price", "supplier_currency"];

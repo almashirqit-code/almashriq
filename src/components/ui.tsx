@@ -59,6 +59,10 @@ export function InvoiceStatusBadge({ status, label }: { status: InvoiceStatus; l
   return <Badge className={INVOICE_COLORS[status]}>{label}</Badge>;
 }
 
+export function PartsBadge({ label }: { label: string }) {
+  return <Badge className="bg-rose-50 text-rose-700 ring-rose-600/20">🔧 {label}</Badge>;
+}
+
 export function Empty({ children }: { children: React.ReactNode }) {
   return <div className="px-4 py-12 text-center text-sm text-slate-500">{children}</div>;
 }

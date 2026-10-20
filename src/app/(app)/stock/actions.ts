@@ -12,7 +12,8 @@ export type FormState = { error?: string; ok?: boolean };
 function formToRaw(formData: FormData) {
   const raw: Record<string, unknown> = {};
   for (const f of VEHICLE_FIELDS) {
-    if (formData.has(f)) raw[f] = formData.get(f);
+    // Last value wins (checkbox after its hidden "false" fallback).
+    if (formData.has(f)) raw[f] = formData.getAll(f).pop();
   }
   return raw;
 }

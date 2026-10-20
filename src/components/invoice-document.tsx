@@ -92,6 +92,23 @@ export function InvoiceDocument({
         </table>
       </div>
 
+      {(invoice.consignee_name || invoice.consignee_address || invoice.notify_party) && (
+        <div className="mb-5 grid grid-cols-2 gap-6 rounded border border-slate-200 p-3 text-xs">
+          <div>
+            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{t("inv_consignee")}</div>
+            {invoice.consignee_name && <div className="font-semibold text-slate-900">{invoice.consignee_name}</div>}
+            {invoice.consignee_address && <div className="whitespace-pre-line">{invoice.consignee_address}</div>}
+            {invoice.consignee_phone && <div className="text-slate-600">{invoice.consignee_phone}</div>}
+          </div>
+          {invoice.notify_party && (
+            <div>
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{t("c_notify_party")}</div>
+              <div className="whitespace-pre-line">{invoice.notify_party}</div>
+            </div>
+          )}
+        </div>
+      )}
+
       <table className="w-full border-collapse text-[12.5px]">
         <thead>
           <tr className="bg-slate-900 text-white">
