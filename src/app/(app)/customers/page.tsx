@@ -26,9 +26,12 @@ export default async function CustomersPage({
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (q) {
     const s = q.replace(/[%,()]/g, " ");
-    query = query.or(`name.ilike.%${s}%,company.ilike.%${s}%,country.ilike.%${s}%,email.ilike.%${s}%,phone.ilike.%${s}%`);
+    query = query.or(
+      `name.ilike.%${s}%,company.ilike.%${s}%,country.ilike.%${s}%,email.ilike.%${s}%,phone.ilike.%${s}%${/^\d+$/.test(s.trim()) ? `,customer_no.eq.${s.trim()}` : ""}`
+    );
   }
-  const { data, count } = await query;
+  const [{ data, count }, { data: staff }] = await Promise.all([query, supabase.from("profiles").select("id, full_name, email")]);
+  const staffName = new Map((staff ?? []).map((s) => [s.id, s.full_name || s.email]));
   const customers = (data ?? []) as Customer[];
   const pages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
 
@@ -56,17 +59,20 @@ export default async function CustomersPage({
             <table className="table">
               <thead>
                 <tr>
+                  <th>{t("c_customer_no")}</th>
                   <th>{t("c_name")}</th>
                   <th>{t("c_company")}</th>
                   <th>{t("c_country")}</th>
                   <th>{t("c_port")}</th>
                   <th>{t("c_email")}</th>
                   <th>{t("c_phone")}</th>
+                  <th>{t("rem_tagged_with")}</th>
                 </tr>
               </thead>
               <tbody>
                 {customers.map((c) => (
                   <tr key={c.id}>
+                    <td className="tabular-nums text-slate-500">{c.customer_no}</td>
                     <td>
                       <Link href={`/customers/${c.id}`} className="font-medium text-brand-700 hover:underline">
                         {c.name}
@@ -77,6 +83,7 @@ export default async function CustomersPage({
                     <td>{c.port ?? "—"}</td>
                     <td className="text-slate-600">{c.email ?? "—"}</td>
                     <td className="text-slate-600">{c.phone ?? c.whatsapp ?? "—"}</td>
+                    <td className="text-slate-600">{c.assigned_to ? staffName.get(c.assigned_to) : "—"}</td>
                   </tr>
                 ))}
               </tbody>

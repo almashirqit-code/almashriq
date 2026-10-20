@@ -125,6 +125,66 @@ export function Pagination({
   );
 }
 
+/** Numbered pagination: ‹ 1 2 3 4 5 … 518 › */
+export function NumberedPagination({
+  page,
+  pages,
+  makeHref,
+}: {
+  page: number;
+  pages: number;
+  makeHref: (p: number) => string;
+}) {
+  if (pages <= 1) return null;
+  const nums: (number | "…")[] = [];
+  const add = (n: number) => nums[nums.length - 1] !== n && nums.push(n);
+  const start = Math.max(1, Math.min(page - 2, pages - 4));
+  const end = Math.min(pages, start + 4);
+  if (start > 1) {
+    add(1);
+    if (start > 2) nums.push("…");
+  }
+  for (let i = start; i <= end; i++) add(i);
+  if (end < pages) {
+    if (end < pages - 1) nums.push("…");
+    add(pages);
+  }
+  const cell = "flex h-8 min-w-8 items-center justify-center rounded px-2 text-sm";
+  return (
+    <nav className="flex items-center gap-1" aria-label="Pagination">
+      {page > 1 ? (
+        <Link href={makeHref(page - 1)} className={`${cell} text-slate-500 hover:bg-slate-100`}>
+          ‹
+        </Link>
+      ) : (
+        <span className={`${cell} text-slate-300`}>‹</span>
+      )}
+      {nums.map((n, i) =>
+        n === "…" ? (
+          <span key={`e${i}`} className={`${cell} text-slate-400`}>
+            …
+          </span>
+        ) : (
+          <Link
+            key={n}
+            href={makeHref(n)}
+            className={`${cell} ${n === page ? "bg-red-600 font-semibold text-white" : "text-slate-700 hover:bg-slate-100"}`}
+          >
+            {n}
+          </Link>
+        )
+      )}
+      {page < pages ? (
+        <Link href={makeHref(page + 1)} className={`${cell} text-slate-500 hover:bg-slate-100`}>
+          ›
+        </Link>
+      ) : (
+        <span className={`${cell} text-slate-300`}>›</span>
+      )}
+    </nav>
+  );
+}
+
 export function Field({
   label,
   children,

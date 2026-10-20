@@ -33,7 +33,9 @@ export function CustomerForm({
   customer,
   action,
   returnTo,
+  staff = [],
 }: {
+  staff?: { id: string; name: string }[];
   customer?: Partial<Customer>;
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
   returnTo?: string;
@@ -86,7 +88,25 @@ export function CustomerForm({
 
       <section className="card">
         <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
+          {customer?.customer_no && (
+            <div className="sm:col-span-2 text-sm text-slate-500">
+              {t("c_customer_no")}: <span className="font-semibold text-slate-800">{customer.customer_no}</span>
+            </div>
+          )}
           {MAIN.map(field)}
+          <div>
+            <label className="label" htmlFor="assigned_to">
+              {t("c_assigned_to")}
+            </label>
+            <select id="assigned_to" name="assigned_to" defaultValue={customer?.assigned_to ?? ""} className="input">
+              <option value="">{t("c_unassigned")}</option>
+              {staff.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <p className="text-xs text-slate-500 sm:col-span-2">{t("c_contact_hint")}</p>
           <div className="sm:col-span-2">
             <label className="label" htmlFor="notes">

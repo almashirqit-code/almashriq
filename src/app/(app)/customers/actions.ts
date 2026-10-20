@@ -33,6 +33,8 @@ function read(formData: FormData) {
     const v = String(formData.get(f) ?? "").trim();
     data[f] = v === "" ? null : v;
   }
+  const assigned = String(formData.get("assigned_to") ?? "").trim();
+  data.assigned_to = /^[0-9a-f-]{36}$/i.test(assigned) ? assigned : null;
   if (data.email) data.email = data.email.toLowerCase();
   if (data.consignee_email) data.consignee_email = data.consignee_email.toLowerCase();
   // A phone with no digits at all is treated as empty.

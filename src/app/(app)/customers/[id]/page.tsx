@@ -11,6 +11,7 @@ import { PageHeader, InvoiceStatusBadge, Empty } from "@/components/ui";
 import { ConfirmButton } from "@/components/buttons";
 import { CustomerForm } from "../customer-form";
 import { updateCustomer, deleteCustomer } from "../actions";
+import { loadStaff } from "../staff";
 
 export default async function CustomerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,6 +24,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
     supabase.from("invoices").select("*").eq("customer_id", id).order("issue_date", { ascending: false }),
   ]);
   if (!customer) notFound();
+  const staff = await loadStaff();
   const c = customer as Customer;
   const list = (invoices ?? []) as Invoice[];
 
@@ -37,7 +39,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
     <>
       <PageHeader
         back={{ href: "/customers", label: t("cust_title") }}
-        title={c.name}
+        title={`${c.customer_no ? c.customer_no + " · " : ""}${c.name}`}
         subtitle={[c.company, c.country].filter(Boolean).join(" · ")}
         actions={
           <>
@@ -55,7 +57,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
         }
       />
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <CustomerForm customer={c} action={updateCustomer.bind(null, c.id)} />
+        <CustomerForm customer={c} action={updateCustomer.bind(null, c.id)} staff={staff} />
         <section className="card overflow-hidden self-start">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
             <h2 className="text-sm font-semibold">{t("cust_invoices")}</h2>

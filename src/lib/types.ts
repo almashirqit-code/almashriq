@@ -34,10 +34,14 @@ export interface Settings {
   tax_rate: number;
   invoice_terms: string | null;
   exchange_rates: Record<Currency, number>;
+  offices: string[];
+  shifts: string[];
 }
 
 export interface Customer {
   id: string;
+  customer_no: number;
+  assigned_to: string | null;
   name: string;
   company: string | null;
   country: string | null;
@@ -206,3 +210,47 @@ export const NUMERIC_VEHICLE_FIELDS: VehicleField[] = [
 
 /** Cost fields hidden from the sales role. */
 export const COST_FIELDS: VehicleField[] = ["purchase_price", "expenses", "purchase_date", "supplier_price", "supplier_currency"];
+
+export type RemittanceStatus = "unallocated" | "partial" | "allocated";
+export const REMITTANCE_STATUSES: RemittanceStatus[] = ["unallocated", "partial", "allocated"];
+
+export interface Remittance {
+  id: number;
+  customer_id: string;
+  office: string;
+  shift: string | null;
+  currency: Currency;
+  remitter: string;
+  bank: string;
+  bank_address: string;
+  bank_phone: string | null;
+  exchange_rate: number;
+  instructed_amount: number;
+  remit_amount: number;
+  bank_charges: number;
+  remit_date: string;
+  received_date: string;
+  remarks: string | null;
+  allocated_amount: number;
+  remaining_amount: number;
+  status: RemittanceStatus;
+  created_at: string;
+}
+
+export interface RemittanceDocument {
+  id: string;
+  remittance_id: number;
+  path: string;
+  file_name: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  created_at: string;
+}
+
+export interface RemittanceAllocation {
+  id: string;
+  remittance_id: number;
+  vehicle_id: string;
+  amount: number;
+  created_at: string;
+}

@@ -131,6 +131,20 @@ export function SettingsForm({ settings }: { settings: Settings }) {
         </div>
       </section>
 
+      <section className="card">
+        <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("settings_remittances")}</h2>
+        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="offices">{t("settings_offices")}</label>
+            <textarea id="offices" name="offices" rows={4} className="input" defaultValue={(settings.offices ?? ["Head Office"]).join("\n")} />
+          </div>
+          <div>
+            <label className="label" htmlFor="shifts">{t("settings_shifts")}</label>
+            <textarea id="shifts" name="shifts" rows={4} className="input" defaultValue={(settings.shifts ?? []).join("\n")} />
+          </div>
+        </div>
+      </section>
+
       <div className="flex items-center gap-3">
         <SubmitButton>{t("save")}</SubmitButton>
         {state.error && <p className="text-sm text-red-600">{state.error}</p>}

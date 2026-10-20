@@ -5,6 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { CURRENCIES, type Currency } from "@/lib/types";
 
+const lines = (v: FormDataEntryValue | null) =>
+  [...new Set(String(v ?? "").split(/\r?\n|,/).map((s) => s.trim()).filter(Boolean))];
+
 export type SettingsState = { error?: string; ok?: boolean };
 
 export async function saveSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
@@ -41,6 +44,8 @@ export async function saveSettings(_prev: SettingsState, formData: FormData): Pr
       next_invoice_no: Number.isInteger(nextNo) && nextNo > 0 ? nextNo : 1,
       tax_rate: Math.max(0, Number(formData.get("tax_rate")) || 0),
       exchange_rates: rates,
+      offices: lines(formData.get("offices")),
+      shifts: lines(formData.get("shifts")),
       updated_at: new Date().toISOString(),
     })
     .eq("id", 1);

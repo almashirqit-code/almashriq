@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Store,
+  Banknote,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -29,6 +30,7 @@ const ITEMS: Item[] = [
   { href: "/stock/import", label: "nav_import", icon: Upload, roles: ["admin", "manager"] },
   { href: "/customers", label: "nav_customers", icon: Users },
   { href: "/invoices", label: "nav_invoices", icon: FileText },
+  { href: "/remittances", label: "nav_remittances", icon: Banknote },
   { href: "/users", label: "nav_users", icon: UserCog, roles: ["admin"] },
   { href: "/settings", label: "nav_settings", icon: Settings, roles: ["admin"] },
   { href: "/showroom", label: "nav_showroom", icon: Store, newTab: true },
