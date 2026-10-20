@@ -1,3 +1,4 @@
+import { UserCog } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -18,7 +19,7 @@ export default async function UsersPage() {
 
   return (
     <>
-      <PageHeader title={t("users_title")} />
+      <PageHeader icon={<UserCog />} tone="violet" title={t("users_title")} />
       {!hasServiceKey && (
         <p className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">{t("users_service_key_missing")}</p>
       )}

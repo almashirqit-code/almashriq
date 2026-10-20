@@ -1,3 +1,4 @@
+import { Settings as SettingsIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -12,7 +13,7 @@ export default async function SettingsPage() {
   const { data } = await supabase.from("settings").select("*").single();
   return (
     <>
-      <PageHeader title={t("settings_title")} />
+      <PageHeader icon={<SettingsIcon />} tone="slate" title={t("settings_title")} />
       <div className="max-w-4xl">
         <SettingsForm settings={data as Settings} />
       </div>

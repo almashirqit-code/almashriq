@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { num } from "@/lib/format";
@@ -38,6 +38,8 @@ export default async function CustomersPage({
   return (
     <>
       <PageHeader
+        icon={<Users />}
+        tone="sky"
         title={t("cust_title")}
         subtitle={t("total_records", { count: num(count ?? 0, locale) })}
         actions={

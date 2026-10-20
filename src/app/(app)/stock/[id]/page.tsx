@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Trash2, FileText } from "lucide-react";
+import { Trash2, FileText, Car } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -53,6 +53,8 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
   return (
     <>
       <PageHeader
+        icon={<Car />}
+        tone="brand"
         back={{ href: "/stock", label: t("stock_title") }}
         title={
           <span className="flex flex-wrap items-center gap-3">
@@ -85,12 +87,14 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
       {seeCost && (
         <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Stat
+            tone="violet"
             label={thirdParty ? t("f_supplier_price") : t("stock_total_cost")}
             value={money(cost, "JPY", locale)}
             hint={thirdParty && v.supplier_name ? v.supplier_name : undefined}
           />
-          <Stat label={t("f_price")} value={v.price != null ? money(v.price, v.price_currency, locale) : "—"} hint={priceJpy != null && v.price_currency !== "JPY" ? `≈ ${money(priceJpy, "JPY", locale)}` : undefined} />
+          <Stat tone="sky" label={t("f_price")} value={v.price != null ? money(v.price, v.price_currency, locale) : "—"} hint={priceJpy != null && v.price_currency !== "JPY" ? `≈ ${money(priceJpy, "JPY", locale)}` : undefined} />
           <Stat
+            tone={priceJpy != null && priceJpy - cost < 0 ? "brand" : "emerald"}
             label={t("stock_margin")}
             value={priceJpy != null ? money(priceJpy - cost, "JPY", locale) : "—"}
             hint={priceJpy && cost ? `${(((priceJpy - cost) / priceJpy) * 100).toFixed(1)}%` : undefined}

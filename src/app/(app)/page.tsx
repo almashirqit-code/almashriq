@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { Car, Clock, TrendingUp, Wallet, Users, Package } from "lucide-react";
+import { Car, Clock, TrendingUp, Wallet, Users, Package, Plus, FileText, Banknote, Upload, ArrowUpRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { money, date, num, vehicleTitle } from "@/lib/format";
 import type { Currency, InvoiceStatus, VehicleStatus } from "@/lib/types";
-import { PageHeader, Stat, InvoiceStatusBadge, VehicleStatusBadge, Empty } from "@/components/ui";
+import { Stat, InvoiceStatusBadge, VehicleStatusBadge, Empty, IconChip } from "@/components/ui";
+import { Greeting } from "./greeting";
 import { SalesChart, MakesChart } from "./dashboard-charts";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 
@@ -113,49 +114,102 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <PageHeader title={t("dash_title")} />
+      <section className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-rose-500 to-orange-400 p-6 text-white shadow-xl shadow-brand-600/20 sm:p-8">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full bg-fuchsia-500/40 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 left-1/3 h-64 w-64 rounded-full bg-amber-300/40 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.18)_1px,transparent_0)] [background-size:22px_22px] opacity-40" />
+        <div className="relative flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">{t("dash_title")}</div>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+              <Greeting name={(profile.full_name || "").split(" ")[0]} />
+            </h1>
+            <p className="mt-1 max-w-lg text-sm text-white/85">{t("dash_hero_sub")}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {can.editStock(profile.role) && (
+              <Link href="/stock/new" className="btn bg-white text-brand-700 shadow-lg shadow-black/10 hover:bg-white/90">
+                <Plus className="h-4 w-4" />
+                {t("top_new_vehicle")}
+              </Link>
+            )}
+            <Link href="/invoices/new" className="btn bg-white/15 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
+              <FileText className="h-4 w-4" />
+              {t("top_new_invoice")}
+            </Link>
+            {can.editStock(profile.role) && (
+              <>
+                <Link href="/remittances/new" className="btn bg-white/15 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
+                  <Banknote className="h-4 w-4" />
+                  TT
+                </Link>
+                <Link href="/stock/import" className="btn bg-white/15 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
+                  <Upload className="h-4 w-4" />
+                  {t("nav_import")}
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <Stat
           label={t("dash_in_stock")}
           value={num(inStock.count ?? 0, locale)}
           hint={thirdPartyInStock ? t("dash_third_party", { count: num(thirdPartyInStock, locale) }) : undefined}
-          icon={<Car className="h-5 w-5" />}
+          icon={<Car />}
+          tone="brand"
         />
-        <Stat label={t("dash_reserved")} value={num(reserved.count ?? 0, locale)} icon={<Clock className="h-5 w-5" />} />
-        <Stat label={t("dash_sold_month")} value={num(soldThisMonth, locale)} icon={<Package className="h-5 w-5" />} />
+        <Stat label={t("dash_reserved")} value={num(reserved.count ?? 0, locale)} icon={<Clock />} tone="amber" />
+        <Stat label={t("dash_sold_month")} value={num(soldThisMonth, locale)} icon={<Package />} tone="violet" />
         {can.seeCost(profile.role) ? (
-          <Stat label={t("dash_stock_value")} value={money(stockValue, "JPY", locale)} icon={<Wallet className="h-5 w-5" />} />
+          <Stat label={t("dash_stock_value")} value={money(stockValue, "JPY", locale)} icon={<Wallet />} tone="emerald" />
         ) : (
-          <Stat label={t("dash_customers")} value={num(custCount.count ?? 0, locale)} icon={<Users className="h-5 w-5" />} />
+          <Stat label={t("dash_customers")} value={num(custCount.count ?? 0, locale)} icon={<Users />} tone="sky" />
         )}
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Stat label={t("dash_sales_month")} value={byCurrency(monthSales)} icon={<TrendingUp className="h-5 w-5" />} />
-        <Stat label={t("dash_outstanding")} value={byCurrency(outstanding)} icon={<Wallet className="h-5 w-5" />} />
+        <Stat label={t("dash_sales_month")} value={byCurrency(monthSales)} icon={<TrendingUp />} tone="fuchsia" />
+        <Stat label={t("dash_outstanding")} value={byCurrency(outstanding)} icon={<Wallet />} tone="cyan" />
         {can.seeCost(profile.role) && (
-          <Stat label={t("dash_customers")} value={num(custCount.count ?? 0, locale)} icon={<Users className="h-5 w-5" />} />
+          <Stat label={t("dash_customers")} value={num(custCount.count ?? 0, locale)} icon={<Users />} tone="sky" />
         )}
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="card p-5 lg:col-span-2">
-          <h2 className="mb-4 text-sm font-semibold">{t("dash_sales_chart")}</h2>
+          <h2 className="card-title mb-4">
+            <IconChip tone="brand" size="sm">
+              <TrendingUp />
+            </IconChip>
+            {t("dash_sales_chart")}
+          </h2>
           <SalesChart data={months.map((m) => ({ label: m.label, value: Math.round(m.jpy) }))} locale={locale} />
         </div>
         <div className="card p-5">
-          <h2 className="mb-4 text-sm font-semibold">{t("dash_top_makes")}</h2>
+          <h2 className="card-title mb-4">
+            <IconChip tone="violet" size="sm">
+              <Car />
+            </IconChip>
+            {t("dash_top_makes")}
+          </h2>
           {topMakes.length ? <MakesChart data={topMakes} /> : <Empty>{t("no_results")}</Empty>}
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="card overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
-            <h2 className="text-sm font-semibold">{t("dash_recent_invoices")}</h2>
-            <Link href="/invoices" className="text-xs font-medium text-brand-600 hover:underline">
-              {t("view")} →
+          <div className="card-head">
+            <h2 className="card-title">
+              <IconChip tone="fuchsia" size="sm">
+                <FileText />
+              </IconChip>
+              {t("dash_recent_invoices")}
+            </h2>
+            <Link href="/invoices" className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-brand-50 hover:text-brand-700">
+              {t("view")} <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           {recentInv.data?.length ? (
@@ -186,10 +240,15 @@ export default async function DashboardPage() {
           )}
         </div>
         <div className="card overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
-            <h2 className="text-sm font-semibold">{t("dash_recent_vehicles")}</h2>
-            <Link href="/stock" className="text-xs font-medium text-brand-600 hover:underline">
-              {t("view")} →
+          <div className="card-head">
+            <h2 className="card-title">
+              <IconChip tone="amber" size="sm">
+                <Car />
+              </IconChip>
+              {t("dash_recent_vehicles")}
+            </h2>
+            <Link href="/stock" className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-brand-50 hover:text-brand-700">
+              {t("view")} <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           {recentVeh.data?.length ? (

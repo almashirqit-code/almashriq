@@ -199,7 +199,7 @@ export function AllocateForm({
       <div className="flex gap-2">
         <button
           type="button"
-          className="btn bg-slate-900 text-white hover:bg-slate-800"
+          className="btn-secondary"
           onClick={() => {
             setRows([newRow(String(remittance.available))]);
             setError("");
@@ -207,7 +207,7 @@ export function AllocateForm({
         >
           {t("rem_reset")}
         </button>
-        <button type="button" className="btn bg-red-600 text-white hover:bg-red-700" disabled={pending} onClick={submit}>
+        <button type="button" className="btn-primary" disabled={pending} onClick={submit}>
           {pending ? t("saving") : t("rem_allocate")}
         </button>
       </div>

@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Banknote } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { date, money } from "@/lib/format";
 import { REMITTANCE_STATUSES, type Remittance, type RemittanceDocument } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
-import { Empty, NumberedPagination } from "@/components/ui";
+import { Empty, NumberedPagination, IconChip } from "@/components/ui";
 import { PageSizeSelect, RowActions } from "./list-controls";
 import { DocIcons } from "./doc-icons";
 
@@ -17,9 +17,9 @@ type Row = Remittance & {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  unallocated: "text-slate-500",
-  partial: "text-amber-600",
-  allocated: "text-emerald-600",
+  unallocated: "bg-slate-100 text-slate-600 ring-slate-500/20",
+  partial: "bg-amber-50 text-amber-700 ring-amber-600/20",
+  allocated: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
 };
 
 export default async function RemittancesPage({
@@ -88,15 +88,20 @@ export default async function RemittancesPage({
   return (
     <>
       <div className="no-print mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold tracking-tight text-slate-900">{t("rem_title")}</h1>
-          <span className="border-l border-slate-200 pl-3 text-xs text-slate-400">
-            {t("nav_remittances")} <span className="mx-1">›</span>
-            <span className="text-slate-700">{t("rem_list")}</span>
-          </span>
+        <div className="flex items-center gap-3.5">
+          <IconChip tone="emerald">
+            <Banknote />
+          </IconChip>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t("rem_title")}</h1>
+            <p className="mt-0.5 text-xs text-slate-500">
+              {t("nav_remittances")} <span className="mx-1">›</span>
+              <span className="text-slate-700">{t("rem_list")}</span>
+            </p>
+          </div>
         </div>
         {canEdit && (
-          <Link href="/remittances/new" className="btn bg-slate-900 text-white hover:bg-slate-800">
+          <Link href="/remittances/new" className="btn-primary">
             <PlusCircle className="h-4 w-4" />
             {t("rem_add")}
           </Link>
@@ -130,7 +135,7 @@ export default async function RemittancesPage({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[13px]">
               <thead>
-                <tr className="bg-slate-200/70 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   <th className="px-3 py-3">{t("rem_id")}</th>
                   <th className="px-3 py-3">{t("rem_customer_details")}</th>
                   <th className="px-3 py-3">{t("rem_remitter_details")}</th>
@@ -141,13 +146,13 @@ export default async function RemittancesPage({
                   <th className="px-3 py-3 text-center">{t("actions")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 text-slate-600">
+              <tbody className="divide-y divide-slate-100 text-slate-600">
                 {rows.map((r) => {
                   const c = r.customers;
                   const stocks = [...new Map(r.remittance_allocations.filter((a) => a.vehicles).map((a) => [a.vehicles!.id, a.vehicles!])).values()];
                   const cur = r.currency;
                   return (
-                    <tr key={r.id} className="align-top hover:bg-slate-50/60">
+                    <tr key={r.id} className="align-top transition-colors hover:bg-emerald-50/40">
                       <td className="whitespace-nowrap px-3 py-3 leading-5">
                         <div>
                           {t("rem_id")}:{" "}
@@ -226,7 +231,12 @@ export default async function RemittancesPage({
                         </div>
                       </td>
                       <td className="px-3 py-3">
-                        <div className={`font-medium uppercase ${STATUS_COLOR[r.status]}`}>{t(`rs_${r.status}` as DictKey)}</div>
+                        <span
+                          className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase ring-1 ring-inset ${STATUS_COLOR[r.status]}`}
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
+                          {t(`rs_${r.status}` as DictKey)}
+                        </span>
                         <DocIcons docs={r.remittance_documents} />
                       </td>
                       <td className="px-3 py-3 text-center">

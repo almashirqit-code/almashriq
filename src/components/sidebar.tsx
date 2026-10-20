@@ -17,25 +17,53 @@ import {
   Store,
   Banknote,
   Anchor,
+  ExternalLink,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import type { Role } from "@/lib/types";
 import { signOut } from "@/app/actions";
 
-type Item = { href: string; label: DictKey; icon: React.ElementType; roles?: Role[]; newTab?: boolean };
+type Item = {
+  href: string;
+  label: DictKey;
+  icon: React.ElementType;
+  /** gradient used for the icon chip when active, and the icon colour when idle */
+  grad: string;
+  idle: string;
+  roles?: Role[];
+  newTab?: boolean;
+};
 
-const ITEMS: Item[] = [
-  { href: "/", label: "nav_dashboard", icon: LayoutDashboard },
-  { href: "/stock", label: "nav_stock", icon: Car },
-  { href: "/stock/import", label: "nav_import", icon: Upload, roles: ["admin", "manager"] },
-  { href: "/customers", label: "nav_customers", icon: Users },
-  { href: "/invoices", label: "nav_invoices", icon: FileText },
-  { href: "/remittances", label: "nav_remittances", icon: Banknote },
-  { href: "/masters", label: "nav_masters", icon: Anchor },
-  { href: "/users", label: "nav_users", icon: UserCog, roles: ["admin"] },
-  { href: "/settings", label: "nav_settings", icon: Settings, roles: ["admin"] },
-  { href: "/showroom", label: "nav_showroom", icon: Store, newTab: true },
+const GROUPS: { label: DictKey; items: Item[] }[] = [
+  {
+    label: "grp_overview",
+    items: [{ href: "/", label: "nav_dashboard", icon: LayoutDashboard, grad: "from-violet-500 to-indigo-600", idle: "text-violet-300" }],
+  },
+  {
+    label: "grp_inventory",
+    items: [
+      { href: "/stock", label: "nav_stock", icon: Car, grad: "from-rose-500 to-brand-600", idle: "text-rose-300" },
+      { href: "/stock/import", label: "nav_import", icon: Upload, grad: "from-amber-400 to-orange-500", idle: "text-amber-300", roles: ["admin", "manager"] },
+      { href: "/masters", label: "nav_masters", icon: Anchor, grad: "from-cyan-400 to-sky-600", idle: "text-cyan-300" },
+    ],
+  },
+  {
+    label: "grp_sales",
+    items: [
+      { href: "/customers", label: "nav_customers", icon: Users, grad: "from-sky-400 to-blue-600", idle: "text-sky-300" },
+      { href: "/invoices", label: "nav_invoices", icon: FileText, grad: "from-fuchsia-500 to-pink-600", idle: "text-fuchsia-300" },
+      { href: "/remittances", label: "nav_remittances", icon: Banknote, grad: "from-emerald-400 to-teal-600", idle: "text-emerald-300" },
+    ],
+  },
+  {
+    label: "grp_admin",
+    items: [
+      { href: "/users", label: "nav_users", icon: UserCog, grad: "from-indigo-400 to-violet-600", idle: "text-indigo-300", roles: ["admin"] },
+      { href: "/settings", label: "nav_settings", icon: Settings, grad: "from-slate-400 to-slate-600", idle: "text-slate-300", roles: ["admin"] },
+      { href: "/showroom", label: "nav_showroom", icon: Store, grad: "from-amber-400 to-rose-500", idle: "text-amber-300", newTab: true },
+    ],
+  },
 ];
 
 export function Sidebar({
@@ -61,11 +89,22 @@ export function Sidebar({
     return pathname.startsWith(href);
   };
 
+  const initials = (name || email)
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
+
   const nav = (
-    <nav className="flex h-full flex-col">
-      <Link href="/" className="block px-5 pb-4 pt-5" onClick={() => setOpen(false)}>
+    <nav className="relative flex h-full flex-col overflow-hidden">
+      {/* colour glows */}
+      <div className="pointer-events-none absolute -left-24 -top-24 h-64 w-64 rounded-full bg-brand-600/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-violet-600/20 blur-3xl" />
+
+      <Link href="/" className="relative block px-5 pb-3 pt-5" onClick={() => setOpen(false)}>
         {logoUrl ? (
-          <span className="block rounded-lg bg-white px-2 py-1.5">
+          <span className="block rounded-xl bg-white px-2 py-1.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={logoUrl} alt={companyName} className="mx-auto h-10 w-auto object-contain" />
           </span>
@@ -73,66 +112,95 @@ export function Sidebar({
           // eslint-disable-next-line @next/next/no-img-element
           <img src="/brand/logo-light.png" alt={companyName} className="h-12 w-auto object-contain" />
         )}
-        <span className="mt-1.5 block truncate text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">ERP</span>
+        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 ring-1 ring-white/10">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+          ERP
+        </span>
       </Link>
-      <div className="mx-5 mb-3 flex h-[3px] overflow-hidden rounded-full">
-        <div className="w-2/3 bg-brand-600" />
-        <div className="w-1/3 bg-slate-700" />
-      </div>
-      <ul className="flex-1 space-y-0.5 px-3">
-        {ITEMS.filter((i) => !i.roles || i.roles.includes(role)).map((i) => {
-          const Icon = i.icon;
-          const active = !i.newTab && isActive(i.href);
+
+      <div className="relative flex-1 space-y-5 overflow-y-auto px-3 pb-4 pt-2">
+        {GROUPS.map((g) => {
+          const items = g.items.filter((i) => !i.roles || i.roles.includes(role));
+          if (!items.length) return null;
           return (
-            <li key={i.href}>
-              <Link
-                href={i.href}
-                target={i.newTab ? "_blank" : undefined}
-                onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 rounded-lg border-l-[3px] px-3 py-2 text-sm font-medium transition ${
-                  active ? "border-brand-600 bg-white/10 text-white" : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {t(i.label)}
-              </Link>
-            </li>
+            <div key={g.label}>
+              <div className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{t(g.label)}</div>
+              <ul className="space-y-0.5">
+                {items.map((i) => {
+                  const Icon = i.icon;
+                  const active = !i.newTab && isActive(i.href);
+                  return (
+                    <li key={i.href}>
+                      <Link
+                        href={i.href}
+                        target={i.newTab ? "_blank" : undefined}
+                        onClick={() => setOpen(false)}
+                        className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-medium transition ${
+                          active
+                            ? "bg-white/[0.08] text-white shadow-inner ring-1 ring-white/10"
+                            : "text-slate-300 hover:bg-white/[0.05] hover:text-white"
+                        }`}
+                      >
+                        <span
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
+                            active ? `bg-gradient-to-br ${i.grad} text-white shadow-lg` : `bg-white/[0.06] ${i.idle} group-hover:bg-white/10`
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="flex-1 truncate">{t(i.label)}</span>
+                        {i.newTab && <ExternalLink className="h-3.5 w-3.5 text-slate-500" />}
+                        {active && <span className={`h-1.5 w-1.5 rounded-full bg-gradient-to-br ${i.grad}`} />}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           );
         })}
-      </ul>
-      <div className="border-t border-white/10 p-4">
-        <div className="mb-3 min-w-0">
-          <div className="truncate text-sm font-medium text-white">{name}</div>
-          <div className="truncate text-xs text-slate-400">{email}</div>
-          <div className="mt-1 inline-block rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
-            {t(`role_${role}` as DictKey)}
+      </div>
+
+      <div className="relative m-3 rounded-2xl bg-white/[0.06] p-3 ring-1 ring-white/10">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 via-fuchsia-500 to-violet-600 text-xs font-bold text-white">
+            {initials}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-semibold text-white">{name}</div>
+            <div className="truncate text-[11px] text-slate-400">{t(`role_${role}` as DictKey)}</div>
           </div>
+          <form action={signOut}>
+            <button
+              className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+              title={t("sign_out")}
+              aria-label={t("sign_out")}
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </form>
         </div>
-        <form action={signOut}>
-          <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white">
-            <LogOut className="h-4 w-4" />
-            {t("sign_out")}
-          </button>
-        </form>
       </div>
     </nav>
   );
 
+  const bg = "bg-gradient-to-b from-[#0d1024] via-[#141233] to-[#1b0f24]";
+
   return (
     <>
       <button
-        className="no-print fixed left-3 top-3 z-40 rounded-lg bg-slate-900 p-2 text-white lg:hidden"
+        className="no-print fixed left-3 top-2.5 z-40 rounded-xl bg-gradient-to-br from-rose-500 to-brand-600 p-2 text-white shadow-lg lg:hidden"
         onClick={() => setOpen(true)}
         aria-label="Menu"
       >
         <Menu className="h-5 w-5" />
       </button>
-      <aside className="no-print fixed inset-y-0 left-0 z-30 hidden w-60 bg-[#0f172a] lg:block">{nav}</aside>
+      <aside className={`no-print fixed inset-y-0 left-0 z-30 hidden w-64 lg:block ${bg}`}>{nav}</aside>
       {open && (
         <div className="no-print fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-64 bg-slate-900">
-            <button className="absolute right-3 top-4 text-slate-400" onClick={() => setOpen(false)} aria-label="Close">
+          <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <aside className={`absolute inset-y-0 left-0 w-72 ${bg}`}>
+            <button className="absolute right-3 top-4 z-10 text-slate-400" onClick={() => setOpen(false)} aria-label="Close">
               <X className="h-5 w-5" />
             </button>
             {nav}

@@ -316,7 +316,7 @@ export function RemittanceForm({
       <div className="mt-6 flex gap-2">
         <button
           type="button"
-          className="btn bg-slate-900 text-white hover:bg-slate-800"
+          className="btn-secondary"
           onClick={() => {
             setF(fromInitial);
             setFiles([]);
@@ -325,7 +325,7 @@ export function RemittanceForm({
         >
           {t("rem_reset")}
         </button>
-        <button type="submit" disabled={pending} className="btn bg-red-600 text-white hover:bg-red-700">
+        <button type="submit" disabled={pending} className="btn-primary">
           {pending ? t("saving") : initial?.id ? t("rem_update") : t("rem_create")}
         </button>
       </div>

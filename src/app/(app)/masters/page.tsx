@@ -1,3 +1,4 @@
+import { Anchor } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -21,7 +22,7 @@ export default async function MastersPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <PageHeader title={t("m_title")} />
+      <PageHeader icon={<Anchor />} tone="cyan" title={t("m_title")} />
       <MastersManager
         initialTab={tab === "auctions" || tab === "yards" ? tab : "ports"}
         ports={(ports.data ?? []) as Port[]}

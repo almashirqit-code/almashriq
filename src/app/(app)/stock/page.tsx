@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Upload, Download, ImageIcon } from "lucide-react";
+import { Plus, Upload, Download, ImageIcon, Car } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -61,6 +61,8 @@ export default async function StockPage({
   return (
     <>
       <PageHeader
+        icon={<Car />}
+        tone="brand"
         title={t("stock_title")}
         subtitle={t("total_records", { count: num(count ?? 0, locale) })}
         actions={

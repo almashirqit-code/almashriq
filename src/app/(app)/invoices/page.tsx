@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { money, date, num } from "@/lib/format";
@@ -56,6 +56,8 @@ export default async function InvoicesPage({
   return (
     <>
       <PageHeader
+        icon={<FileText />}
+        tone="fuchsia"
         title={t("inv_title")}
         subtitle={t("total_records", { count: num(count ?? 0, locale) })}
         actions={

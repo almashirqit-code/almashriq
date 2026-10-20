@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Split, Trash2, FileText, X, Download } from "lucide-react";
+import { Pencil, Split, Trash2, FileText, X, Download, Banknote } from "lucide-react";
 import { AllocationRowControls, UnallocateAllButton } from "./allocation-controls";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
@@ -67,6 +67,8 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
   return (
     <>
       <PageHeader
+        icon={<Banknote />}
+        tone="emerald"
         back={{ href: "/remittances", label: t("rem_title") }}
         title={
           <span className="flex flex-wrap items-center gap-3">
@@ -78,7 +80,7 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
         actions={
           <>
             {canEdit && rem.remaining_amount > 0 && (
-              <Link href={`/remittances/${id}/allocate`} className="btn bg-red-600 text-white hover:bg-red-700">
+              <Link href={`/remittances/${id}/allocate`} className="btn-primary">
                 <Split className="h-4 w-4" />
                 {t("rem_allocate")}
               </Link>
@@ -101,10 +103,11 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat label={t("rem_instructed")} value={money(rem.instructed_amount, cur, locale)} />
-        <Stat label={t("rem_remit_amount")} value={money(rem.remit_amount, cur, locale)} hint={`${t("rem_bank_charges")}: ${money(rem.bank_charges, cur, locale)}`} />
-        <Stat label={t("rem_allocated_amount")} value={money(rem.allocated_amount, cur, locale)} />
+        <Stat tone="violet" label={t("rem_instructed")} value={money(rem.instructed_amount, cur, locale)} />
+        <Stat tone="sky" label={t("rem_remit_amount")} value={money(rem.remit_amount, cur, locale)} hint={`${t("rem_bank_charges")}: ${money(rem.bank_charges, cur, locale)}`} />
+        <Stat tone="emerald" label={t("rem_allocated_amount")} value={money(rem.allocated_amount, cur, locale)} />
         <Stat
+          tone={rem.remaining_amount > 0 ? "amber" : "emerald"}
           label={t("rem_remaining")}
           value={<span className={rem.remaining_amount > 0 ? "text-red-600" : "text-emerald-600"}>{money(rem.remaining_amount, cur, locale)}</span>}
           hint={`≈ ${money(rem.remaining_amount * (cur === "JPY" ? 1 : Number(rem.exchange_rate)), "JPY", locale)}`}
