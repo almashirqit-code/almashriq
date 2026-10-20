@@ -473,3 +473,11 @@ create policy "vehicle images delete" on storage.objects for delete to authentic
 grant execute on function public.next_invoice_number() to authenticated;
 grant execute on function public.auth_role() to authenticated;
 grant execute on function public.is_staff(public.user_role[]) to authenticated;
+
+-- Backfill profiles for any auth users created before this migration ran.
+-- The earliest existing user becomes admin.
+insert into public.profiles (id, email, full_name, role)
+select u.id, u.email, coalesce(u.raw_user_meta_data ->> 'full_name', split_part(u.email, '@', 1)),
+       case when row_number() over (order by u.created_at) = 1 then 'admin'::public.user_role else 'sales'::public.user_role end
+from auth.users u
+on conflict (id) do nothing;
