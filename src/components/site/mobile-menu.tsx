@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Mail, MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
@@ -13,7 +14,10 @@ type Contact = { email: string | null; phone: string | null; address: string | n
 /** Phone menu: a frosted-glass sheet with the links, makes, contact details and live Japan time / USD-JPY. */
 export function MobileMenu({ links, makes, contact, fx }: { links: { href: string; label: string }[]; makes: { href: string; label: string }[]; contact: Contact; fx: Fx | null }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => setMounted(true), []);
 
   // Close on navigation; lock page scroll and close on Escape while open.
   useEffect(() => setOpen(false), [pathname]);
@@ -34,7 +38,7 @@ export function MobileMenu({ links, makes, contact, fx }: { links: { href: strin
       <button type="button" onClick={() => setOpen(true)} aria-label="Open menu" aria-expanded={open} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white hover:bg-white/10 lg:hidden">
         <Menu className="h-6 w-6" />
       </button>
-      {open && (
+      {open && mounted ? createPortal((
         <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="absolute inset-0 bg-black/55" onClick={() => setOpen(false)} />
           <div className="glass-strong absolute inset-y-0 right-0 flex w-[min(22rem,88vw)] flex-col overflow-y-auto rounded-l-3xl pb-[env(safe-area-inset-bottom)]">
@@ -99,7 +103,7 @@ export function MobileMenu({ links, makes, contact, fx }: { links: { href: strin
             </div>
           </div>
         </div>
-      )}
+      ), document.body) : null}
     </>
   );
 }
