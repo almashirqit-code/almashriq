@@ -46,7 +46,7 @@ export async function CarListing({ f, path, heading, intro, lockMake = false }: 
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 lg:px-6 lg:py-6">
       <nav className="mb-3 text-xs text-white/60" aria-label="Breadcrumb">
-        <Link href="/" className="hover:text-white">Home</Link> / <Link href="/cars" className="hover:text-white">Stock list</Link>
+        <Link href="/" className="inline-block py-2 hover:text-white">Home</Link> / <Link href="/cars" className="inline-block py-2 hover:text-white">Stock list</Link>
         {lockMake && f.make ? ` / ${f.make}` : ""}
       </nav>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">

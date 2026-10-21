@@ -200,7 +200,7 @@ export default async function PublicLayout({ children }: { children: React.React
             <ul className="mt-3 space-y-1 text-sm">
               {makes.slice(0, 8).map((m) => (
                 <li key={m.slug}>
-                  <Link href={`/makes/${m.slug}`} className="inline-flex min-h-9 items-center text-white/70 hover:text-white">
+                  <Link href={`/makes/${m.slug}`} className="inline-flex min-h-11 items-center text-white/70 hover:text-white">
                     {m.label}
                   </Link>
                 </li>
@@ -212,7 +212,7 @@ export default async function PublicLayout({ children }: { children: React.React
             <ul className="mt-3 space-y-1 text-sm">
               {links.slice(1).map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-flex min-h-9 items-center text-white/70 hover:text-white">
+                  <Link href={l.href} className="inline-flex min-h-11 items-center text-white/70 hover:text-white">
                     {l.label}
                   </Link>
                 </li>
@@ -228,7 +228,7 @@ export default async function PublicLayout({ children }: { children: React.React
               </div>
             )}
             {company.phone && (
-              <a href={`tel:${company.phone}`} className="flex min-h-9 items-center gap-2 hover:text-white">
+              <a href={`tel:${company.phone}`} className="flex min-h-11 items-center gap-2 hover:text-white">
                 <Phone className="h-4 w-4 text-rose-300" /> {company.phone}
               </a>
             )}
@@ -238,7 +238,7 @@ export default async function PublicLayout({ children }: { children: React.React
               </div>
             )}
             {company.email && (
-              <a href={`mailto:${company.email}`} className="flex min-h-9 items-center gap-2 break-all hover:text-white">
+              <a href={`mailto:${company.email}`} className="flex min-h-11 items-center gap-2 break-all hover:text-white">
                 <Mail className="h-4 w-4 shrink-0 text-rose-300" /> {company.email}
               </a>
             )}

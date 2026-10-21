@@ -181,7 +181,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                       )}
                     </Link>
                     <div className="flex flex-1 flex-col p-3.5">
-                      <Link href={detail} className="line-clamp-1 text-[15px] font-extrabold group-hover:text-[var(--accent-text)]">
+                      <Link href={detail} className="line-clamp-1 py-1 text-[15px] font-extrabold group-hover:text-[var(--accent-text)]">
                         {machineTitle(m)}
                       </Link>
                       <div className="flex h-4 items-center justify-between gap-2 text-xs text-white/60">

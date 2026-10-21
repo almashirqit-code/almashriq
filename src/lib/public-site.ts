@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import type { Currency, VehicleStatus } from "./types";
 import { defaultMakeLogo } from "./brand-assets";
@@ -113,6 +114,25 @@ export async function listCars(f: Filters, size = PAGE_SIZE) {
   const cars = (data ?? []) as PublicCard[];
   return { cars, total: cars[0] ? Number(cars[0].total_count) : 0, page, error: error?.message ?? null };
 }
+
+/**
+ * A real photo (storage path) for each body type: the cover of the newest in-stock car of that type.
+ * Cached for 10 minutes so the home page doesn't repeat one lookup per body type on every visit.
+ */
+export const getBodyPhotos = unstable_cache(
+  async (bodies: string[]) => {
+    const rows = await Promise.all(
+      bodies.map(async (b) => {
+        const r = await listCars({ body: b, sort: "new" }, 1);
+        const c = r.cars[0];
+        return [b.toLowerCase(), c?.cover ?? c?.images?.[0] ?? null] as const;
+      })
+    );
+    return Object.fromEntries(rows.filter(([, p]) => p)) as Record<string, string>;
+  },
+  ["body-photos"],
+  { revalidate: 600 }
+);
 
 export type Facets = { make: [string, number][]; body: [string, number][]; fuel: [string, number][]; transmission: [string, number][]; steering: [string, number][]; total: number; available: number };
 

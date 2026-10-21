@@ -4,7 +4,7 @@ import { dicebear } from "@/lib/avatar";
 import Link from "next/link";
 import { Search, ShieldCheck, Ship, Banknote, ArrowRight, Send, Quote, FileCheck2, Globe, ChevronDown } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
-import { getCompany, getFacets, listCars, whatsapp, carTitle, priceLabel, getMakeTiles, getReviews, getPosts, assetUrl } from "@/lib/public-site";
+import { getCompany, getFacets, getBodyPhotos, listCars, whatsapp, carTitle, priceLabel, getMakeTiles, getReviews, getPosts, assetUrl } from "@/lib/public-site";
 import { CarCard } from "./car-card";
 import { HeroSlider } from "@/components/site/hero-slider";
 import { BodyIcon } from "@/components/site/body-icon";
@@ -39,17 +39,9 @@ export default async function PublicHome() {
     getPosts(3),
   ]);
 
-  // A real photo for each body type: the cover of the newest car of that type in stock.
+  // A real photo for each body type (newest car of that type in stock; cached for 10 minutes).
   const bodies = facets.body.filter(([b]) => !/^others?$/i.test(b)).slice(0, 16);
-  const bodyCovers = await Promise.all(
-    bodies.map(async ([b]) => {
-      const r = await listCars({ body: b, sort: "new" }, 1);
-      const c = r.cars[0];
-      const path = c?.cover ?? c?.images?.[0] ?? null;
-      return [b, path ? publicImageUrl(path) : null] as const;
-    })
-  );
-  const bodyPhoto = new Map(bodyCovers);
+  const bodyPhoto = await getBodyPhotos(bodies.map(([b]) => b));
 
   const available = latest.cars.filter((c) => c.status === "in_stock");
   const arrivals = (available.length >= 8 ? available : latest.cars).slice(0, 12);
@@ -192,7 +184,8 @@ export default async function PublicHome() {
         <SectionHead title="Search by body type" href="/cars" link="All stock" />
         <div className="hscroll sm:grid sm:grid-cols-3 sm:overflow-visible md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
           {bodies.map(([b, n]) => {
-            const photo = bodyPhoto.get(b);
+            const path = bodyPhoto[b.toLowerCase()];
+            const photo = path ? publicImageUrl(path) : null;
             return (
               <Link key={b} href={`/cars?body=${encodeURIComponent(b)}`} className="glass-lite glass-hover group w-40 overflow-hidden rounded-2xl sm:w-auto">
                 <div className="relative aspect-[4/3] bg-black/20">

@@ -31,7 +31,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
         {c.for_parts && !sold && !reserved && <span className="absolute bottom-2 left-2.5 rounded-lg bg-[var(--accent)] px-2 py-0.5 text-[11px] font-bold text-white">Parts car</span>}
       </Link>
       <div className="flex flex-1 flex-col p-3.5">
-        <Link href={href} className="line-clamp-1 text-[15px] font-extrabold text-white group-hover:text-[var(--accent-text)]">
+        <Link href={href} className="line-clamp-1 py-1 text-[15px] font-extrabold text-white group-hover:text-[var(--accent-text)]">
           {carTitle(c)}
         </Link>
         <div className="flex h-4 items-center justify-between gap-2 text-xs text-white/60">

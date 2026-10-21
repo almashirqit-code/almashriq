@@ -217,8 +217,29 @@ body:has(.site-glass) {
   color: #6ee7b7;
 }
 .site-glass .text-amber-700,
-.site-glass .text-amber-800 {
-  color: #fcd34d;
+.site-glass .text-amber-800,
+.site-glass .text-amber-900 {
+  color: #fde68a;
+}
+.site-glass .text-amber-600,
+.site-glass .text-amber-500 {
+  color: #fbbf24;
+}
+.site-glass .text-emerald-800 {
+  color: #6ee7b7;
+}
+.site-glass .ring-amber-200 {
+  --tw-ring-color: rgb(251 191 36 / 0.4);
+}
+/* solid navy chips/buttons from the old theme become translucent glass */
+.site-glass .bg-navy-700,
+.site-glass .bg-navy-800,
+.site-glass .bg-navy-900 {
+  background-color: rgb(255 255 255 / 0.13);
+}
+.site-glass .hover\:bg-navy-900:hover,
+.site-glass .hover\:bg-navy-800:hover {
+  background-color: rgb(255 255 255 / 0.2);
 }
 .site-glass .text-red-700,
 .site-glass .text-red-600 {
@@ -276,6 +297,11 @@ body:has(.site-glass) {
 }
 
 /* ---------- 5. helpers ---------- */
+/* Grid/flex cells may shrink below their content, so a swipe row inside one can never stretch the page sideways */
+.site-glass .grid > *,
+.site-glass main .flex > .min-w-0 {
+  min-width: 0;
+}
 /* Horizontal swipe row (make tiles, price chips…): bleeds to the screen edge on phones */
 .site-glass .hscroll {
   display: flex;

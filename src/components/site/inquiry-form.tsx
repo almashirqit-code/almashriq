@@ -4,7 +4,8 @@ import { useActionState, useEffect, useState } from "react";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { sendInquiry, type InquiryState } from "@/app/(site)/actions";
 
-const F = "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-navy-500 focus:ring-2 focus:ring-navy-500/15";
+// Colours, 16px text on phones and focus ring come from the glass theme (site.css).
+const F = "h-12 w-full rounded-xl px-3.5 text-sm";
 
 export function InquiryForm({ stockNo, defaultMessage = "", source = "website", compact = false }: { stockNo?: string; defaultMessage?: string; source?: string; compact?: boolean }) {
   const [state, action, pending] = useActionState<InquiryState, FormData>(sendInquiry, null);
@@ -13,8 +14,8 @@ export function InquiryForm({ stockNo, defaultMessage = "", source = "website", 
 
   if (state?.ok)
     return (
-      <div className="rounded-xl bg-emerald-50 p-5 text-emerald-900 ring-1 ring-emerald-200">
-        <CheckCircle2 className="mb-2 h-7 w-7 text-emerald-600" />
+      <div className="rounded-2xl bg-emerald-400/15 p-5 text-emerald-100 ring-1 ring-emerald-300/40" role="status">
+        <CheckCircle2 className="mb-2 h-7 w-7 text-emerald-300" />
         <p className="font-bold">{state.message}</p>
         {state.no ? <p className="mt-1 text-sm">Your reference: <b>INQ-{state.no}</b></p> : null}
       </div>
@@ -32,21 +33,21 @@ export function InquiryForm({ stockNo, defaultMessage = "", source = "website", 
       </div>
       <div className={`grid gap-2.5 ${compact ? "" : "sm:grid-cols-2"}`}>
         <input name="name" required placeholder="Your name *" autoComplete="name" className={F} aria-label="Your name" />
-        <input name="email" type="email" placeholder="Email" autoComplete="email" className={F} aria-label="Email" />
-        <input name="phone" placeholder="Phone / WhatsApp (or email)" autoComplete="tel" className={F} aria-label="Phone or WhatsApp" />
+        <input name="email" type="email" inputMode="email" placeholder="Email" autoComplete="email" className={F} aria-label="Email" />
+        <input name="phone" type="tel" inputMode="tel" placeholder="Phone / WhatsApp (or email)" autoComplete="tel" className={F} aria-label="Phone or WhatsApp" />
         <input name="country" placeholder="Country" autoComplete="country-name" className={F} aria-label="Country" />
       </div>
-      <input name="port" placeholder="Destination port (e.g. Mombasa, Durban, Jebel Ali)" className={F} aria-label="Destination port" />
-      <textarea name="message" rows={compact ? 3 : 5} defaultValue={defaultMessage} placeholder="Your message" className={F} aria-label="Message" />
+      <input name="port" placeholder="Destination port (e.g. Mombasa, Durban)" className={F} aria-label="Destination port" />
+      <textarea name="message" rows={compact ? 3 : 5} defaultValue={defaultMessage} placeholder="Your message" className="w-full rounded-xl px-3.5 py-3 text-sm" aria-label="Message" />
       {state && !state.ok && (
         <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-700">
           <AlertCircle className="h-4 w-4" /> {state.message}
         </p>
       )}
-      <button disabled={pending} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 py-3 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60">
+      <button disabled={pending} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-sm font-bold text-white shadow-lg shadow-red-900/40 hover:bg-red-600 disabled:opacity-60">
         <Send className="h-4 w-4" /> {pending ? "Sending…" : stockNo ? "Get a C&F quotation" : "Send inquiry"}
       </button>
-      <p className="text-center text-[11px] text-slate-400">We reply within 24 hours. Your details are only used to answer your inquiry.</p>
+      <p className="text-center text-[11px] text-white/50">We reply within 24 hours. Your details are only used to answer your inquiry.</p>
     </form>
   );
 }

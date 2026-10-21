@@ -10,6 +10,7 @@ import { Gallery } from "@/components/site/gallery";
 import { InquiryForm } from "@/components/site/inquiry-form";
 import { JsonLd } from "@/components/site/json-ld";
 import { ShipsFrom } from "@/components/site/ships-from";
+import { StickyContact } from "@/components/site/sticky-contact";
 
 export const revalidate = 60;
 
@@ -84,8 +85,8 @@ export default async function PartPage({ params }: { params: Promise<{ partNo: s
         <Gallery images={images} alt={`${p.name} ${p.part_no}`} stockNo={p.part_no} ribbon={p.status === "reserved" ? "reserved" : null} />
 
         <div className="space-y-4">
-          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <span className="inline-flex rounded bg-navy-800 px-2 py-0.5 text-xs font-bold text-white">Part no. {p.part_no}</span>
+          <div className="glass-lite rounded-3xl p-5">
+            <span className="inline-flex rounded-lg bg-white/10 px-2 py-0.5 text-xs font-bold text-white">Part no. {p.part_no}</span>
             <h1 className="mt-2 text-2xl font-black tracking-tight text-navy-950 sm:text-3xl">{p.name}</h1>
             {fits && <p className="text-slate-500">Fits {fits}</p>}
             <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
@@ -101,7 +102,7 @@ export default async function PartPage({ params }: { params: Promise<{ partNo: s
                 <div className="text-3xl font-black text-brand-600">{price ?? "Ask for price"}</div>
               </div>
               {wa && (
-                <a href={wa} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-600">
+                <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-white shadow-lg shadow-black/25 hover:brightness-110">
                   <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
               )}
@@ -109,16 +110,18 @@ export default async function PartPage({ params }: { params: Promise<{ partNo: s
             {p.description && <p className="mt-4 whitespace-pre-line text-sm leading-6 text-slate-700">{p.description}</p>}
           </div>
 
-          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <h2 className="mb-1 font-black text-navy-950">Get a quotation</h2>
+          <div id="quote" className="glass-lite scroll-mt-20 rounded-3xl p-5">
+            <h2 className="mb-1 font-black">Get a quotation</h2>
             <p className="mb-3 text-sm text-slate-500">Tell us your destination port and we will send a C&amp;F price.</p>
             <InquiryForm stockNo={p.part_no} source="part" compact defaultMessage={`Please send me a quotation for part ${p.part_no} — ${p.name}. My destination port is: `} />
           </div>
         </div>
       </div>
 
-      <section className="mt-6 rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-        <h2 className="border-b border-slate-100 px-5 py-3 font-black text-navy-950">Specifications</h2>
+      <StickyContact price={price} wa={wa} />
+
+      <section className="glass-lite mt-6 overflow-hidden rounded-3xl">
+        <h2 className="border-b border-white/10 px-5 py-3.5 font-black">Specifications</h2>
         <dl className="grid sm:grid-cols-2">
           {specs
             .filter(([, v]) => v !== null && v !== "")
