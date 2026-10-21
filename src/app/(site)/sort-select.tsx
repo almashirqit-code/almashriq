@@ -2,10 +2,18 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
-export function SortSelect({ value }: { value: string }) {
+export function SortSelect({ value, options = [] }: { value: string; options?: [string, string][] }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
+  const opts: [string, string][] = options.length
+    ? options
+    : [
+        ["new", "Newest first"],
+        ["price_asc", "Price: low to high"],
+        ["price_desc", "Price: high to low"],
+        ["year", "Year: newest"],
+      ];
   return (
     <select
       aria-label="Sort"
@@ -16,12 +24,13 @@ export function SortSelect({ value }: { value: string }) {
         p.delete("page");
         router.push(`${pathname}?${p}`);
       }}
-      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-navy-500"
+      className="h-11 min-w-0 shrink rounded-xl px-3 text-sm font-semibold"
     >
-      <option value="new">Newest first</option>
-      <option value="price_asc">Price: low to high</option>
-      <option value="price_desc">Price: high to low</option>
-      <option value="year">Year: newest</option>
+      {opts.map(([v, l]) => (
+        <option key={v} value={v}>
+          {l}
+        </option>
+      ))}
     </select>
   );
 }

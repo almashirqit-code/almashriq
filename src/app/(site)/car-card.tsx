@@ -12,61 +12,62 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
   const reserved = c.status === "reserved";
   const imgs = (c.images?.length ? c.images : c.cover ? [c.cover] : []).map(publicImageUrl);
   return (
-    <article className={`group flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-lg hover:ring-navy-300 ${sold ? "opacity-80" : ""}`}>
-      <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-slate-200">
+    <article className={`glass-lite glass-hover group flex flex-col overflow-hidden rounded-2xl ${sold ? "opacity-80" : ""}`}>
+      <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-black/20" aria-label={`${carTitle(c)} — ${c.stock_no}`}>
         <CardPhotos images={imgs} alt={`${carTitle(c)} ${c.stock_no}`} dim={sold} />
-        <span className="absolute left-2 top-2 rounded bg-navy-900/90 px-1.5 py-0.5 text-[11px] font-bold text-white">{c.stock_no}</span>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0b1020]/70 to-transparent" />
+        <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">{c.stock_no}</span>
         {c.image_count > 1 && (
-          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded bg-black/55 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+          <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
             <Camera className="h-3 w-3" />
             {c.image_count}
           </span>
         )}
         {(sold || reserved) && (
-          <span className={`absolute inset-x-0 bottom-0 py-1 text-center text-xs font-black uppercase tracking-widest text-white ${sold ? "bg-brand-600/95" : "bg-amber-500/95"}`}>
+          <span className={`absolute inset-x-0 bottom-0 py-1 text-center text-xs font-black uppercase tracking-widest text-white ${sold ? "bg-[var(--accent)]/95" : "bg-amber-500/95"}`}>
             {sold ? "Sold" : "Reserved"}
           </span>
         )}
-        {c.for_parts && !sold && !reserved && <span className="absolute bottom-2 left-2 rounded bg-brand-600 px-1.5 py-0.5 text-[11px] font-bold text-white">Parts car</span>}
+        {c.for_parts && !sold && !reserved && <span className="absolute bottom-2 left-2.5 rounded-lg bg-[var(--accent)] px-2 py-0.5 text-[11px] font-bold text-white">Parts car</span>}
       </Link>
-      <div className="flex flex-1 flex-col p-3">
-        <Link href={href} className="line-clamp-1 text-[14px] font-extrabold text-navy-900 hover:text-brand-700">
+      <div className="flex flex-1 flex-col p-3.5">
+        <Link href={href} className="line-clamp-1 text-[15px] font-extrabold text-white group-hover:text-[var(--accent-text)]">
           {carTitle(c)}
         </Link>
-        <div className="flex h-4 items-center justify-between gap-2 text-xs text-slate-500">
+        <div className="flex h-4 items-center justify-between gap-2 text-xs text-white/60">
           <span className="line-clamp-1">{c.grade ?? ""}</span>
-          <ShipsFrom code={c.branch} compact className="shrink-0 text-[11px] font-semibold text-navy-700" />
+          <ShipsFrom code={c.branch} compact className="shrink-0 text-[11px] font-semibold text-white/80" />
         </div>
-        <dl className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[11.5px] text-slate-600">
-          <div className="flex items-center gap-1 truncate">
-            <CalendarDays className="h-3 w-3 shrink-0 text-navy-400" />
+        <dl className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs text-white/75">
+          <div className="flex items-center gap-1.5 truncate">
+            <CalendarDays className="h-3.5 w-3.5 shrink-0 text-rose-300" />
             {c.year ?? "—"}
           </div>
-          <div className="flex items-center gap-1 truncate">
-            <Gauge className="h-3 w-3 shrink-0 text-navy-400" />
+          <div className="flex items-center gap-1.5 truncate">
+            <Gauge className="h-3.5 w-3.5 shrink-0 text-rose-300" />
             {c.mileage != null ? `${c.mileage.toLocaleString()} km` : "—"}
           </div>
-          <div className="flex items-center gap-1 truncate">
-            <Cog className="h-3 w-3 shrink-0 text-navy-400" />
+          <div className="flex items-center gap-1.5 truncate">
+            <Cog className="h-3.5 w-3.5 shrink-0 text-rose-300" />
             {[c.engine_cc ? `${c.engine_cc.toLocaleString()}cc` : null, c.transmission].filter(Boolean).join(" ") || "—"}
           </div>
-          <div className="flex items-center gap-1 truncate">
-            <Fuel className="h-3 w-3 shrink-0 text-navy-400" />
+          <div className="flex items-center gap-1.5 truncate">
+            <Fuel className="h-3.5 w-3.5 shrink-0 text-rose-300" />
             {c.fuel ?? "—"}
           </div>
         </dl>
-        <div className="mt-auto flex items-end justify-between gap-2 border-t border-slate-100 pt-2.5 mt-3">
+        <div className="mt-3 flex items-end justify-between gap-2 border-t border-white/10 pt-3">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">FOB price</div>
-            {price ? <div className="text-lg font-black leading-tight text-brand-600">{price}</div> : <div className="text-sm font-bold text-navy-800">Ask for price</div>}
+            <div className="text-[10px] font-bold uppercase tracking-wider text-white/45">FOB price</div>
+            {price ? <div className="text-xl font-black leading-tight text-white">{price}</div> : <div className="text-sm font-bold text-white/85">Ask for price</div>}
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             {wa && !sold && (
-              <a href={wa} target="_blank" rel="noreferrer" className="rounded-lg bg-emerald-50 p-2 text-emerald-600 ring-1 ring-emerald-200 hover:bg-emerald-100" aria-label={`WhatsApp about ${c.stock_no}`}>
-                <MessageCircle className="h-4 w-4" />
+              <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-[#4ADE80] ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${c.stock_no}`}>
+                <MessageCircle className="h-5 w-5" />
               </a>
             )}
-            <Link href={href} className="rounded-lg bg-navy-800 px-3 py-2 text-xs font-bold text-white hover:bg-navy-900">
+            <Link href={href} className="inline-flex h-11 items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white shadow-lg shadow-red-900/30 hover:bg-red-600">
               Details
             </Link>
           </div>
