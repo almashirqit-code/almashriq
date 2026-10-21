@@ -23,6 +23,7 @@ import {
   BookmarkCheck,
   Handshake,
   Wrench,
+  Tractor,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -52,6 +53,7 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
       { href: "/admin/stock", label: "nav_stock", icon: Car, grad: "from-rose-500 to-brand-600", idle: "text-rose-300" },
       { href: "/admin/third-party", label: "nav_third_party", icon: Handshake, grad: "from-cyan-400 to-sky-600", idle: "text-cyan-300" },
       { href: "/admin/parts", label: "nav_parts", icon: Wrench, grad: "from-teal-400 to-cyan-600", idle: "text-teal-300" },
+      { href: "/admin/machinery", label: "nav_machinery", icon: Tractor, grad: "from-yellow-400 to-amber-600", idle: "text-yellow-300" },
       { href: "/admin/stock/import", label: "nav_import", icon: Upload, grad: "from-amber-400 to-orange-500", idle: "text-amber-300", roles: ["admin", "manager"] },
     ],
   },

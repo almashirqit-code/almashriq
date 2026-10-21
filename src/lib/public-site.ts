@@ -254,6 +254,76 @@ export const getPartFacets = cache(async () => {
   return out;
 });
 
+export type PublicMachineCard = {
+  id: string;
+  stock_no: string;
+  category: string | null;
+  make: string;
+  model: string;
+  year: number | null;
+  hours: number | null;
+  operating_weight_kg: number | null;
+  engine_power_hp: number | null;
+  condition: "new" | "used" | "rebuilt";
+  price: number | null;
+  price_currency: Currency;
+  status: VehicleStatus;
+  location: string | null;
+  branch: string;
+  created_at: string;
+  total_count: number;
+  cover: string | null;
+  image_count: number;
+  images: string[];
+};
+export type MachineFilters = { q?: string; category?: string; make?: string; branch?: string; min_price?: string; max_price?: string; min_year?: string; max_year?: string; sort?: string; page?: string };
+
+export async function listMachinery(f: MachineFilters, size = PAGE_SIZE) {
+  const page = Math.max(1, Number(f.page) || 1);
+  const { data, error } = await anon().rpc("public_machinery", {
+    p_q: f.q?.trim() || null,
+    p_category: f.category || null,
+    p_make: f.make || null,
+    p_branch: f.branch || null,
+    p_min_price: n(f.min_price),
+    p_max_price: n(f.max_price),
+    p_min_year: n(f.min_year),
+    p_max_year: n(f.max_year),
+    p_sort: f.sort || "new",
+    p_limit: size,
+    p_offset: (page - 1) * size,
+  });
+  const machines = (data ?? []) as PublicMachineCard[];
+  return { machines, total: machines[0] ? Number(machines[0].total_count) : 0, page, error: error?.message ?? null };
+}
+
+export type PublicMachine = Omit<PublicMachineCard, "total_count" | "cover" | "image_count" | "operating_weight_kg" | "engine_power_hp"> & {
+  serial_no: string | null;
+  operating_weight_kg: number | null;
+  engine_power_hp: number | null;
+  bucket_capacity_m3: number | null;
+  attachments: string | null;
+  description: string | null;
+  updated_at: string;
+};
+export const getMachine = cache(async (key: string): Promise<PublicMachine | null> => {
+  const { data } = await anon().rpc("public_machine", { p_key: key });
+  return ((data ?? [])[0] as PublicMachine) ?? null;
+});
+
+export const getMachineryFacets = cache(async () => {
+  const { data } = await anon().rpc("public_machinery_facets");
+  const out = { category: [] as [string, number][], make: [] as [string, number][], total: 0, available: 0 };
+  for (const r of (data ?? []) as { kind: string; value: string | null; n: number }[]) {
+    if (r.kind === "total") out.total = Number(r.n);
+    else if (r.kind === "available") out.available = Number(r.n);
+    else if (r.value && (r.kind === "category" || r.kind === "make")) out[r.kind].push([r.value, Number(r.n)]);
+  }
+  out.category.sort((a, b) => b[1] - a[1]);
+  out.make.sort((a, b) => b[1] - a[1]);
+  return out;
+});
+
 export async function getSitemapRows() {
   const { data } = await anon().rpc("public_sitemap");
   return (data ?? []) as { kind: "car" | "post" | "make" | "part" | "machine"; key: string; updated: string }[];
