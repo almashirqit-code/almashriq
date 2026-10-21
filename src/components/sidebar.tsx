@@ -38,7 +38,11 @@ type Item = {
   icon: React.ElementType;
   roles?: Role[];
   newTab?: boolean;
+  /** Sub-menu shown under the item. */
+  children?: { href: string; label: DictKey }[];
 };
+
+const DOC_SUBPAGES = ["/admin/invoices/quotations", "/admin/invoices/auction-deposits"];
 
 const GROUPS: { label: DictKey; items: Item[] }[] = [
   {
@@ -61,7 +65,16 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
       { href: "/admin/inquiries", label: "nav_inquiries", icon: Inbox },
       { href: "/admin/customers", label: "nav_customers", icon: Users },
       { href: "/admin/reservations", label: "nav_reservations", icon: BookmarkCheck },
-      { href: "/admin/invoices", label: "nav_invoices", icon: FileText },
+      {
+        href: "/admin/invoices",
+        label: "nav_invoices",
+        icon: FileText,
+        children: [
+          { href: "/admin/invoices", label: "doc_invoice" },
+          { href: "/admin/invoices/quotations", label: "doc_quotation" },
+          { href: "/admin/invoices/auction-deposits", label: "doc_auction_deposit" },
+        ],
+      },
       { href: "/admin/remittances", label: "nav_remittances", icon: Banknote },
     ],
   },
@@ -110,6 +123,9 @@ export function Sidebar({
     if (href === "/admin/stock") return pathname === "/admin/stock" || (pathname.startsWith("/admin/stock/") && !pathname.startsWith("/admin/stock/import"));
     return pathname.startsWith(href);
   };
+  // Invoices sub-menu: quotations / auction deposits have their own pages; everything else under /admin/invoices is "Invoices".
+  const isSubActive = (href: string) =>
+    href === "/admin/invoices" ? pathname.startsWith(href) && !DOC_SUBPAGES.some((p) => pathname.startsWith(p)) : pathname.startsWith(href);
 
 
   const nav = (
@@ -167,6 +183,25 @@ export function Sidebar({
                         {i.newTab && <ExternalLink className="h-3.5 w-3.5 text-slate-500" />}
                         {active && <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_#ec3a40]" />}
                       </Link>
+                      {i.children && (
+                        <ul className="ml-[1.6rem] mt-0.5 space-y-0.5 border-l border-white/10 pl-3">
+                          {i.children.map((c) => {
+                            const on = isSubActive(c.href);
+                            return (
+                              <li key={c.href}>
+                                <Link
+                                  href={c.href}
+                                  onClick={() => setOpen(false)}
+                                  aria-current={on ? "page" : undefined}
+                                  className={`block rounded-lg px-2.5 py-1.5 text-[13px] transition ${on ? "bg-white/[0.08] font-semibold text-white" : "text-slate-400 hover:bg-white/[0.05] hover:text-white"}`}
+                                >
+                                  {t(c.label)}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
                     </li>
                   );
                 })}

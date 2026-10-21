@@ -20,10 +20,16 @@ function formToRaw(formData: FormData) {
 
 export async function createVehicle(_prev: FormState, formData: FormData): Promise<FormState> {
   await assertRole(["admin", "manager"]);
-  const { data, errors } = parseVehicle(formToRaw(formData));
+  const supabase = await createClient();
+  const raw = formToRaw(formData);
+  // Stock no. left blank → next automatic number (AM-…).
+  if (!String(raw.stock_no ?? "").trim()) {
+    const { data: no } = await supabase.rpc("next_ref", { p_kind: "vehicle" });
+    if (no) raw.stock_no = no;
+  }
+  const { data, errors } = parseVehicle(raw);
   if (errors.length) return { error: errors.join(", ") };
 
-  const supabase = await createClient();
   const { data: row, error } = await supabase.from("vehicles").insert(data).select("id").single();
   if (error) return { error: error.code === "23505" ? "Stock no. or chassis no. already exists" : error.message };
 
@@ -120,7 +126,8 @@ export async function makeAvailable(id: string): Promise<MakeAvailableResult> {
     .from("invoice_items")
     .select("invoice_id, invoices!inner(id, invoice_no, status, amount_paid)")
     .eq("vehicle_id", id)
-    .neq("invoices.status", "cancelled");
+    .neq("invoices.status", "cancelled")
+    .eq("invoices.doc_type", "invoice");
   type Inv = { id: string; invoice_no: string; status: string; amount_paid: number };
   const invoices: Inv[] = [
     ...new Map<string, Inv>((items ?? []).map((i: { invoice_id: string; invoices: unknown }) => [i.invoice_id, i.invoices as Inv])).values(),

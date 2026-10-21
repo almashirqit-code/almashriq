@@ -4,14 +4,17 @@ import type { InvoicePayload } from "../actions";
 import { PageHeader } from "@/components/ui";
 import { InvoiceEditor } from "../invoice-editor";
 import { loadEditorData } from "../data";
+import { DOC_LIST_PATH, DOC_TYPES, type DocType } from "@/lib/types";
+import type { DictKey } from "@/lib/i18n/dictionaries";
 
 export default async function NewInvoicePage({
   searchParams,
 }: {
-  searchParams: Promise<{ customer?: string; vehicle?: string; reservation?: string }>;
+  searchParams: Promise<{ customer?: string; vehicle?: string; reservation?: string; type?: string }>;
 }) {
   const { t } = await getT();
-  const { customer, vehicle, reservation } = await searchParams;
+  const { customer, vehicle, reservation, type } = await searchParams;
+  const docType: DocType = DOC_TYPES.includes(type as DocType) ? (type as DocType) : "invoice";
 
   // Opened from a reservation: carry its customer, terms, freight and price over.
   let initial: Partial<InvoicePayload> = { customer_id: customer ?? "" };
@@ -41,8 +44,8 @@ export default async function NewInvoicePage({
   const data = await loadEditorData(addVehicleId ? [addVehicleId] : []);
   return (
     <>
-      <PageHeader title={t("inv_new")} back={{ href: "/admin/invoices", label: t("inv_title") }} />
-      <InvoiceEditor {...data} initial={initial} addVehicleId={addVehicleId} addVehiclePrice={addVehiclePrice} />
+      <PageHeader title={t(`doc_new_${docType}` as DictKey)} back={{ href: DOC_LIST_PATH[docType], label: t(`doc_${docType}` as DictKey) }} />
+      <InvoiceEditor {...data} docType={docType} initial={initial} addVehicleId={addVehicleId} addVehiclePrice={addVehiclePrice} />
     </>
   );
 }

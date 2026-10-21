@@ -190,8 +190,25 @@ export interface Invoice {
   total: number;
   amount_paid: number;
   created_at: string;
+  doc_type: DocType;
+  /** Quotations only. */
+  valid_until: string | null;
+  /** Invoice created from this quotation. */
+  converted_from: string | null;
+  /** Printed as a QR code; scanning opens /verify/<token>. */
+  verify_token: string;
   customers?: Pick<Customer, "id" | "name" | "company" | "country"> | null;
 }
+
+/** invoice = sales invoice · quotation = QT-…, no payments · auction_deposit = AD-…, car still at auction, deposit only. */
+export type DocType = "invoice" | "quotation" | "auction_deposit";
+export const DOC_TYPES: DocType[] = ["invoice", "quotation", "auction_deposit"];
+/** Admin list page per document type (each is a sub-page of Invoices). */
+export const DOC_LIST_PATH: Record<DocType, string> = {
+  invoice: "/admin/invoices",
+  quotation: "/admin/invoices/quotations",
+  auction_deposit: "/admin/invoices/auction-deposits",
+};
 
 export interface InvoiceItem {
   id: string;

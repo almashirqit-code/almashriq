@@ -27,8 +27,9 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
     supabase.from("vehicle_images").select("*").eq("vehicle_id", id).order("sort_order").order("created_at"),
     supabase
       .from("invoice_items")
-      .select("amount, invoices(id, invoice_no, status, currency, issue_date, exchange_rate, customers(name))")
-      .eq("vehicle_id", id),
+      .select("amount, invoices!inner(id, invoice_no, status, currency, issue_date, exchange_rate, customers(name))")
+      .eq("vehicle_id", id)
+      .eq("invoices.doc_type", "invoice"),
     supabase.from("settings").select("exchange_rates").single(),
     supabase
       .from("reservations")

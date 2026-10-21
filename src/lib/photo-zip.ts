@@ -2,7 +2,7 @@
 
 import type JSZipType from "jszip";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { IMAGE_EXT, resizeImage } from "./images";
+import { IMAGE_EXT, prepareListingPhoto } from "./images";
 
 /**
  * Photos ZIP helpers shared by the vehicle, part and machinery bulk importers.
@@ -75,7 +75,7 @@ export const MACHINE_PHOTOS: PhotoTable = { table: "machinery_images", fk: "mach
 /** Uploads one photo to the vehicle-images bucket and records it in the given images table. */
 export async function uploadStockPhoto(supabase: SupabaseClient, t: PhotoTable, ownerId: string, file: Blob, name: string, sortOrder: number, resize = true) {
   let body: Blob = file.type ? file : new Blob([file], { type: mimeFor(name) });
-  if (resize) body = await resizeImage(body);
+  if (resize) body = await prepareListingPhoto(body);
   const ext = body.type === "image/png" ? "png" : body.type === "image/webp" ? "webp" : body.type === "image/gif" ? "gif" : "jpg";
   const path = `${t.folder}/${ownerId}/${Date.now()}-${sortOrder}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
   const up = await supabase.storage.from("vehicle-images").upload(path, body, { contentType: body.type || mimeFor(name), cacheControl: "31536000" });

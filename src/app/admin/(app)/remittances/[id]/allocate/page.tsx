@@ -29,6 +29,7 @@ export default async function AllocatePage({ params }: { params: Promise<{ id: s
       .select("vehicle_id, amount, invoices!inner(id, invoice_no, customer_id, currency, exchange_rate, status)")
       .not("vehicle_id", "is", null)
       .neq("invoices.status", "cancelled")
+      .neq("invoices.doc_type", "quotation")
       .limit(10000),
     supabase.from("remittance_allocations").select("vehicle_id, amount, remittances(currency, exchange_rate)").limit(20000),
   ]);

@@ -151,6 +151,7 @@ export async function allocateRemittance(
       .select("invoice_id, invoices!inner(id, invoice_no, currency, exchange_rate, status)")
       .eq("vehicle_id", r.vehicle_id)
       .in("invoices.status", ["issued", "partially_paid", "paid"])
+      .neq("invoices.doc_type", "quotation")
       .limit(1);
     const inv = items?.[0]?.invoices as unknown as
       | { id: string; invoice_no: string; currency: Currency; exchange_rate: number; status: string }

@@ -7,7 +7,7 @@ import { CheckCircle2, FileSpreadsheet, FileArchive, Download, AlertTriangle, Lo
 import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n/client";
 import { normalizeHeader, parseVehicle, TEMPLATE_HEADERS, TEMPLATE_SAMPLE, type VehicleInput } from "@/lib/vehicle";
-import { pool, resizeImage } from "@/lib/images";
+import { pool, prepareListingPhoto } from "@/lib/images";
 import { groupZipImages, mimeFor, readZipImages, type ZipFile } from "@/lib/photo-zip";
 import type { Currency, VehicleField } from "@/lib/types";
 import { DEFAULT_BRANCHES, jpyRate } from "@/lib/branches";
@@ -252,7 +252,7 @@ export function Importer() {
       try {
         const raw = await job.file.entry.async("blob");
         let body: Blob = new Blob([raw], { type: mimeFor(job.file.name) });
-        if (resize) body = await resizeImage(body);
+        if (resize) body = await prepareListingPhoto(body);
         const ext = body.type === "image/png" ? "png" : body.type === "image/webp" ? "webp" : body.type === "image/gif" ? "gif" : "jpg";
         const path = `vehicles/${job.vehicleId}/${Date.now()}-${job.order}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
         const up = await supabase.storage.from("vehicle-images").upload(path, body, { contentType: body.type, cacheControl: "31536000" });
