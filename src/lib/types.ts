@@ -145,6 +145,7 @@ export interface VehicleImage {
 
 export interface Invoice {
   id: string;
+  show_consignee?: boolean;
   invoice_no: string;
   customer_id: string;
   issue_date: string;
@@ -182,7 +183,11 @@ export interface InvoiceItem {
   unit_price: number;
   amount: number;
   sort_order: number;
+  ext_vehicle?: ExtVehicle | null;
 }
+
+/** A vehicle typed in by hand on an invoice (not in our stock). */
+export type ExtVehicle = { make: string; model: string; grade?: string; year?: string; chassis_no?: string; engine_cc?: string; color?: string };
 
 export interface Payment {
   id: string;

@@ -119,3 +119,38 @@ export async function deleteCustomer(id: string) {
   revalidatePath("/admin/customers");
   redirect("/admin/customers");
 }
+
+export type QuickCustomer = {
+  id: string;
+  name: string;
+  company: string | null;
+  country: string | null;
+  port: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  consignee_name: string | null;
+  consignee_address: string | null;
+  consignee_phone: string | null;
+  notify_party: string | null;
+};
+
+/** Creates a customer from the invoice editor without leaving the page. */
+export async function quickCreateCustomer(input: Record<string, string>): Promise<{ customer?: QuickCustomer; error?: string }> {
+  const profile = await getProfile();
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(input)) fd.set(k, v ?? "");
+  const data = read(fd);
+  if (profile.role === "sales") data.assigned_to = profile.id;
+  const invalid = await validate(data);
+  if (invalid) return { error: invalid };
+  const supabase = await createClient();
+  const { data: row, error } = await supabase
+    .from("customers")
+    .insert({ ...data, created_by: profile.id })
+    .select("id, name, company, country, port, address, phone, email, consignee_name, consignee_address, consignee_phone, notify_party")
+    .single();
+  if (error) return { error: mapDbError(error) };
+  revalidatePath("/admin/customers");
+  return { customer: row as QuickCustomer };
+}

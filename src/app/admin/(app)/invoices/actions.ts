@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole, getProfile } from "@/lib/auth";
 import { round } from "@/lib/format";
-import { CURRENCIES, INCOTERMS, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type ShipmentType } from "@/lib/types";
+import { CURRENCIES, INCOTERMS, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type ExtVehicle, type ShipmentType } from "@/lib/types";
 
 export type InvoicePayload = {
   id?: string;
@@ -27,7 +27,8 @@ export type InvoicePayload = {
   insurance: number;
   shipment_type: ShipmentType | null;
   tax_rate: number;
-  items: { vehicle_id: string | null; description: string; quantity: number; unit_price: number }[];
+  items: { vehicle_id: string | null; description: string; quantity: number; unit_price: number; ext_vehicle?: ExtVehicle | null }[];
+  show_consignee?: boolean;
   issue: boolean;
   /** When created from a reservation, that reservation is marked invoiced. */
   reservation_id?: string | null;
@@ -42,6 +43,7 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
   const items = p.items
     .map((it) => ({
       vehicle_id: it.vehicle_id || null,
+      ext_vehicle: !it.vehicle_id && it.ext_vehicle && (it.ext_vehicle.make || it.ext_vehicle.model) ? cleanExt(it.ext_vehicle) : null,
       description: String(it.description || "").trim(),
       quantity: Number(it.quantity) || 0,
       unit_price: Number(it.unit_price) || 0,
@@ -110,6 +112,7 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
     consignee_address: p.consignee_address?.trim() || null,
     consignee_phone: p.consignee_phone?.trim() || null,
     notify_party: p.notify_party?.trim() || null,
+    show_consignee: !!p.show_consignee,
     notes: p.notes || null,
     subtotal,
     discount,
@@ -161,6 +164,15 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
   revalidatePath("/admin/stock");
   revalidatePath("/admin");
   return { id };
+}
+
+function cleanExt(e: ExtVehicle): ExtVehicle {
+  const out: Record<string, string> = {};
+  for (const k of ["make", "model", "grade", "year", "chassis_no", "engine_cc", "color"] as const) {
+    const v = String(e[k] ?? "").trim().slice(0, 80);
+    if (v) out[k] = v;
+  }
+  return { make: out.make ?? "", model: out.model ?? "", ...out } as ExtVehicle;
 }
 
 export async function issueInvoice(id: string) {

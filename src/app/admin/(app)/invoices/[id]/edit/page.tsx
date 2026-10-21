@@ -39,6 +39,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
           consignee_address: invoice.consignee_address,
           consignee_phone: invoice.consignee_phone,
           notify_party: invoice.notify_party,
+          show_consignee: !!invoice.show_consignee,
           notes: invoice.notes,
           discount: Number(invoice.discount),
           freight: Number(invoice.freight ?? 0),
@@ -50,6 +51,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
             description: l.description,
             quantity: Number(l.quantity),
             unit_price: Number(l.unit_price),
+            ext_vehicle: l.ext_vehicle ?? null,
           })),
         }}
       />

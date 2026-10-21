@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Car, Plus, Trash2, Search } from "lucide-react";
+import { Car, Trash2, Search, UserPlus, X, PenLine } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { convert, money, round, vehicleTitle, num } from "@/lib/format";
-import { CURRENCIES, INCOTERMS, INCOTERM_LABEL, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type Customer, type ShipmentType, type Vehicle } from "@/lib/types";
+import { CURRENCIES, INCOTERMS, INCOTERM_LABEL, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type Customer, type ExtVehicle, type ShipmentType, type Vehicle } from "@/lib/types";
+import { quickCreateCustomer } from "../customers/actions";
 import { saveInvoice, type InvoicePayload } from "./actions";
 
 export type VehicleOption = Pick<
@@ -15,13 +15,24 @@ export type VehicleOption = Pick<
   "id" | "stock_no" | "chassis_no" | "make" | "model" | "grade" | "year" | "color" | "mileage" | "engine_cc" | "transmission" | "fuel" | "price" | "price_currency" | "status"
 > & { port?: { name: string; shipment_modes: string[] } | null };
 
-type Line = { key: string; vehicle_id: string | null; description: string; quantity: number; unit_price: number };
+type Line = { key: string; vehicle_id: string | null; description: string; quantity: number; unit_price: number; ext_vehicle?: ExtVehicle | null };
+
+const EXT_FIELDS: { k: keyof ExtVehicle; label: string; w: string }[] = [
+  { k: "make", label: "Make *", w: "w-28" },
+  { k: "model", label: "Model *", w: "w-32" },
+  { k: "grade", label: "Grade", w: "w-28" },
+  { k: "year", label: "Year", w: "w-20" },
+  { k: "chassis_no", label: "Chassis no.", w: "w-40" },
+  { k: "engine_cc", label: "Engine cc", w: "w-24" },
+  { k: "color", label: "Color", w: "w-24" },
+];
+const extTitle = (e: ExtVehicle) => [e.year, e.make, e.model, e.grade].filter(Boolean).join(" ");
 
 let seq = 0;
 const newKey = () => `l${++seq}`;
 
 export function InvoiceEditor({
-  customers,
+  customers: initialCustomers,
   vehicles,
   rates,
   defaults,
@@ -44,6 +55,11 @@ export function InvoiceEditor({
 }) {
   const { t, locale } = useT();
   const router = useRouter();
+  const [customers, setCustomers] = useState(initialCustomers);
+  const [newCust, setNewCust] = useState<Record<string, string> | null>(null);
+  const [custErr, setCustErr] = useState("");
+  const [custSaving, setCustSaving] = useState(false);
+  const [showConsignee, setShowConsignee] = useState<boolean>(initial?.show_consignee ?? false);
   const [pending, start] = useTransition();
   const [error, setError] = useState("");
 
@@ -139,6 +155,35 @@ export function InvoiceEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addVehicleId]);
 
+  function addManualVehicle() {
+    setLines((ls) => [...ls, { key: newKey(), vehicle_id: null, description: "", quantity: 1, unit_price: 0, ext_vehicle: { make: "", model: "" } }]);
+  }
+
+  function updateExt(key: string, patch: Partial<ExtVehicle>) {
+    setLines((ls) =>
+      ls.map((l) => {
+        if (l.key !== key || !l.ext_vehicle) return l;
+        const ext = { ...l.ext_vehicle, ...patch };
+        return { ...l, ext_vehicle: ext, description: extTitle(ext) || l.description };
+      })
+    );
+  }
+
+  async function saveNewCustomer() {
+    if (!newCust) return;
+    setCustErr("");
+    setCustSaving(true);
+    const res = await quickCreateCustomer(newCust);
+    setCustSaving(false);
+    if (res.error) return setCustErr(res.error.startsWith("c_") ? t(res.error as DictKey) : res.error);
+    const c = res.customer!;
+    setCustomers((cs) => [c, ...cs]);
+    setCustomerId(c.id);
+    if (c.port && !pod) setPod(c.port);
+    setConsignee(consigneeFrom(c));
+    setNewCust(null);
+  }
+
   function addCharge(desc = "") {
     setLines((ls) => [...ls, { key: newKey(), vehicle_id: null, description: desc, quantity: 1, unit_price: 0 }]);
   }
@@ -178,6 +223,8 @@ export function InvoiceEditor({
     setError("");
     if (!customerId) return setError(t("inv_no_customer"));
     if (!lines.some((l) => l.description.trim())) return setError(t("inv_no_items"));
+    const badExt = lines.find((l) => l.ext_vehicle && (!l.ext_vehicle.make.trim() || !l.ext_vehicle.model.trim()));
+    if (badExt) return setError("Enter the make and model for each vehicle that is not in stock.");
     if (roroBlocked.length) return setError(t("m_roro_blocked", { stock: roroBlocked[0].stock_no, port: roroBlocked[0].port!.name }));
     const payload: InvoicePayload = {
       id: initial?.id,
@@ -193,13 +240,14 @@ export function InvoiceEditor({
       consignee_address: consignee.address || null,
       consignee_phone: consignee.phone || null,
       notify_party: consignee.notify || null,
+      show_consignee: showConsignee,
       notes: notes || null,
       discount: Number(discount) || 0,
       freight: freightAmt,
       insurance: insuranceAmt,
       shipment_type: shipmentType || null,
       tax_rate: Number(taxRate) || 0,
-      items: lines.map(({ vehicle_id, description, quantity, unit_price }) => ({ vehicle_id, description, quantity, unit_price })),
+      items: lines.map(({ vehicle_id, description, quantity, unit_price, ext_vehicle }) => ({ vehicle_id, description, quantity, unit_price, ext_vehicle: ext_vehicle ?? null })),
       issue,
       reservation_id: initial?.reservation_id ?? null,
     };
@@ -238,10 +286,60 @@ export function InvoiceEditor({
                   </option>
                 ))}
               </select>
-              <Link href="/admin/customers/new?return_to=/invoices/new" className="btn-secondary shrink-0" title={t("cust_new")}>
-                <Plus className="h-4 w-4" />
-              </Link>
+              <button
+                type="button"
+                className="btn-secondary shrink-0"
+                title={t("cust_new")}
+                onClick={() => setNewCust(newCust ? null : { name: "", company: "", country: "", port: "", phone: "", email: "", address: "" })}
+              >
+                <UserPlus className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("cust_new")}</span>
+              </button>
             </div>
+            {newCust && (
+              <div className="mt-3 rounded-xl border border-brand-200 bg-brand-50/40 p-3">
+                <div className="mb-2 flex items-center justify-between text-xs font-semibold text-brand-800">
+                  {t("cust_new")}
+                  <button type="button" onClick={() => setNewCust(null)} className="rounded p-1 text-slate-400 hover:bg-white" aria-label="Close">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {(
+                    [
+                      ["name", `${t("c_name")} *`],
+                      ["company", t("c_company")],
+                      ["phone", t("c_phone")],
+                      ["email", t("c_email")],
+                      ["country", t("c_country")],
+                      ["port", t("c_port")],
+                    ] as [string, string][]
+                  ).map(([k, label]) => (
+                    <input
+                      key={k}
+                      className="input"
+                      placeholder={label}
+                      value={newCust[k] ?? ""}
+                      onChange={(e) => setNewCust({ ...newCust, [k]: e.target.value })}
+                    />
+                  ))}
+                  <textarea
+                    className="input sm:col-span-2"
+                    rows={2}
+                    placeholder={t("c_address")}
+                    value={newCust.address ?? ""}
+                    onChange={(e) => setNewCust({ ...newCust, address: e.target.value })}
+                  />
+                </div>
+                <div className="mt-2 flex items-center gap-3">
+                  <button type="button" className="btn-primary py-1.5" disabled={custSaving} onClick={saveNewCustomer}>
+                    {custSaving ? t("saving") : t("save")}
+                  </button>
+                  <span className="text-xs text-slate-500">{t("c_contact_required")}</span>
+                </div>
+                {custErr && <p className="mt-2 text-xs font-semibold text-red-600">{custErr}</p>}
+              </div>
+            )}
             {customer && <p className="mt-1 text-xs text-slate-500">{[customer.company, customer.country, customer.port].filter(Boolean).join(" · ")}</p>}
           </div>
           <div>
@@ -311,8 +409,17 @@ export function InvoiceEditor({
 
       <section className="card">
         <div className="border-b border-slate-100 px-5 py-3.5">
-          <h2 className="text-sm font-semibold">{t("inv_consignee")}</h2>
-          <p className="mt-0.5 text-xs text-slate-500">{t("inv_consignee_help")}</p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold">{t("inv_consignee")}</h2>
+              <p className="mt-0.5 text-xs text-slate-500">{t("inv_consignee_help")}</p>
+            </div>
+            <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+              <input type="checkbox" className="h-4 w-4 rounded border-slate-300" checked={showConsignee} onChange={(e) => setShowConsignee(e.target.checked)} />
+              Show consignee on the printed invoice
+            </label>
+          </div>
+          {!showConsignee && <p className="mt-1 text-xs text-amber-700">Hidden — the invoice prints Bill To only. The consignee is still saved for shipping documents.</p>}
         </div>
         <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2">
           <div>
@@ -351,6 +458,10 @@ export function InvoiceEditor({
             <button type="button" className="btn-secondary" onClick={() => setShowSearch((s) => !s)}>
               <Car className="h-4 w-4" />
               {t("inv_add_vehicle")}
+            </button>
+            <button type="button" className="btn-secondary" onClick={addManualVehicle}>
+              <PenLine className="h-4 w-4" />
+              Vehicle not in stock
             </button>
             <select
               className="input w-auto"
@@ -431,6 +542,24 @@ export function InvoiceEditor({
                       {v && (
                         <div className="mb-1 inline-flex items-center gap-1 rounded bg-brand-50 px-1.5 py-0.5 text-[11px] font-medium text-brand-700">
                           <Car className="h-3 w-3" /> {v.stock_no}
+                        </div>
+                      )}
+                      {l.ext_vehicle && (
+                        <div className="mb-2">
+                          <div className="mb-1 inline-flex items-center gap-1 rounded bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-800">
+                            <PenLine className="h-3 w-3" /> Not in stock
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {EXT_FIELDS.map((f) => (
+                              <input
+                                key={f.k}
+                                className={`input py-1.5 text-xs ${f.w}`}
+                                placeholder={f.label}
+                                value={(l.ext_vehicle?.[f.k] as string) ?? ""}
+                                onChange={(e) => updateExt(l.key, { [f.k]: e.target.value })}
+                              />
+                            ))}
+                          </div>
                         </div>
                       )}
                       <textarea

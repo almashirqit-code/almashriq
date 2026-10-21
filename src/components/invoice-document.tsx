@@ -136,7 +136,7 @@ export function InvoiceDocument({
         )}
 
         {/* Parties + shipment */}
-        <div className="mt-4 grid grid-cols-3 gap-3">
+        <div className={`mt-4 grid gap-3 ${invoice.show_consignee ? "grid-cols-3" : "grid-cols-2"}`}>
           <section className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
             <Label>{t("inv_bill_to")}</Label>
             {customer && (
@@ -157,6 +157,7 @@ export function InvoiceDocument({
             )}
           </section>
 
+          {invoice.show_consignee && (
           <section className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
             <Label>{t("inv_consignee")}</Label>
             {invoice.consignee_name || invoice.consignee_address ? (
@@ -175,6 +176,7 @@ export function InvoiceDocument({
               </div>
             )}
           </section>
+          )}
 
           <section className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5">
             <Label>{t("inv_shipment")}</Label>
@@ -218,7 +220,10 @@ export function InvoiceDocument({
           </thead>
           <tbody>
             {items.map((it, i) => {
-              const v = it.vehicles;
+              const e = it.ext_vehicle;
+              const v = it.vehicles ?? (e && (e.make || e.model)
+                ? { stock_no: "", make: e.make, model: e.model, grade: e.grade ?? null, chassis_no: e.chassis_no ?? null, engine_cc: e.engine_cc ? Number(e.engine_cc) || null : null, color: e.color ?? null, year: e.year ? Number(e.year) || null : null }
+                : null);
               return (
                 <tr key={it.id} className="border-b border-slate-200 align-top even:bg-slate-50/70 [break-inside:avoid]">
                   <td className="px-2 py-2 text-slate-500">{i + 1}</td>
