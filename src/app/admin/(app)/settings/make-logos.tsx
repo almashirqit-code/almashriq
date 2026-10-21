@@ -9,14 +9,14 @@ import { saveMakeLogo, type MakeLogoInput } from "./make-actions";
 
 export type MakeRow = { make: string; label: string; logo_path: string | null; n: number; featured: boolean; sort_order: number };
 
-const assetUrl = (p: string) => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`;
+const assetUrl = (p: string) => (p.startsWith("http") ? p : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`);
 
 /** Upload a logo per make (shown in "Shop by make" on the website). */
 export function MakeLogos({ makes, canEdit }: { makes: MakeRow[]; canEdit: boolean }) {
   return (
     <div className="card overflow-hidden">
       <div className="border-b border-slate-100 px-5 py-3.5 text-sm text-slate-500">
-        Upload a logo image for each make (PNG with a transparent background works best). Makes without a logo show a styled name badge on the website.
+        Upload a logo image for each make, or paste a link to one (PNG/SVG with a transparent background works best — use the manufacturer’s official media/press logo where possible). Makes without a logo show a styled name badge on the website.
         Featured makes appear on the homepage; lower sort numbers come first.
       </div>
       <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -108,6 +108,30 @@ function MakeCard({ row, canEdit }: { row: MakeRow; canEdit: boolean }) {
             onChange={(e) => setV({ ...v, sort_order: Number(e.target.value) })}
             onBlur={() => v.sort_order !== row.sort_order && save(v)}
           />
+        </div>
+      )}
+      {canEdit && (
+        <div className="flex items-center gap-2">
+          <input
+            className="input flex-1 py-1 text-xs"
+            placeholder="…or paste image link (https://…)"
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), (e.target as HTMLInputElement).blur())}
+            onBlur={(e) => {
+              const url = e.target.value.trim();
+              if (!url) return;
+              if (!/^https:\/\/\S+$/i.test(url)) return alert("Please paste a full https:// image link");
+              e.target.value = "";
+              save({ ...v, logo_path: url });
+            }}
+          />
+          <a
+            href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(`${v.label} car logo png transparent`)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="whitespace-nowrap text-xs font-semibold text-brand-700 hover:underline"
+          >
+            Find ↗
+          </a>
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { dicebear } from "@/lib/avatar";
 import Link from "next/link";
 import { Search, ShieldCheck, Ship, Banknote, ArrowRight, Car, Send, Quote, FileCheck2, Globe } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
@@ -222,7 +223,8 @@ export default async function PublicHome() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={assetUrl(r.photo_path)!} alt="" className="h-11 w-11 rounded-full object-cover" loading="lazy" />
                     ) : (
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy-800 font-black text-white">{r.customer_name.slice(0, 1)}</span>
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={dicebear(r.customer_name)} alt="" className="h-11 w-11 rounded-full" loading="lazy" />
                     )}
                     <div>
                       <figcaption className="text-sm font-bold text-navy-950">{r.customer_name}</figcaption>

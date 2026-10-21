@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { dicebear } from "@/lib/avatar";
 import { Quote } from "lucide-react";
 import { assetUrl, getCompany, getReviews, SITE_URL } from "@/lib/public-site";
 import { Stars } from "@/components/site/stars";
@@ -74,7 +75,8 @@ export default async function ReviewsPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={assetUrl(r.photo_path)!} alt="" className="h-12 w-12 rounded-full object-cover" loading="lazy" />
                 ) : (
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-navy-800 text-lg font-black text-white">{r.customer_name.slice(0, 1)}</span>
+                  // eslint-disable-next-line @next/next/no-img-element
+                      <img src={dicebear(r.customer_name)} alt="" className="h-12 w-12 rounded-full" loading="lazy" />
                 )}
                 <div className="min-w-0 flex-1">
                   <figcaption className="font-bold text-navy-950">{r.customer_name}</figcaption>

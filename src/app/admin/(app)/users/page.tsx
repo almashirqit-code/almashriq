@@ -1,4 +1,5 @@
 import { UserCog } from "lucide-react";
+import { avatarSrc } from "@/lib/avatar";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -48,12 +49,18 @@ export default async function UsersPage() {
                 {users.map((u) => (
                   <tr key={u.id}>
                     <td>
+                      <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={avatarSrc(u.avatar_url, u.full_name || u.email)} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-slate-200" />
+                      <div>
                       <div className="font-medium">
                         {u.full_name || "—"}
                         {u.id === me.id && <span className="ml-2 text-xs text-slate-400">({t("users_self")})</span>}
                       </div>
                       <div className="text-xs text-slate-500">
                         {u.email} · {date(u.created_at, locale)}
+                      </div>
+                      </div>
                       </div>
                     </td>
                     <td>{t(`role_${u.role}` as DictKey)}</td>

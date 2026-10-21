@@ -26,6 +26,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         office={[profile.office, profile.shift].filter(Boolean).join(" · ") || null}
         companyName={companyName}
         logoUrl={settings?.logo_url}
+        userId={profile.id}
+        avatarUrl={profile.avatar_url ?? null}
       />
       <div className="lg:pl-64">
         <header className="no-print sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200/60 bg-white/70 pl-16 pr-4 backdrop-blur-xl lg:px-8">

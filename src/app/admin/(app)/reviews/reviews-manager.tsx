@@ -1,5 +1,6 @@
 "use client";
 
+import { dicebear } from "@/lib/avatar";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Plus, Pencil, Trash2, Eye, EyeOff, Download, Upload, Check } from "lucide-react";
@@ -82,9 +83,8 @@ export function ReviewsManager({ reviews }: { reviews: ReviewRow[] }) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={assetUrl(r.photo_path)} alt="" className="h-11 w-11 rounded-full object-cover" />
                 ) : (
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-violet-600 text-sm font-bold text-white">
-                    {r.customer_name.slice(0, 1)}
-                  </span>
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={dicebear(r.customer_name)} alt="" className="h-11 w-11 rounded-full" />
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-bold">{r.customer_name}</div>

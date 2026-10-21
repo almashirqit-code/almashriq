@@ -27,6 +27,7 @@ import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import type { Role } from "@/lib/types";
 import { signOut } from "@/app/actions";
+import { AvatarPicker } from "./avatar-picker";
 
 type Item = {
   href: string;
@@ -86,6 +87,8 @@ export function Sidebar({
   companyName,
   logoUrl,
   office = null,
+  userId,
+  avatarUrl = null,
 }: {
   role: Role;
   name: string;
@@ -93,6 +96,8 @@ export function Sidebar({
   companyName: string;
   logoUrl?: string | null;
   office?: string | null;
+  userId: string;
+  avatarUrl?: string | null;
 }) {
   const { t } = useT();
   const pathname = usePathname();
@@ -104,12 +109,6 @@ export function Sidebar({
     return pathname.startsWith(href);
   };
 
-  const initials = (name || email)
-    .split(/[\s@.]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join("");
 
   const nav = (
     <nav className="relative flex h-full flex-col overflow-hidden">
@@ -178,9 +177,7 @@ export function Sidebar({
 
       <div className="relative m-3 rounded-2xl bg-white/[0.06] p-3 ring-1 ring-white/10">
         <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 via-fuchsia-500 to-violet-600 text-xs font-bold text-white">
-            {initials}
-          </span>
+          <AvatarPicker userId={userId} name={name || email} current={avatarUrl} />
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold text-white">{name}</div>
             <div className="truncate text-[11px] text-slate-400">
