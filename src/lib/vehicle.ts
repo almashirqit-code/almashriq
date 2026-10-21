@@ -9,6 +9,7 @@ import {
   type VehicleField,
   type VehicleStatus,
 } from "./types";
+import { parseBranch } from "./branches";
 
 /** Header aliases accepted by bulk import (lower-cased, non-alphanumerics stripped). */
 const ALIASES: Record<string, VehicleField> = {
@@ -142,6 +143,15 @@ const ALIASES: Record<string, VehicleField> = {
   partscar: "for_parts",
   partsonly: "for_parts",
   部品取り: "for_parts",
+  branch: "branch",
+  source: "branch",
+  sourcecountry: "branch",
+  拠点: "branch",
+  costcurrency: "cost_currency",
+  purchasecurrency: "cost_currency",
+  costfxrate: "cost_fx_rate",
+  costrate: "cost_fx_rate",
+  jpyrate: "cost_fx_rate",
 };
 
 export function normalizeHeader(h: string): VehicleField | null {
@@ -249,10 +259,19 @@ export function parseVehicle(raw: Record<string, unknown>): { data: VehicleInput
         n === null
           ? field === "purchase_tax_rate"
             ? 10
-            : null
-          : ["price", "purchase_price", "expenses", "supplier_price", "purchase_tax_rate", "fob_fx_rate"].includes(field)
+            : field === "cost_fx_rate"
+              ? 1
+              : null
+          : ["price", "purchase_price", "expenses", "supplier_price", "purchase_tax_rate", "fob_fx_rate", "cost_fx_rate"].includes(field)
             ? n
             : Math.round(n);
+    } else if (field === "branch") {
+      const b = parseBranch(v);
+      if (String(v ?? "").trim() && !b) errors.push(`branch: ${String(v)} (use JP, SG, TW or TH)`);
+      data.branch = b ?? "JP";
+    } else if (field === "cost_currency") {
+      const c = String(v ?? "").trim().toUpperCase();
+      data.cost_currency = (CURRENCIES as string[]).includes(c) ? c : c === "" ? "JPY" : (errors.push(`cost_currency: ${c}`), "JPY");
     } else if (field === "ownership") {
       const k = String(v ?? "").trim().toLowerCase().replace(/[\s_\-]/g, "");
       data.ownership = OWNERSHIP_ALIASES[k] ?? OWNERSHIP_ALIASES[String(v ?? "").trim()] ?? "own";
@@ -283,6 +302,10 @@ export function parseVehicle(raw: Record<string, unknown>): { data: VehicleInput
   if ("month" in data && data.month !== null && (Number(data.month) < 1 || Number(data.month) > 12)) {
     data.month = null;
   }
+
+  // Costs in JPY need no conversion; other currencies need a rate (1 unit = N JPY).
+  if (data.cost_currency === "JPY") data.cost_fx_rate = 1;
+  else if (data.cost_currency && "cost_fx_rate" in data && !(Number(data.cost_fx_rate) > 0)) errors.push("cost_fx_rate must be more than 0");
 
   // Stock no. falls back to chassis no.
   if (!data.stock_no && data.chassis_no) data.stock_no = data.chassis_no;
@@ -332,9 +355,13 @@ export const TEMPLATE_HEADERS: string[] = [
   "fob_fx_rate",
   "auction_house",
   "yard",
+  "branch",
+  "cost_currency",
+  "cost_fx_rate",
 ];
 
 export const TEMPLATE_SAMPLE = [
-  "A1023,ZVW50-8012345,Toyota,Prius,S Touring,2018,5,62000,Pearl White,1800,Hybrid,AT,2WD,RHD,5,5,Hatchback,4.5,Yokohama,2026-09-12,980000,85000,8900,USD,in_stock,Sunroof,own,,,,,yes,no,10,150,USS Tokyo,",
-  "P2001,NHP10-6123456,Toyota,Aqua,G,2017,11,78000,Silver,1500,Hybrid,AT,2WD,RHD,5,5,Hatchback,4,Kobe,,,,5600,USD,in_stock,Partner car,third_party,Sakura Motors,+81 90 1234 5678,700000,JPY,yes,no,10,150,USS Kobe,",
+  "A1023,ZVW50-8012345,Toyota,Prius,S Touring,2018,5,62000,Pearl White,1800,Hybrid,AT,2WD,RHD,5,5,Hatchback,4.5,Yokohama,2026-09-12,980000,85000,8900,USD,in_stock,Sunroof,own,,,,,yes,no,10,150,USS Tokyo,,JP,JPY,1",
+  "P2001,NHP10-6123456,Toyota,Aqua,G,2017,11,78000,Silver,1500,Hybrid,AT,2WD,RHD,5,5,Hatchback,4,Kobe,,,,5600,USD,in_stock,Partner car,third_party,Sakura Motors,+81 90 1234 5678,700000,JPY,yes,no,10,150,USS Kobe,,JP,JPY,1",
+  "S3001,ZRE212-1012345,Toyota,Corolla Altis,1.6,2019,3,54000,White,1600,Petrol,AT,2WD,RHD,4,5,Sedan,,Singapore,2026-09-20,18500,1200,9800,USD,in_stock,,own,,,,,yes,no,9,150,,,SG,SGD,112",
 ];

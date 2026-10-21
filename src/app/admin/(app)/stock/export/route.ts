@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { COST_FIELDS, VEHICLE_FIELDS, VEHICLE_STATUSES } from "@/lib/types";
+import { parseBranch } from "@/lib/branches";
 
 function csvCell(v: unknown) {
   if (v === null || v === undefined) return "";
@@ -14,13 +15,15 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const sp = req.nextUrl.searchParams;
   const fields: string[] = VEHICLE_FIELDS.filter((f) => can.seeCost(profile.role) || !COST_FIELDS.includes(f));
-  // Computed by the database (buying tax and FOB in USD)
-  if (can.seeCost(profile.role)) fields.push("purchase_tax", "fob_usd");
+  // Computed by the database (buying tax, total cost in JPY and FOB in USD)
+  if (can.seeCost(profile.role)) fields.push("purchase_tax", "cost_total_jpy", "fob_usd");
 
   let query = supabase.from("vehicles").select(fields.join(",")).order("created_at", { ascending: false }).limit(50000);
   const status = sp.get("status");
   if (status && (VEHICLE_STATUSES as string[]).includes(status)) query = query.eq("status", status);
   if (sp.get("make")) query = query.eq("make", sp.get("make")!);
+  const branch = parseBranch(sp.get("branch"));
+  if (branch) query = query.eq("branch", branch);
   const own = sp.get("own");
   if (own === "own" || own === "third_party") query = query.eq("ownership", own);
   const q = (sp.get("q") ?? "").trim().replace(/[%,()]/g, " ");

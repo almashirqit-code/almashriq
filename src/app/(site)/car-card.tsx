@@ -3,6 +3,7 @@ import { Gauge, Fuel, Cog, Camera, MessageCircle, CalendarDays } from "lucide-re
 import { publicImageUrl } from "@/lib/format";
 import { carTitle, priceLabel, type PublicCard } from "@/lib/public-site";
 import { CardPhotos } from "@/components/site/card-photos";
+import { ShipsFrom } from "@/components/site/ships-from";
 
 export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
   const href = `/cars/${encodeURIComponent(c.stock_no)}`;
@@ -32,7 +33,10 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
         <Link href={href} className="line-clamp-1 text-[14px] font-extrabold text-navy-900 hover:text-brand-700">
           {carTitle(c)}
         </Link>
-        <div className="line-clamp-1 h-4 text-xs text-slate-500">{c.grade ?? ""}</div>
+        <div className="flex h-4 items-center justify-between gap-2 text-xs text-slate-500">
+          <span className="line-clamp-1">{c.grade ?? ""}</span>
+          <ShipsFrom code={c.branch} compact className="shrink-0 text-[11px] font-semibold text-navy-700" />
+        </div>
         <dl className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[11.5px] text-slate-600">
           <div className="flex items-center gap-1 truncate">
             <CalendarDays className="h-3 w-3 shrink-0 text-navy-400" />

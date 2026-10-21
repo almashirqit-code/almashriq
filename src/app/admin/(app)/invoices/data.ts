@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { Currency, Settings } from "@/lib/types";
+import { DEFAULT_RATES, type Currency, type Settings } from "@/lib/types";
 import type { VehicleOption } from "./invoice-editor";
 
 const VEHICLE_COLS =
@@ -34,7 +34,7 @@ export async function loadEditorData(includeVehicleIds: string[] = []) {
   return {
     customers: customers.data ?? [],
     vehicles: [...map.values()],
-    rates: { JPY: 1, USD: 150, EUR: 163, GBP: 191, ...(s?.exchange_rates ?? {}) } as Record<Currency, number>,
+    rates: { ...DEFAULT_RATES, ...(s?.exchange_rates ?? {}) } as Record<Currency, number>,
     defaults: { currency: (s?.default_currency ?? "USD") as Currency, tax_rate: Number(s?.tax_rate ?? 0) },
   };
 }

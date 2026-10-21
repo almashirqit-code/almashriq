@@ -4,37 +4,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, FileSpreadsheet, FileArchive, Download, AlertTriangle, Loader2 } from "lucide-react";
-import type JSZipType from "jszip";
 import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n/client";
 import { normalizeHeader, parseVehicle, TEMPLATE_HEADERS, TEMPLATE_SAMPLE, type VehicleInput } from "@/lib/vehicle";
-import { IMAGE_EXT, pool, resizeImage } from "@/lib/images";
-import type { VehicleField } from "@/lib/types";
+import { pool, resizeImage } from "@/lib/images";
+import { groupZipImages, mimeFor, readZipImages, type ZipFile } from "@/lib/photo-zip";
+import type { Currency, VehicleField } from "@/lib/types";
+import { DEFAULT_BRANCHES, jpyRate } from "@/lib/branches";
 
 type Row = { line: number; data: VehicleInput; errors: string[] };
-type ZipFile = { path: string; name: string; entry: JSZipType.JSZipObject };
 type DbVehicle = { id: string; stock_no: string; chassis_no: string | null };
 type Result = { vehicles: number; photos: number; errors: string[] };
-
-const SEP = /^[_\-\s\.\(\[#]/;
-
-function mimeFor(name: string) {
-  const ext = name.split(".").pop()?.toLowerCase();
-  return ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : ext === "gif" ? "image/gif" : "image/jpeg";
-}
-
-/** Find the longest known identifier that `s` equals or starts with (followed by a separator). */
-function matchKey(s: string, keys: string[]): string | null {
-  const v = s.toLowerCase();
-  let best: string | null = null;
-  for (const k of keys) {
-    if (!k) continue;
-    if (v === k || (v.startsWith(k) && SEP.test(v.slice(k.length)))) {
-      if (!best || k.length > best.length) best = k;
-    }
-  }
-  return best;
-}
 
 export function Importer() {
   const { t } = useT();
@@ -133,17 +113,7 @@ export function Importer() {
     setResult(null);
     setLoading("zip");
     try {
-      const JSZip = (await import("jszip")).default;
-      const zip = await JSZip.loadAsync(file);
-      const files: ZipFile[] = [];
-      zip.forEach((path, entry) => {
-        if (entry.dir) return;
-        const parts = path.split("/");
-        const name = parts[parts.length - 1];
-        if (path.startsWith("__MACOSX") || name.startsWith(".") || !IMAGE_EXT.test(name)) return;
-        files.push({ path, name, entry });
-      });
-      setZipFiles(files);
+      setZipFiles(await readZipImages(file));
       setZipName(file.name);
     } catch (e) {
       setParseError((e as Error).message);
@@ -167,24 +137,7 @@ export function Importer() {
       keys.add(v.stock_no.toLowerCase());
       if (v.chassis_no) keys.add(v.chassis_no.toLowerCase());
     }
-    const keyList = [...keys];
-    const groups = new Map<string, ZipFile[]>();
-    const unmatched = new Set<string>();
-    for (const f of zipFiles) {
-      const parts = f.path.split("/");
-      let key: string | null = null;
-      // Folder names, nearest first
-      for (let i = parts.length - 2; i >= 0 && !key; i--) key = matchKey(parts[i], keyList);
-      if (!key) key = matchKey(f.name.replace(/\.[^.]+$/, ""), keyList);
-      if (key) {
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key)!.push(f);
-      } else {
-        unmatched.add(parts.length > 1 ? parts[parts.length - 2] : f.name.replace(/\.[^.]+$/, ""));
-      }
-    }
-    for (const list of groups.values()) list.sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }));
-    return { groups, unmatched: [...unmatched] };
+    return groupZipImages(zipFiles, keys);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zipFiles, rows, db]);
 
@@ -197,11 +150,13 @@ export function Importer() {
     let uploaded = 0;
     setResult(null);
 
-    // 0) Auction house / yard names → ids
-    const [{ data: ahs }, { data: yds }] = await Promise.all([
+    // 0) Auction house / yard names → ids; exchange rates for local-currency costs
+    const [{ data: ahs }, { data: yds }, { data: settings }] = await Promise.all([
       supabase.from("auction_houses").select("id, name").limit(5000),
       supabase.from("yards").select("id, name").limit(5000),
+      supabase.from("settings").select("exchange_rates").single(),
     ]);
+    const rates = (settings?.exchange_rates ?? {}) as Partial<Record<Currency, number>>;
     const ahByName = new Map<string, string>((ahs ?? []).map((a): [string, string] => [String(a.name).toLowerCase().trim(), a.id as string]));
     const ydByName = new Map<string, string>((yds ?? []).map((y): [string, string] => [String(y.name).toLowerCase().trim(), y.id as string]));
     const isUuid = (s: string) => /^[0-9a-f-]{36}$/i.test(s);
@@ -219,8 +174,18 @@ export function Importer() {
       const d = { ...r.data };
       if ("auction_house_id" in d) d.auction_house_id = resolve(d.auction_house_id, ahByName, "auction house", d.stock_no);
       if ("yard_id" in d) d.yard_id = resolve(d.yard_id, ydByName, "yard", d.stock_no);
+      // Branch without a cost currency column: costs are in that branch's currency.
+      if (d.branch && !("cost_currency" in d)) d.cost_currency = DEFAULT_BRANCHES.find((b) => b.code === d.branch)?.currency ?? "JPY";
+      // Cost currency without a rate (no column, or blank → 1): use today's rate from Configuration.
+      if (d.cost_currency && d.cost_currency !== "JPY" && (!(Number(d.cost_fx_rate) > 0) || Number(d.cost_fx_rate) === 1)) {
+        const rate = jpyRate(d.cost_currency as Currency, rates);
+        if (rate) d.cost_fx_rate = rate;
+        else errors.push(`${d.stock_no}: no exchange rate for ${d.cost_currency} in Configuration`);
+      }
       return d;
     });
+    // Rows in one upsert must share columns; JPY-cost rows get the rate 1.
+    if (data.some((d) => "cost_fx_rate" in d)) for (const d of data) if (!("cost_fx_rate" in d)) d.cost_fx_rate = 1;
     const returned: DbVehicle[] = [];
     setProgress({ label: t("import_vehicles_saved"), done: 0, total: data.length });
     for (let i = 0; i < data.length; i += 100) {

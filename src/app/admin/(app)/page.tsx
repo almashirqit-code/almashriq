@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { money, date, num, vehicleTitle } from "@/lib/format";
+import { costJpy } from "@/lib/branches";
 import type { Currency, InvoiceStatus, VehicleStatus } from "@/lib/types";
 import { Stat, InvoiceStatusBadge, VehicleStatusBadge, Empty, IconChip } from "@/components/ui";
 import { Greeting } from "./greeting";
@@ -28,7 +29,7 @@ export default async function DashboardPage() {
     await Promise.all([
       countStatus("in_stock"),
       countStatus("reserved"),
-      supabase.from("vehicles").select("make, purchase_price, purchase_tax, expenses, ownership, status").in("status", ["in_stock", "reserved"]).limit(20000),
+      supabase.from("vehicles").select("make, purchase_price, purchase_tax, expenses, cost_fx_rate, ownership, status").in("status", ["in_stock", "reserved"]).limit(20000),
       supabase
         .from("invoices")
         .select("issue_date, total, currency, exchange_rate")
@@ -63,7 +64,7 @@ export default async function DashboardPage() {
     if (v.ownership === "third_party") {
       if (v.status === "in_stock") thirdPartyInStock++;
     } else {
-      stockValue += Number(v.purchase_price || 0) + Number(v.purchase_tax || 0) + Number(v.expenses || 0);
+      stockValue += costJpy(v);
     }
     makes.set(v.make, (makes.get(v.make) ?? 0) + 1);
   }

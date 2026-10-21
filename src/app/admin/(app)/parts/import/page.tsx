@@ -13,7 +13,7 @@ export default async function PartsImportPage() {
         icon={<Upload />}
         tone="cyan"
         title="Bulk import parts"
-        subtitle="Upload a CSV / Excel file or paste rows copied from a spreadsheet. Rows are matched on Part no."
+        subtitle="Upload a CSV / Excel file or paste rows, and/or a ZIP of photos. Rows and photos are matched on Part no."
         back={{ href: "/admin/parts", label: "Parts" }}
       />
       <PartsImporter />

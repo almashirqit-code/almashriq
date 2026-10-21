@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { InvoiceStatus, VehicleStatus } from "@/lib/types";
+import { branchFlag, branchName } from "@/lib/branches";
 
 /** Vibrant accent palette used for icon chips, stat cards and module colours. */
 export const TONES = {
@@ -99,6 +100,21 @@ export function InvoiceStatusBadge({ status, label }: { status: InvoiceStatus; l
     <Badge className={INVOICE_COLORS[status]}>
       <Dot />
       {label}
+    </Badge>
+  );
+}
+
+/** Source-branch chip with its flag ("🇸🇬 Singapore"). */
+export function BranchBadge({ code }: { code: string | null | undefined }) {
+  const flag = branchFlag(code);
+  if (!code) return null;
+  return (
+    <Badge className="bg-white text-slate-700 ring-slate-300">
+      {flag && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={flag} alt="" className="h-3 w-4 rounded-[2px] object-cover ring-1 ring-black/10" />
+      )}
+      {branchName(code)}
     </Badge>
   );
 }

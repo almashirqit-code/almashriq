@@ -1,31 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, X, ArrowDownToLine } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { money, num } from "@/lib/format";
-import { EXPENSE_TYPES, TAXED_EXPENSES, type ExpenseItem, type ExpenseType, type Vehicle } from "@/lib/types";
+import { jpyRate } from "@/lib/branches";
+import { CURRENCIES, EXPENSE_TYPES, TAXED_EXPENSES, type Branch, type Currency, type ExpenseItem, type ExpenseType, type Vehicle } from "@/lib/types";
 
 type Line = ExpenseItem & { key: number };
 let seq = 0;
 
 /**
- * Buying-cost formula:
- *   total (JPY) = buying price + buying price × tax% + Σ expenses (auction fee + tax%)
- *   FOB (USD)   = total ÷ FX rate
- * The database recomputes the same figures on save (vehicles_costing trigger).
+ * Buying-cost formula (amounts in the branch's cost currency):
+ *   total       = buying price + buying price × tax% + Σ expenses (auction fee + tax%)
+ *   total (JPY) = total × cost FX rate (1 unit = N JPY; 1 for JPY)
+ *   FOB (USD)   = total (JPY) ÷ USD rate
+ * The database recomputes the same figures on save (vehicles_costing trigger, cost_total_jpy, fob_usd).
  */
 export function CostCalculator({
   vehicle,
   defaultFx,
   readOnly,
+  branch,
+  rates = {},
 }: {
   vehicle?: Partial<Vehicle>;
   defaultFx: number;
   readOnly: boolean;
+  branch: Branch;
+  rates?: Partial<Record<Currency, number>>;
 }) {
   const { t, locale } = useT();
+  const [costCurrency, setCostCurrency] = useState<Currency>(vehicle?.cost_currency ?? branch.currency);
+  const [costFx, setCostFx] = useState<string>(String(vehicle?.cost_fx_rate ?? jpyRate(vehicle?.cost_currency ?? branch.currency, rates) ?? ""));
+  const pickCurrency = (c: Currency) => {
+    setCostCurrency(c);
+    setCostFx(String(jpyRate(c, rates) ?? ""));
+  };
+
+  // A new branch brings its own currency and purchase tax (skip the first render: keep saved values).
+  const firstBranch = useRef(branch.code);
+  useEffect(() => {
+    if (branch.code === firstBranch.current) return;
+    firstBranch.current = branch.code;
+    pickCurrency(branch.currency);
+    setTaxRate(String(branch.default_tax_rate));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [branch.code]);
 
   const initialLines: Line[] = (() => {
     const items = Array.isArray(vehicle?.expense_items) ? vehicle!.expense_items : [];
@@ -36,7 +58,7 @@ export function CostCalculator({
   })();
 
   const [price, setPrice] = useState<string>(vehicle?.purchase_price != null ? String(vehicle.purchase_price) : "");
-  const [taxRate, setTaxRate] = useState<string>(String(vehicle?.purchase_tax_rate ?? 10));
+  const [taxRate, setTaxRate] = useState<string>(String(vehicle?.purchase_tax_rate ?? branch.default_tax_rate));
   const [fx, setFx] = useState<string>(vehicle?.fob_fx_rate ? String(vehicle.fob_fx_rate) : defaultFx ? String(defaultFx) : "");
   const [lines, setLines] = useState<Line[]>(initialLines);
 
@@ -46,11 +68,15 @@ export function CostCalculator({
   const lineTotal = (l: Line) => (Number(l.amount) || 0) * (TAXED_EXPENSES.includes(l.type) ? 1 + rate / 100 : 1);
   const expenses = Math.round(lines.reduce((s, l) => s + lineTotal(l), 0));
   const total = buying + buyingTax + expenses;
+  const isJpy = costCurrency === "JPY";
+  const costRate = isJpy ? 1 : Number(costFx) || 0;
+  const totalJpy = Math.round(total * costRate);
   const fxNum = Number(fx) || 0;
-  const fob = fxNum > 0 ? Math.round((total / fxNum) * 100) / 100 : null;
+  const fob = fxNum > 0 && costRate > 0 ? Math.round((totalJpy / fxNum) * 100) / 100 : null;
 
   const update = (key: number, patch: Partial<Line>) => setLines((ls) => ls.map((l) => (l.key === key ? { ...l, ...patch } : l)));
   const yen = (n: number) => money(n, "JPY", locale);
+  const local = (n: number) => money(n, costCurrency, locale);
 
   function useFobAsPrice() {
     if (fob === null) return;
@@ -75,6 +101,40 @@ export function CostCalculator({
       {/* Values submitted with the vehicle form */}
       <input type="hidden" name="expense_items" value={JSON.stringify(items)} />
       <input type="hidden" name="expenses" value={expenses} />
+      <input type="hidden" name="cost_currency" value={costCurrency} />
+      <input type="hidden" name="cost_fx_rate" value={isJpy ? 1 : costFx} />
+
+      <div className="grid grid-cols-1 gap-4 border-b border-slate-100 bg-slate-50/60 px-5 py-4 sm:grid-cols-4">
+        <div>
+          <label className="label" htmlFor="cost_currency_pick">
+            {t("f_cost_currency")}
+          </label>
+          <select id="cost_currency_pick" className="input" value={costCurrency} disabled={readOnly} onChange={(e) => pickCurrency(e.target.value as Currency)}>
+            {CURRENCIES.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+        {!isJpy && (
+          <div>
+            <label className="label" htmlFor="cost_fx_pick">
+              {t("f_cost_fx_rate", { cur: costCurrency })}
+            </label>
+            <input
+              id="cost_fx_pick"
+              type="number"
+              min={0}
+              step="any"
+              required
+              value={costFx}
+              disabled={readOnly}
+              onChange={(e) => setCostFx(e.target.value)}
+              className="input"
+            />
+          </div>
+        )}
+        <p className="self-end text-xs text-slate-500 sm:col-span-2">{isJpy ? t("cost_jpy_help") : t("cost_local_help", { cur: costCurrency })}</p>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-4">
         <div>
@@ -85,7 +145,7 @@ export function CostCalculator({
         </div>
         <div className="sm:col-span-2">
           <label className="label" htmlFor="purchase_price">
-            {t("f_purchase_price")}
+            {t("f_purchase_price_in", { cur: costCurrency })}
           </label>
           <input
             id="purchase_price"
@@ -158,7 +218,7 @@ export function CostCalculator({
                     type="number"
                     min={0}
                     step="any"
-                    placeholder="¥"
+                    placeholder={costCurrency}
                     value={l.amount || ""}
                     disabled={readOnly}
                     onChange={(e) => update(l.key, { amount: Number(e.target.value) })}
@@ -175,7 +235,7 @@ export function CostCalculator({
                       {taxed && Number(l.amount) > 0 ? (
                         <>
                           <span className="block text-amber-700">{t("stock_expense_tax", { rate: num(rate) })}</span>
-                          {yen(lineTotal(l))}
+                          {local(lineTotal(l))}
                         </>
                       ) : null}
                     </span>
@@ -200,12 +260,18 @@ export function CostCalculator({
       {/* Totals + FX → FOB */}
       <div className="grid grid-cols-1 gap-5 border-t border-slate-100 bg-slate-50/60 px-5 py-4 sm:grid-cols-2">
         <dl className="space-y-1.5 text-sm">
-          <Row label={t("f_purchase_price")} value={yen(buying)} />
-          <Row label={`${t("f_purchase_tax")} (${num(rate)}%)`} value={yen(buyingTax)} />
-          <Row label={t("stock_total_expenses")} value={yen(expenses)} />
+          <Row label={t("f_purchase_price_in", { cur: costCurrency })} value={local(buying)} />
+          <Row label={`${t("f_purchase_tax")} (${num(rate)}%)`} value={local(buyingTax)} />
+          <Row label={t("stock_total_expenses")} value={local(expenses)} />
+          {!isJpy && (
+            <div className="flex justify-between border-t border-slate-200 pt-1.5">
+              <dt className="text-slate-500">{t("stock_total_cost_in", { cur: costCurrency })}</dt>
+              <dd className="tabular-nums">{local(total)}</dd>
+            </div>
+          )}
           <div className="flex justify-between border-t border-slate-200 pt-1.5 font-semibold">
             <dt>{t("stock_total_cost_jpy")}</dt>
-            <dd className="tabular-nums">{yen(total)}</dd>
+            <dd className="tabular-nums">{costRate > 0 ? yen(totalJpy) : "—"}</dd>
           </div>
         </dl>
         <div className="space-y-3">

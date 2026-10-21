@@ -8,6 +8,8 @@ import { Gallery } from "@/components/site/gallery";
 import { InquiryForm } from "@/components/site/inquiry-form";
 import { JsonLd } from "@/components/site/json-ld";
 import { CarCard } from "../../car-card";
+import { ShipsFrom } from "@/components/site/ships-from";
+import { branchName } from "@/lib/branches";
 
 export const revalidate = 60;
 
@@ -18,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ stock: st
   const title = `${[c.year, c.make, c.model, c.grade].filter(Boolean).join(" ")} — ${c.stock_no}`;
   const price = priceLabel(c);
   const description = [
-    `Used ${c.year ?? ""} ${c.make} ${c.model} for sale from Japan`.replace(/\s+/g, " "),
+    `Used ${c.year ?? ""} ${c.make} ${c.model} for sale from ${branchName(c.branch ?? "JP")}`.replace(/\s+/g, " "),
     c.mileage != null ? `${c.mileage.toLocaleString()} km` : null,
     c.engine_cc ? `${c.engine_cc}cc` : null,
     c.transmission,
@@ -68,6 +70,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
     ["Seats", c.seats],
     ["Chassis no.", c.chassis_no],
     ["Location", c.location],
+    ["Ships from", branchName(c.branch ?? "JP")],
   ];
 
   return (
@@ -133,6 +136,9 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
               {(c.engine_cc || c.transmission) && <Chip icon={Cog}>{[c.engine_cc ? `${c.engine_cc}cc` : null, c.transmission].filter(Boolean).join(" · ")}</Chip>}
               {c.fuel && <Chip icon={Fuel}>{c.fuel}</Chip>}
               {c.location && <Chip icon={MapPin}>{c.location}</Chip>}
+              <span className="rounded-full bg-slate-100 px-2.5 py-1">
+                <ShipsFrom code={c.branch ?? "JP"} />
+              </span>
             </div>
             <div className="mt-4 flex items-end justify-between gap-3 rounded-lg bg-navy-50 p-4">
               <div>

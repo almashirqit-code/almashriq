@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
-import type { Currency, Settings } from "@/lib/types";
+import { DEFAULT_RATES, type Currency, type Settings } from "@/lib/types";
 import type { CustomerOption } from "./remittance-form";
 
 export async function loadFormData() {
@@ -19,6 +19,6 @@ export async function loadFormData() {
     shifts: s?.shifts ?? [],
     defaultOffice: me.office ?? null,
     defaultShift: me.shift ?? null,
-    rates: { JPY: 1, USD: 150, EUR: 163, GBP: 191, ...(s?.exchange_rates ?? {}) } as Record<Currency, number>,
+    rates: { ...DEFAULT_RATES, ...(s?.exchange_rates ?? {}) } as Record<Currency, number>,
   };
 }

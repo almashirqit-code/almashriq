@@ -2,7 +2,8 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { convert } from "@/lib/format";
-import type { Currency, FreightRate, Settings, ShipmentMode } from "@/lib/types";
+import { costJpy } from "@/lib/branches";
+import { DEFAULT_RATES, type BranchCode, type Currency, type FreightRate, type Settings, type ShipmentMode } from "@/lib/types";
 
 export type PortInfo = { id: string; name: string; shipment_modes: ShipmentMode[] } | null;
 
@@ -23,6 +24,9 @@ export type ReserveVehicle = {
   purchase_price: number | null;
   purchase_tax: number | null;
   expenses: number | null;
+  branch: BranchCode;
+  cost_currency: Currency;
+  cost_fx_rate: number;
   supplier_name: string | null;
   supplier_price: number | null;
   supplier_currency: Currency | null;
@@ -36,22 +40,27 @@ export type ReserveVehicle = {
 
 const VEHICLE_SELECT =
   "id, stock_no, chassis_no, make, model, grade, year, color, mileage, status, ownership, price, price_currency, purchase_price, purchase_tax, expenses, " +
+  "branch, cost_currency, cost_fx_rate, " +
   "supplier_name, supplier_price, supplier_currency, fob_usd, " +
   "auction_houses(name, ports(id, name, shipment_modes)), yards(name, address, ports(id, name, shipment_modes)), vehicle_images(path, sort_order)";
 
-/** Buying cost in JPY: own stock = price + tax + expenses; third-party = supplier price (→ JPY) + expenses. */
+/**
+ * Buying cost in JPY: own stock = (price + tax + expenses) × cost FX rate;
+ * third-party = supplier price (→ JPY) + expenses (→ JPY).
+ */
 export function vehicleCostJpy(
-  v: Pick<ReserveVehicle, "ownership" | "purchase_price" | "purchase_tax" | "expenses" | "supplier_price" | "supplier_currency">,
+  v: Pick<ReserveVehicle, "ownership" | "purchase_price" | "purchase_tax" | "expenses" | "supplier_price" | "supplier_currency"> & { cost_fx_rate?: number | null },
   rates: Record<Currency, number>
 ) {
-  const expenses = Number(v.expenses || 0);
+  const fx = Number(v.cost_fx_rate) || 1;
+  const expenses = Math.round(Number(v.expenses || 0) * fx);
   if (v.ownership === "third_party") {
     const supplier = convert(Number(v.supplier_price || 0), (v.supplier_currency ?? "JPY") as Currency, "JPY", rates);
     return { buying: 0, tax: 0, expenses, supplier, total: Math.round(supplier + expenses) };
   }
-  const buying = Number(v.purchase_price || 0);
-  const tax = Number(v.purchase_tax || 0);
-  return { buying, tax, expenses, supplier: 0, total: Math.round(buying + tax + expenses) };
+  const buying = Math.round(Number(v.purchase_price || 0) * fx);
+  const tax = Math.round(Number(v.purchase_tax || 0) * fx);
+  return { buying, tax, expenses, supplier: 0, total: costJpy(v) };
 }
 
 export async function loadRates(): Promise<{ rates: Record<Currency, number>; defaultCurrency: Currency }> {
@@ -59,7 +68,7 @@ export async function loadRates(): Promise<{ rates: Record<Currency, number>; de
   const { data } = await supabase.from("settings").select("exchange_rates, default_currency").single();
   const s = data as Pick<Settings, "exchange_rates" | "default_currency"> | null;
   return {
-    rates: { JPY: 1, USD: 150, EUR: 163, GBP: 191, ...(s?.exchange_rates ?? {}) } as Record<Currency, number>,
+    rates: { ...DEFAULT_RATES, ...(s?.exchange_rates ?? {}) } as Record<Currency, number>,
     defaultCurrency: (s?.default_currency ?? "USD") as Currency,
   };
 }

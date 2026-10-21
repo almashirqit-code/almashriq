@@ -10,6 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${SITE_URL}/cars`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
     { url: `${SITE_URL}/parts`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/machinery`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/how-to-buy`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/payment`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${SITE_URL}/reviews`, changeFrequency: "weekly", priority: 0.6 },
@@ -18,15 +19,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
   const seen = new Set<string>();
   const dynamic = rows.flatMap((r): MetadataRoute.Sitemap => {
-    const path = r.kind === "car" ? `/cars/${encodeURIComponent(r.key)}` : r.kind === "post" ? `/blog/${r.key}` : `/makes/${makeSlug(r.key)}`;
+    const path =
+      r.kind === "car"
+        ? `/cars/${encodeURIComponent(r.key)}`
+        : r.kind === "post"
+          ? `/blog/${r.key}`
+          : r.kind === "part"
+            ? `/parts/${encodeURIComponent(r.key)}`
+            : r.kind === "machine"
+              ? `/machinery/${encodeURIComponent(r.key)}`
+              : `/makes/${makeSlug(r.key)}`;
     if (seen.has(path)) return [];
     seen.add(path);
     return [
       {
         url: `${SITE_URL}${path}`,
         lastModified: r.updated ? new Date(r.updated) : undefined,
-        changeFrequency: r.kind === "car" ? "weekly" : r.kind === "make" ? "daily" : "monthly",
-        priority: r.kind === "make" ? 0.8 : r.kind === "car" ? 0.7 : 0.6,
+        changeFrequency: r.kind === "car" || r.kind === "part" || r.kind === "machine" ? "weekly" : r.kind === "make" ? "daily" : "monthly",
+        priority: r.kind === "make" ? 0.8 : r.kind === "car" || r.kind === "machine" ? 0.7 : 0.6,
       },
     ];
   });

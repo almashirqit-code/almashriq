@@ -1,9 +1,22 @@
 export type Role = "admin" | "manager" | "sales";
 export type VehicleStatus = "in_stock" | "reserved" | "sold" | "shipped";
 export type InvoiceStatus = "draft" | "issued" | "partially_paid" | "paid" | "cancelled";
-export type Currency = "JPY" | "USD" | "EUR" | "GBP";
+export type Currency = "JPY" | "USD" | "EUR" | "GBP" | "SGD" | "TWD" | "THB";
 
-export const CURRENCIES: Currency[] = ["JPY", "USD", "EUR", "GBP"];
+export const CURRENCIES: Currency[] = ["JPY", "USD", "EUR", "GBP", "SGD", "TWD", "THB"];
+/** Fallback exchange rates (1 unit = N JPY) when Configuration has none. */
+export const DEFAULT_RATES: Record<Currency, number> = { JPY: 1, USD: 150, EUR: 163, GBP: 191, SGD: 112, TWD: 4.7, THB: 4.2 };
+
+/** Source branch (country the stock is bought in and shipped from). */
+export type BranchCode = "JP" | "SG" | "TW" | "TH";
+export interface Branch {
+  code: BranchCode;
+  name: string;
+  currency: Currency;
+  default_tax_rate: number;
+  sort_order: number;
+  active: boolean;
+}
 export const VEHICLE_STATUSES: VehicleStatus[] = ["in_stock", "reserved", "sold", "shipped"];
 export const INVOICE_STATUSES: InvoiceStatus[] = ["draft", "issued", "partially_paid", "paid", "cancelled"];
 export const ROLES: Role[] = ["admin", "manager", "sales"];
@@ -115,6 +128,12 @@ export interface Vehicle {
   fob_usd: number | null;
   auction_house_id: string | null;
   yard_id: string | null;
+  /** Source branch; purchase_price / purchase_tax / expenses are in cost_currency. */
+  branch: BranchCode;
+  cost_currency: Currency;
+  /** 1 unit of cost_currency = N JPY (1 for JPY). */
+  cost_fx_rate: number;
+  cost_total_jpy: number | null;
   created_at: string;
   updated_at: string;
   vehicle_images?: VehicleImage[];
@@ -238,6 +257,9 @@ export const VEHICLE_FIELDS = [
   "expense_items",
   "auction_house_id",
   "yard_id",
+  "branch",
+  "cost_currency",
+  "cost_fx_rate",
 ] as const;
 
 export type VehicleField = (typeof VEHICLE_FIELDS)[number];
@@ -255,6 +277,7 @@ export const NUMERIC_VEHICLE_FIELDS: VehicleField[] = [
   "supplier_price",
   "purchase_tax_rate",
   "fob_fx_rate",
+  "cost_fx_rate",
 ];
 
 /** Cost fields hidden from the sales role. */
@@ -267,6 +290,8 @@ export const COST_FIELDS: VehicleField[] = [
   "purchase_tax_rate",
   "fob_fx_rate",
   "expense_items",
+  "cost_currency",
+  "cost_fx_rate",
 ];
 
 export type RemittanceStatus = "unallocated" | "partial" | "allocated";
@@ -319,6 +344,7 @@ export const SHIPMENT_MODES: ShipmentMode[] = ["roro", "container"];
 export interface Port {
   id: string;
   name: string;
+  branch: BranchCode;
   shipment_modes: ShipmentMode[];
   region: string | null;
   notes: string | null;

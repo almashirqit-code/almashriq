@@ -19,6 +19,7 @@ import {
   type ShipmentType,
 } from "@/lib/types";
 import { IconChip } from "@/components/ui";
+import { branchName } from "@/lib/branches";
 import type { ReserveVehicle } from "./data";
 import { saveReservation, type ReservationPayload } from "./actions";
 
@@ -59,7 +60,7 @@ export function ReservationForm({
   const [agentId, setAgentId] = useState(initial?.sales_agent_id ?? meId);
   const [term, setTerm] = useState(initial?.price_term ?? "CNF");
   const [shipment, setShipment] = useState<ShipmentType | "">(initial?.shipment_type ?? (roroBlocked ? "container_20" : "roro"));
-  const [pol, setPol] = useState(initial?.port_of_loading ?? (port ? `${port.name}, Japan` : ""));
+  const [pol, setPol] = useState(initial?.port_of_loading ?? (port ? `${port.name}, ${branchName(vehicle.branch ?? "JP")}` : ""));
   const [pod, setPod] = useState(initial?.port_of_discharge ?? "");
   const [currency, setCurrency] = useState<Currency>(initial?.currency ?? defaultCurrency);
   const [fx, setFx] = useState<number>(initial?.exchange_rate ?? rates[initial?.currency ?? defaultCurrency] ?? 1);

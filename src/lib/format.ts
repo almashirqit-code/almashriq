@@ -1,6 +1,6 @@
 import type { Currency } from "./types";
 
-const DECIMALS: Record<Currency, number> = { JPY: 0, USD: 2, EUR: 2, GBP: 2 };
+const DECIMALS: Record<Currency, number> = { JPY: 0, USD: 2, EUR: 2, GBP: 2, SGD: 2, TWD: 0, THB: 2 };
 
 export function money(value: number | null | undefined, currency: Currency = "JPY", locale = "en") {
   const v = Number(value ?? 0);
@@ -46,8 +46,10 @@ export function convert(
   return round((amount * fromRate) / toRate, to);
 }
 
+/** Public URL of a stock photo (vehicle-images bucket; "site-assets:…" paths live in site-assets). */
 export function publicImageUrl(path: string) {
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/vehicle-images/${path}`;
+  const [bucket, p] = path.startsWith("site-assets:") ? ["site-assets", path.slice(12)] : ["vehicle-images", path];
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${p}`;
 }
 
 export function vehicleTitle(v: { year?: number | null; make: string; model: string; grade?: string | null }) {

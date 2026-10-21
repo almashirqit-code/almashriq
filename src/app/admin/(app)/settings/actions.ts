@@ -59,3 +59,15 @@ export async function saveSettings(_prev: SettingsState, formData: FormData): Pr
   revalidatePath("/", "layout");
   return { ok: true };
 }
+
+export async function saveBranch(b: { code: string; currency: string; default_tax_rate: number; active: boolean }): Promise<{ error?: string }> {
+  await assertRole(["admin"]);
+  if (!CURRENCIES.includes(b.currency as Currency)) return { error: "Unknown currency" };
+  const tax = Number(b.default_tax_rate);
+  if (!(tax >= 0 && tax <= 100)) return { error: "Tax must be between 0 and 100" };
+  const supabase = await createClient();
+  const { error } = await supabase.from("branches").update({ currency: b.currency, default_tax_rate: tax, active: !!b.active }).eq("code", b.code);
+  if (error) return { error: error.message };
+  revalidatePath("/", "layout");
+  return {};
+}

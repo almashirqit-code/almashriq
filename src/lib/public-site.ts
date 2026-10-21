@@ -33,9 +33,11 @@ export type PublicCard = {
   created_at: string;
   total_count: number;
   images: string[];
+  branch: string;
 };
 
-export type PublicCar = Omit<PublicCard, "cover" | "image_count" | "total_count" | "images"> & {
+export type PublicCar = Omit<PublicCard, "cover" | "image_count" | "total_count" | "images" | "branch"> & {
+  branch: string | null;
   model_code: string | null;
   month: number | null;
   drive: string | null;
@@ -70,7 +72,15 @@ export type Filters = {
   max_year?: string;
   sort?: string;
   page?: string;
+  branch?: string;
 };
+
+export type PublicBranch = { code: string; name: string; n_cars: number; n_parts: number; n_machines?: number };
+/** Active source branches with how much stock each has on the website. */
+export const getBranches = cache(async (): Promise<PublicBranch[]> => {
+  const { data } = await anon().rpc("public_branches");
+  return ((data ?? []) as PublicBranch[]).map((b) => ({ ...b, n_cars: Number(b.n_cars), n_parts: Number(b.n_parts), n_machines: Number(b.n_machines ?? 0) }));
+});
 
 function anon() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
@@ -98,6 +108,7 @@ export async function listCars(f: Filters, size = PAGE_SIZE) {
     p_sort: f.sort || "new",
     p_limit: size,
     p_offset: (page - 1) * size,
+    p_branch: f.branch || null,
   });
   const cars = (data ?? []) as PublicCard[];
   return { cars, total: cars[0] ? Number(cars[0].total_count) : 0, page, error: error?.message ?? null };
@@ -200,12 +211,21 @@ export type PublicPart = {
   price: number | null;
   price_currency: Currency;
   description: string | null;
-  photo_path: string | null;
   status: "available" | "reserved";
   created_at: string;
   total_count: number;
+  branch: string;
+  cover: string | null;
+  image_count: number;
+  images: string[];
 };
-export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; page?: string };
+
+export type PublicPartDetail = Omit<PublicPart, "total_count" | "cover" | "image_count"> & { updated_at: string };
+export const getPart = cache(async (partNo: string): Promise<PublicPartDetail | null> => {
+  const { data } = await anon().rpc("public_part", { p_part_no: partNo });
+  return ((data ?? [])[0] as PublicPartDetail) ?? null;
+});
+export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; branch?: string; page?: string };
 
 export async function listParts(f: PartFilters, size = PAGE_SIZE) {
   const page = Math.max(1, Number(f.page) || 1);
@@ -216,6 +236,7 @@ export async function listParts(f: PartFilters, size = PAGE_SIZE) {
     p_condition: f.condition || null,
     p_limit: size,
     p_offset: (page - 1) * size,
+    p_branch: f.branch || null,
   });
   const parts = (data ?? []) as PublicPart[];
   return { parts, total: parts[0] ? Number(parts[0].total_count) : 0, page, error: error?.message ?? null };
@@ -233,9 +254,79 @@ export const getPartFacets = cache(async () => {
   return out;
 });
 
+export type PublicMachineCard = {
+  id: string;
+  stock_no: string;
+  category: string | null;
+  make: string;
+  model: string;
+  year: number | null;
+  hours: number | null;
+  operating_weight_kg: number | null;
+  engine_power_hp: number | null;
+  condition: "new" | "used" | "rebuilt";
+  price: number | null;
+  price_currency: Currency;
+  status: VehicleStatus;
+  location: string | null;
+  branch: string;
+  created_at: string;
+  total_count: number;
+  cover: string | null;
+  image_count: number;
+  images: string[];
+};
+export type MachineFilters = { q?: string; category?: string; make?: string; branch?: string; min_price?: string; max_price?: string; min_year?: string; max_year?: string; sort?: string; page?: string };
+
+export async function listMachinery(f: MachineFilters, size = PAGE_SIZE) {
+  const page = Math.max(1, Number(f.page) || 1);
+  const { data, error } = await anon().rpc("public_machinery", {
+    p_q: f.q?.trim() || null,
+    p_category: f.category || null,
+    p_make: f.make || null,
+    p_branch: f.branch || null,
+    p_min_price: n(f.min_price),
+    p_max_price: n(f.max_price),
+    p_min_year: n(f.min_year),
+    p_max_year: n(f.max_year),
+    p_sort: f.sort || "new",
+    p_limit: size,
+    p_offset: (page - 1) * size,
+  });
+  const machines = (data ?? []) as PublicMachineCard[];
+  return { machines, total: machines[0] ? Number(machines[0].total_count) : 0, page, error: error?.message ?? null };
+}
+
+export type PublicMachine = Omit<PublicMachineCard, "total_count" | "cover" | "image_count" | "operating_weight_kg" | "engine_power_hp"> & {
+  serial_no: string | null;
+  operating_weight_kg: number | null;
+  engine_power_hp: number | null;
+  bucket_capacity_m3: number | null;
+  attachments: string | null;
+  description: string | null;
+  updated_at: string;
+};
+export const getMachine = cache(async (key: string): Promise<PublicMachine | null> => {
+  const { data } = await anon().rpc("public_machine", { p_key: key });
+  return ((data ?? [])[0] as PublicMachine) ?? null;
+});
+
+export const getMachineryFacets = cache(async () => {
+  const { data } = await anon().rpc("public_machinery_facets");
+  const out = { category: [] as [string, number][], make: [] as [string, number][], total: 0, available: 0 };
+  for (const r of (data ?? []) as { kind: string; value: string | null; n: number }[]) {
+    if (r.kind === "total") out.total = Number(r.n);
+    else if (r.kind === "available") out.available = Number(r.n);
+    else if (r.value && (r.kind === "category" || r.kind === "make")) out[r.kind].push([r.value, Number(r.n)]);
+  }
+  out.category.sort((a, b) => b[1] - a[1]);
+  out.make.sort((a, b) => b[1] - a[1]);
+  return out;
+});
+
 export async function getSitemapRows() {
   const { data } = await anon().rpc("public_sitemap");
-  return (data ?? []) as { kind: "car" | "post" | "make"; key: string; updated: string }[];
+  return (data ?? []) as { kind: "car" | "post" | "make" | "part" | "machine"; key: string; updated: string }[];
 }
 
 /** Submits a website inquiry (anonymous, validated by the database). */

@@ -37,6 +37,9 @@ const NAMES: Record<Currency, { major: string; minor: string | null }> = {
   EUR: { major: "Euros", minor: "Cents" },
   GBP: { major: "Pounds Sterling", minor: "Pence" },
   JPY: { major: "Japanese Yen", minor: null },
+  SGD: { major: "Singapore Dollars", minor: "Cents" },
+  TWD: { major: "New Taiwan Dollars", minor: null },
+  THB: { major: "Thai Baht", minor: "Satang" },
 };
 
 /** e.g. 14200.5 USD → "US Dollars Fourteen Thousand Two Hundred and Fifty Cents Only" */
