@@ -184,6 +184,55 @@ export const getPost = cache(async (slug: string): Promise<PublicPost | null> =>
   return ((data ?? [])[0] as PublicPost) ?? null;
 });
 
+export type PublicPart = {
+  id: string;
+  part_no: string;
+  name: string;
+  category: string | null;
+  make: string | null;
+  model: string | null;
+  model_code: string | null;
+  year_from: number | null;
+  year_to: number | null;
+  oem_no: string | null;
+  condition: "new" | "used" | "rebuilt";
+  quantity: number;
+  price: number | null;
+  price_currency: Currency;
+  description: string | null;
+  photo_path: string | null;
+  status: "available" | "reserved";
+  created_at: string;
+  total_count: number;
+};
+export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; page?: string };
+
+export async function listParts(f: PartFilters, size = PAGE_SIZE) {
+  const page = Math.max(1, Number(f.page) || 1);
+  const { data, error } = await anon().rpc("public_parts", {
+    p_q: f.q?.trim() || null,
+    p_category: f.category || null,
+    p_make: f.make || null,
+    p_condition: f.condition || null,
+    p_limit: size,
+    p_offset: (page - 1) * size,
+  });
+  const parts = (data ?? []) as PublicPart[];
+  return { parts, total: parts[0] ? Number(parts[0].total_count) : 0, page, error: error?.message ?? null };
+}
+
+export const getPartFacets = cache(async () => {
+  const { data } = await anon().rpc("public_part_facets");
+  const out = { category: [] as [string, number][], make: [] as [string, number][], total: 0 };
+  for (const r of (data ?? []) as { kind: string; value: string | null; n: number }[]) {
+    if (r.kind === "total") out.total = Number(r.n);
+    else if (r.value && (r.kind === "category" || r.kind === "make")) out[r.kind].push([r.value, Number(r.n)]);
+  }
+  out.category.sort((a, b) => b[1] - a[1]);
+  out.make.sort((a, b) => b[1] - a[1]);
+  return out;
+});
+
 export async function getSitemapRows() {
   const { data } = await anon().rpc("public_sitemap");
   return (data ?? []) as { kind: "car" | "post" | "make"; key: string; updated: string }[];

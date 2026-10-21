@@ -28,6 +28,7 @@ export default async function PublicLayout({ children }: { children: React.React
   const links = [
     { href: "/", label: "Home" },
     { href: "/cars", label: "Stock list" },
+    { href: "/parts", label: "Parts" },
     { href: "/how-to-buy", label: "How to buy" },
     { href: "/payment", label: "Payment" },
     { href: "/reviews", label: "Reviews" },
@@ -111,7 +112,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <nav className="sticky top-0 z-40 bg-navy-800 shadow-md">
         <div className="mx-auto flex max-w-7xl items-center px-2 lg:px-4">
           <ul className="hidden items-center lg:flex">
-            {links.slice(0, 2).map((l) => (
+            {links.slice(0, 3).map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="block px-4 py-3 text-sm font-bold text-white hover:bg-navy-900">
                   {l.label}
@@ -148,7 +149,7 @@ export default async function PublicLayout({ children }: { children: React.React
                 </div>
               </li>
             )}
-            {links.slice(2).map((l) => (
+            {links.slice(3).map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="block px-4 py-3 text-sm font-bold text-white hover:bg-navy-900">
                   {l.label}
