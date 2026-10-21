@@ -1,4 +1,5 @@
-import { CURRENCIES, type Currency } from "./types";
+import { CURRENCIES, type BranchCode, type Currency } from "./types";
+import { DEFAULT_BRANCHES, parseBranch } from "./branches";
 
 export type PartCondition = "new" | "used" | "rebuilt";
 export type PartStatus = "available" | "reserved" | "sold";
@@ -34,13 +35,16 @@ export type PartInput = {
   quantity: number;
   price: number | null;
   price_currency: Currency;
+  /** In cost_currency; × cost_fx_rate = JPY. */
   cost: number | null;
   location: string | null;
   description: string | null;
-  photo_path: string | null;
   status: PartStatus;
   show_on_website: boolean;
   notes: string | null;
+  branch: BranchCode;
+  cost_currency: Currency;
+  cost_fx_rate: number;
 };
 
 export type PartField = keyof PartInput;
@@ -62,10 +66,12 @@ export const blankPart = (): PartInput => ({
   cost: null,
   location: null,
   description: null,
-  photo_path: null,
   status: "available",
   show_on_website: true,
   notes: null,
+  branch: "JP",
+  cost_currency: "JPY",
+  cost_fx_rate: 1,
 });
 
 /** Bulk import columns (in template order). */
@@ -89,10 +95,14 @@ export const PART_TEMPLATE_HEADERS: PartField[] = [
   "show_on_website",
   "description",
   "notes",
+  "branch",
+  "cost_currency",
+  "cost_fx_rate",
 ];
 export const PART_TEMPLATE_SAMPLE = [
-  "P-1001,Front bumper,Body,Toyota,Prius,ZVW30,2009,2015,52119-47906,used,1,180,USD,8000,Yard A,available,yes,Pearl white with fog lamp holes,",
-  "P-1002,Headlight (left),Lighting,Honda,Fit,GE6,2007,2013,,used,2,95,USD,4000,Yard A,available,yes,HID,",
+  "P-1001,Front bumper,Body,Toyota,Prius,ZVW30,2009,2015,52119-47906,used,1,180,USD,8000,Yard A,available,yes,Pearl white with fog lamp holes,,JP,JPY,1",
+  "P-1002,Headlight (left),Lighting,Honda,Fit,GE6,2007,2013,,used,2,95,USD,4000,Yard A,available,yes,HID,,JP,JPY,1",
+  "P-1003,Gearbox (AT),Transmission,Toyota,Hilux,GUN125,2016,2020,,used,1,650,USD,420,Bangkok yard,available,yes,Tested,,TH,THB,4.2",
 ];
 
 const ALIASES: Record<string, PartField> = {
@@ -115,6 +125,9 @@ const ALIASES: Record<string, PartField> = {
   show_on_website: "show_on_website", website: "show_on_website", publish: "show_on_website",
   description: "description", details: "description", 説明: "description",
   notes: "notes", note: "notes", memo: "notes", 備考: "notes",
+  branch: "branch", source: "branch", source_country: "branch", 拠点: "branch",
+  cost_currency: "cost_currency", purchase_currency: "cost_currency",
+  cost_fx_rate: "cost_fx_rate", cost_rate: "cost_fx_rate", jpy_rate: "cost_fx_rate",
 };
 
 export function normalizePartHeader(h: string): PartField | null {
@@ -170,8 +183,25 @@ export function parsePart(raw: Partial<Record<PartField, unknown>>): { data: Par
   }
   const web = str(raw.show_on_website)?.toLowerCase();
   if (web) d.show_on_website = !["no", "n", "false", "0", "hidden", "いいえ"].includes(web);
+
+  const br = str(raw.branch);
+  if (br) {
+    const b = parseBranch(br);
+    if (b) d.branch = b;
+    else errors.push(`branch "${br}" must be JP / SG / TW / TH`);
+  }
+  // Cost currency: given, or the branch's own currency.
+  const cc = str(raw.cost_currency)?.toUpperCase();
+  if (cc && !CURRENCIES.includes(cc as Currency)) errors.push(`cost currency "${cc}" must be one of ${CURRENCIES.join("/")}`);
+  d.cost_currency = cc && CURRENCIES.includes(cc as Currency) ? (cc as Currency) : DEFAULT_BRANCHES.find((x) => x.code === d.branch)!.currency;
+  const fx = num(raw.cost_fx_rate);
+  if (Number.isNaN(fx) || (fx !== null && fx <= 0)) errors.push("cost_fx_rate must be a number above 0");
+  d.cost_fx_rate = d.cost_currency === "JPY" ? 1 : fx && fx > 0 ? fx : 0;
   return { data: d, errors };
 }
+
+/** Cost of one part line in JPY. */
+export const partCostJpy = (p: { cost: number | null; cost_fx_rate: number | null }) => Math.round(Number(p.cost || 0) * (Number(p.cost_fx_rate) || 1));
 
 export const partYears = (p: { year_from: number | null; year_to: number | null }) =>
   p.year_from && p.year_to && p.year_from !== p.year_to ? `${p.year_from}–${p.year_to}` : String(p.year_from || p.year_to || "");

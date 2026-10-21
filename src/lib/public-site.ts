@@ -211,12 +211,20 @@ export type PublicPart = {
   price: number | null;
   price_currency: Currency;
   description: string | null;
-  photo_path: string | null;
   status: "available" | "reserved";
   created_at: string;
   total_count: number;
   branch: string;
+  cover: string | null;
+  image_count: number;
+  images: string[];
 };
+
+export type PublicPartDetail = Omit<PublicPart, "total_count" | "cover" | "image_count"> & { updated_at: string };
+export const getPart = cache(async (partNo: string): Promise<PublicPartDetail | null> => {
+  const { data } = await anon().rpc("public_part", { p_part_no: partNo });
+  return ((data ?? [])[0] as PublicPartDetail) ?? null;
+});
 export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; branch?: string; page?: string };
 
 export async function listParts(f: PartFilters, size = PAGE_SIZE) {
@@ -248,7 +256,7 @@ export const getPartFacets = cache(async () => {
 
 export async function getSitemapRows() {
   const { data } = await anon().rpc("public_sitemap");
-  return (data ?? []) as { kind: "car" | "post" | "make"; key: string; updated: string }[];
+  return (data ?? []) as { kind: "car" | "post" | "make" | "part" | "machine"; key: string; updated: string }[];
 }
 
 /** Submits a website inquiry (anonymous, validated by the database). */

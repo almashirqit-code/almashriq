@@ -4,13 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { rowsParam } from "@/lib/rows";
 import { PART_CATEGORIES, PART_STATUSES } from "@/lib/parts";
+import { DEFAULT_BRANCHES, parseBranch } from "@/lib/branches";
+import type { Currency } from "@/lib/types";
 import { RowsSelect } from "@/components/rows-select";
 import { PageHeader, Pagination, Stat } from "@/components/ui";
 import { PartsManager, type PartRow } from "./parts-manager";
 
 export const metadata = { title: "Parts" };
 
-export default async function PartsAdmin({ searchParams }: { searchParams: Promise<{ q?: string; category?: string; status?: string; page?: string; rows?: string }> }) {
+export default async function PartsAdmin({ searchParams }: { searchParams: Promise<{ q?: string; category?: string; status?: string; branch?: string; page?: string; rows?: string }> }) {
   const sp = await searchParams;
   const profile = await getProfile();
   const canEdit = profile.role === "admin" || profile.role === "manager";
@@ -21,9 +23,11 @@ export default async function PartsAdmin({ searchParams }: { searchParams: Promi
 
   let query = supabase
     .from("parts")
-    .select("*", { count: "exact" })
+    .select("*, part_images(id, path, sort_order)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range((page - 1) * size, page * size - 1);
+  const branch = parseBranch(sp.branch);
+  if (branch) query = query.eq("branch", branch);
   if (q) {
     const s = q.replace(/[%,()]/g, " ");
     query = query.or(`part_no.ilike.%${s}%,name.ilike.%${s}%,make.ilike.%${s}%,model.ilike.%${s}%,model_code.ilike.%${s}%,oem_no.ilike.%${s}%`);
@@ -31,12 +35,17 @@ export default async function PartsAdmin({ searchParams }: { searchParams: Promi
   if (sp.category) query = query.ilike("category", sp.category);
   if (sp.status && (PART_STATUSES as string[]).includes(sp.status)) query = query.eq("status", sp.status);
 
-  const [{ data, count }, { data: all }] = await Promise.all([query, supabase.from("parts").select("status, quantity, show_on_website, category").limit(20000)]);
+  const [{ data, count }, { data: all }, { data: settings }] = await Promise.all([
+    query,
+    supabase.from("parts").select("status, quantity, show_on_website, category").limit(20000),
+    supabase.from("settings").select("exchange_rates").single(),
+  ]);
+  const rates = (settings?.exchange_rates ?? {}) as Partial<Record<Currency, number>>;
   const rows = (data ?? []) as PartRow[];
   const stats = all ?? [];
   const pages = Math.max(1, Math.ceil((count ?? 0) / size));
   const categories = [...new Set([...PART_CATEGORIES, ...stats.map((s) => s.category).filter(Boolean)])] as string[];
-  const keep = Object.fromEntries(Object.entries({ q, category: sp.category, status: sp.status, rows: sp.rows }).filter(([, v]) => v)) as Record<string, string>;
+  const keep = Object.fromEntries(Object.entries({ q, category: sp.category, status: sp.status, branch: sp.branch, rows: sp.rows }).filter(([, v]) => v)) as Record<string, string>;
 
   return (
     <>
@@ -81,14 +90,22 @@ export default async function PartsAdmin({ searchParams }: { searchParams: Promi
               </option>
             ))}
           </select>
+          <select name="branch" defaultValue={sp.branch ?? ""} className="input w-auto">
+            <option value="">Any branch</option>
+            {DEFAULT_BRANCHES.map((b) => (
+              <option key={b.code} value={b.code}>
+                {b.name}
+              </option>
+            ))}
+          </select>
           <button className="btn-secondary">Search</button>
-          {(q || sp.category || sp.status) && (
+          {(q || sp.category || sp.status || sp.branch) && (
             <Link href="/admin/parts" className="text-xs font-semibold text-brand-600 hover:underline">
               Clear
             </Link>
           )}
         </form>
-        <PartsManager parts={rows} canEdit={canEdit} categories={categories} />
+        <PartsManager parts={rows} canEdit={canEdit} categories={categories} rates={rates} />
         <Pagination
           page={page}
           pages={pages}

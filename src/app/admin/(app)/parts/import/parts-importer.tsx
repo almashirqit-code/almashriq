@@ -1,17 +1,22 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, CheckCircle2, ClipboardPaste, Download, FileSpreadsheet, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ClipboardPaste, Download, FileArchive, FileSpreadsheet, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { pool } from "@/lib/images";
+import { jpyRate } from "@/lib/branches";
+import { bucketPaths, groupZipImages, PART_PHOTOS, readZipImages, uploadStockPhoto, type ZipFile } from "@/lib/photo-zip";
 import { normalizePartHeader, parsePart, PART_TEMPLATE_HEADERS, PART_TEMPLATE_SAMPLE, type PartField, type PartInput } from "@/lib/parts";
+import type { Currency } from "@/lib/types";
 import { partsImported } from "../actions";
 
 type Row = { line: number; data: PartInput; errors: string[] };
-type Result = { saved: number; skipped: number; errors: string[] };
+type Result = { saved: number; skipped: number; photos: number; errors: string[] };
+type DbPart = { id: string; part_no: string };
 
-const PREVIEW: PartField[] = ["part_no", "name", "category", "make", "model", "year_from", "year_to", "condition", "quantity", "price", "price_currency", "status"];
+const PREVIEW: PartField[] = ["part_no", "name", "branch", "category", "make", "model", "year_from", "year_to", "condition", "quantity", "price", "price_currency", "status"];
 
 export function PartsImporter() {
   const router = useRouter();
@@ -21,11 +26,34 @@ export function PartsImporter() {
   const [source, setSource] = useState("");
   const [paste, setPaste] = useState("");
   const [update, setUpdate] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [zipName, setZipName] = useState("");
+  const [zipFiles, setZipFiles] = useState<ZipFile[]>([]);
+  const [db, setDb] = useState<DbPart[]>([]);
+  const [resize, setResize] = useState(true);
+  const [replace, setReplace] = useState(false);
+  const [loading, setLoading] = useState("");
+  const [progress, setProgress] = useState<{ label: string; done: number; total: number } | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [parseError, setParseError] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
+  const zipInput = useRef<HTMLInputElement>(null);
+
+  // Existing parts, so a ZIP can add photos to parts already in stock.
+  async function loadDb() {
+    const all: DbPart[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase.from("parts").select("id, part_no").range(from, from + 999);
+      if (error || !data?.length) break;
+      all.push(...(data as DbPart[]));
+      if (data.length < 1000) break;
+    }
+    setDb(all);
+    return all;
+  }
+  useEffect(() => {
+    loadDb();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function downloadTemplate() {
     const csv = "﻿" + [PART_TEMPLATE_HEADERS.join(","), ...PART_TEMPLATE_SAMPLE].join("\r\n");
@@ -41,7 +69,7 @@ export function PartsImporter() {
   async function load(input: ArrayBuffer | string, name: string) {
     setParseError("");
     setResult(null);
-    setLoading(true);
+    setLoading("sheet");
     try {
       const XLSX = await import("xlsx");
       const wb = typeof input === "string" ? XLSX.read(input, { type: "string", raw: false }) : XLSX.read(input, { type: "array" });
@@ -76,7 +104,23 @@ export function PartsImporter() {
       setRows([]);
       setParseError((e as Error).message);
     } finally {
-      setLoading(false);
+      setLoading("");
+    }
+  }
+
+  async function onZip(file: File | undefined) {
+    if (!file) return;
+    setParseError("");
+    setResult(null);
+    setLoading("zip");
+    try {
+      setZipFiles(await readZipImages(file));
+      setZipName(file.name);
+    } catch (e) {
+      setParseError((e as Error).message);
+    } finally {
+      setLoading("");
+      if (zipInput.current) zipInput.current.value = "";
     }
   }
 
@@ -84,16 +128,33 @@ export function PartsImporter() {
   const invalid = rows.length - valid.length;
   const busy = !!progress;
 
+  // Photos → part no. (from the sheet and parts already saved)
+  const matching = useMemo(() => groupZipImages(zipFiles, [...valid.map((r) => r.data.part_no), ...db.map((p) => p.part_no)]), [zipFiles, rows, db]); // eslint-disable-line react-hooks/exhaustive-deps
+  const matchedPhotos = [...matching.groups.values()].reduce((n, g) => n + g.length, 0);
+
   async function run() {
     const errors: string[] = [];
     let saved = 0;
     let skipped = 0;
-    // Only send the columns the file has, so updating existing parts doesn't reset their photo, status, etc.
-    const data = valid.map((r) => Object.fromEntries(cols.map((c) => [c, r.data[c]])) as Partial<PartInput> & { part_no: string });
+    let uploaded = 0;
     setResult(null);
-    setProgress({ done: 0, total: data.length });
-    for (let i = 0; i < data.length; i += 200) {
-      const chunk = data.slice(i, i + 200);
+
+    // 1) Parts. Only send the columns the file has, so updating existing parts doesn't reset their status, etc.
+    const send = new Set<PartField>(cols);
+    if (send.has("branch") || send.has("cost_currency")) (["branch", "cost_currency", "cost_fx_rate"] as const).forEach((c) => send.add(c));
+    const { data: settings } = await supabase.from("settings").select("exchange_rates").single();
+    const rates = (settings?.exchange_rates ?? {}) as Partial<Record<Currency, number>>;
+    const data = valid.map((r) => {
+      const d = { ...r.data };
+      if (!(d.cost_fx_rate > 0)) d.cost_fx_rate = jpyRate(d.cost_currency, rates) ?? 0;
+      return Object.fromEntries([...send].map((c) => [c, d[c]])) as Partial<PartInput> & { part_no: string };
+    });
+    const ok = data.filter((d) => !("cost_fx_rate" in d) || Number(d.cost_fx_rate) > 0);
+    for (const d of data) if (!ok.includes(d)) errors.push(`${d.part_no}: no ${d.cost_currency} → JPY rate (add a cost_fx_rate column or set it in Configuration)`);
+
+    setProgress({ label: "Saving parts", done: 0, total: ok.length });
+    for (let i = 0; i < ok.length; i += 200) {
+      const chunk = ok.slice(i, i + 200);
       const { data: res, error } = await supabase.from("parts").upsert(chunk, { onConflict: "part_no", ignoreDuplicates: !update }).select("id");
       if (!error) {
         saved += res?.length ?? 0;
@@ -107,23 +168,61 @@ export function PartsImporter() {
           else skipped++;
         }
       }
-      setProgress({ done: Math.min(i + 200, data.length), total: data.length });
+      setProgress({ label: "Saving parts", done: Math.min(i + 200, ok.length), total: ok.length });
     }
+
+    // 2) Photos → part ids
+    if (matching.groups.size) {
+      const byNo = new Map((await loadDb()).map((p) => [p.part_no.toLowerCase(), p.id]));
+      const perPart = new Map<string, ZipFile[]>();
+      for (const [key, files] of matching.groups) {
+        const id = byNo.get(key);
+        if (id) perPart.set(id, [...(perPart.get(id) ?? []), ...files]);
+      }
+      // Existing photos: remove them, or add the new ones after them
+      const startAt = new Map<string, number>();
+      const ids = [...perPart.keys()];
+      for (let i = 0; i < ids.length; i += 200) {
+        const { data: existing } = await supabase.from("part_images").select("id, part_id, path, sort_order").in("part_id", ids.slice(i, i + 200));
+        if (!existing?.length) continue;
+        if (replace) {
+          await supabase.from("part_images").delete().in("id", existing.map((e) => e.id));
+          const paths = bucketPaths(existing.map((e) => e.path as string));
+          for (let j = 0; j < paths.length; j += 500) await supabase.storage.from("vehicle-images").remove(paths.slice(j, j + 500));
+        } else for (const e of existing) startAt.set(e.part_id, Math.max(startAt.get(e.part_id) ?? 0, e.sort_order + 1));
+      }
+      const jobs = [...perPart].flatMap(([id, files]) => files.map((file, i) => ({ id, file, order: (startAt.get(id) ?? 0) + i })));
+      setProgress({ label: "Uploading photos", done: 0, total: jobs.length });
+      let done = 0;
+      await pool(jobs, 4, async (job) => {
+        try {
+          await uploadStockPhoto(supabase, PART_PHOTOS, job.id, await job.file.entry.async("blob"), job.file.name, job.order, resize);
+          uploaded++;
+        } catch (e) {
+          errors.push(`${job.file.path}: ${(e as Error).message}`);
+        }
+        setProgress({ label: "Uploading photos", done: ++done, total: jobs.length });
+      });
+    }
+
     setProgress(null);
-    setResult({ saved, skipped, errors });
+    setResult({ saved, skipped, photos: uploaded, errors });
     await partsImported();
     router.refresh();
   }
 
+  const canRun = (valid.length > 0 || matchedPhotos > 0) && !busy;
+  const drop = "flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 p-6 text-sm text-slate-600 hover:border-brand-400 hover:bg-brand-50/40";
+
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <section className="card p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">1. Upload a spreadsheet</h2>
+            <h2 className="text-sm font-semibold">1. Parts spreadsheet</h2>
             <button className="btn-ghost text-xs" onClick={downloadTemplate}>
               <Download className="h-3.5 w-3.5" />
-              Download template
+              Template
             </button>
           </div>
           <input
@@ -137,17 +236,14 @@ export function PartsImporter() {
               if (fileInput.current) fileInput.current.value = "";
             }}
           />
-          <button
-            className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 p-6 text-sm text-slate-600 hover:border-brand-400 hover:bg-brand-50/40"
-            onClick={() => fileInput.current?.click()}
-            disabled={busy}
-          >
-            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : <FileSpreadsheet className="h-6 w-6 text-slate-400" />}
+          <button className={drop} onClick={() => fileInput.current?.click()} disabled={busy}>
+            {loading === "sheet" ? <Loader2 className="h-6 w-6 animate-spin" /> : <FileSpreadsheet className="h-6 w-6 text-slate-400" />}
             {source && source !== "Pasted rows" ? source : "Choose CSV / XLSX file"}
           </button>
           <p className="mt-3 text-xs text-slate-500">
-            Required: <b>part_no</b>, <b>name</b>. Optional: category, make, model, model_code, year_from, year_to, oem_no, condition (new/used/rebuilt), quantity, price, price_currency
-            (JPY/USD/EUR/GBP), cost (JPY), location, status (available/reserved/sold), show_on_website (yes/no), description, notes.
+            Required: <b>part_no</b>, <b>name</b>. Optional: branch (JP/SG/TW/TH), category, make, model, model_code, year_from, year_to, oem_no, condition (new/used/rebuilt), quantity,
+            price, price_currency, cost, cost_currency (defaults to the branch&apos;s currency), cost_fx_rate (1 unit = ? JPY; defaults to Configuration), location, status
+            (available/reserved/sold), show_on_website (yes/no), description, notes.
           </p>
         </section>
 
@@ -166,6 +262,32 @@ export function PartsImporter() {
             Read pasted rows
           </button>
         </section>
+
+        <section className="card p-5">
+          <h2 className="mb-3 text-sm font-semibold">2. Photos ZIP (optional)</h2>
+          <input ref={zipInput} type="file" accept=".zip" className="hidden" onChange={(e) => onZip(e.target.files?.[0])} />
+          <button className={drop} onClick={() => zipInput.current?.click()} disabled={busy}>
+            {loading === "zip" ? <Loader2 className="h-6 w-6 animate-spin" /> : <FileArchive className="h-6 w-6 text-slate-400" />}
+            {zipName || "Choose ZIP"}
+          </button>
+          <p className="mt-3 text-xs text-slate-500">
+            Put each part&apos;s photos in a folder named after its Part no. (<code>P-1001/1.jpg</code>) or start the file name with it (<code>P-1001_1.jpg</code>). Photos are sorted by
+            file name; the first is the cover. A ZIP on its own adds photos to parts already saved.
+          </p>
+          {zipFiles.length > 0 && (
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              <Mini label="Photos in ZIP" value={zipFiles.length} />
+              <Mini label="Matched" value={matchedPhotos} tone="good" />
+              <Mini label="Unmatched groups" value={matching.unmatched.length} tone={matching.unmatched.length ? "bad" : undefined} />
+            </div>
+          )}
+          {matching.unmatched.length > 0 && (
+            <p className="mt-2 break-words text-xs text-amber-700">
+              {matching.unmatched.slice(0, 30).join(", ")}
+              {matching.unmatched.length > 30 && " …"}
+            </p>
+          )}
+        </section>
       </div>
 
       {parseError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{parseError}</p>}
@@ -173,7 +295,7 @@ export function PartsImporter() {
       <section className="card">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5">
           <h2 className="text-sm font-semibold">
-            2. Review &amp; import
+            3. Review &amp; import
             {rows.length > 0 && (
               <span className="ml-2 font-normal text-slate-500">
                 {rows.length} rows · <span className="text-emerald-700">{valid.length} valid</span>
@@ -184,11 +306,19 @@ export function PartsImporter() {
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={update} onChange={(e) => setUpdate(e.target.checked)} disabled={busy} />
-              Update parts that already exist (same Part no.)
+              Update parts that already exist
             </label>
-            <button className="btn-primary" onClick={run} disabled={!valid.length || busy}>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={resize} onChange={(e) => setResize(e.target.checked)} disabled={busy} />
+              Resize photos (recommended)
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} disabled={busy} />
+              Replace existing photos
+            </label>
+            <button className="btn-primary" onClick={run} disabled={!canRun}>
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-              {busy ? "Importing…" : `Import ${valid.length || ""} parts`}
+              {busy ? "Importing…" : "Start import"}
             </button>
           </div>
         </div>
@@ -196,7 +326,7 @@ export function PartsImporter() {
         {progress && (
           <div className="border-b border-slate-100 px-5 py-4">
             <div className="mb-1.5 flex justify-between text-xs text-slate-600">
-              <span>Saving parts</span>
+              <span>{progress.label}</span>
               <span className="tabular-nums">
                 {progress.done} / {progress.total}
               </span>
@@ -211,7 +341,7 @@ export function PartsImporter() {
           <div className="border-b border-slate-100 px-5 py-4">
             <div className="flex items-center gap-2 font-medium text-emerald-700">
               <CheckCircle2 className="h-5 w-5" />
-              Done — {result.saved} parts saved{result.skipped ? `, ${result.skipped} already existed (not changed)` : ""}.
+              Done — {result.saved} parts saved{result.skipped ? `, ${result.skipped} already existed (not changed)` : ""} · {result.photos} photos uploaded.
             </div>
             {result.errors.length > 0 && (
               <div className="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-700">
@@ -230,7 +360,9 @@ export function PartsImporter() {
         )}
 
         {rows.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-slate-500">Upload a file or paste rows to see a preview here.</p>
+          <p className="px-5 py-10 text-center text-sm text-slate-500">
+            {zipFiles.length ? "Photos only: they will be added to parts already saved." : "Upload a file, paste rows or choose a photos ZIP to begin."}
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="table">
@@ -240,6 +372,7 @@ export function PartsImporter() {
                   {PREVIEW.map((h) => (
                     <th key={h}>{h}</th>
                   ))}
+                  <th>📷</th>
                   <th></th>
                 </tr>
               </thead>
@@ -252,6 +385,7 @@ export function PartsImporter() {
                         {r.data[h] === null ? "" : String(r.data[h])}
                       </td>
                     ))}
+                    <td className="text-xs tabular-nums">{matching.groups.get(r.data.part_no.toLowerCase())?.length || ""}</td>
                     <td className="text-xs text-red-600">
                       {r.errors.length > 0 && (
                         <span className="flex items-center gap-1 whitespace-nowrap">
@@ -268,6 +402,16 @@ export function PartsImporter() {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function Mini({ label, value, tone }: { label: string; value: number; tone?: "good" | "bad" }) {
+  const color = tone === "good" ? "text-emerald-700" : tone === "bad" ? "text-red-600" : "text-slate-900";
+  return (
+    <div className="rounded-lg bg-slate-50 px-2 py-2">
+      <div className={`text-lg font-semibold tabular-nums ${color}`}>{value}</div>
+      <div className="text-[11px] leading-tight text-slate-500">{label}</div>
     </div>
   );
 }

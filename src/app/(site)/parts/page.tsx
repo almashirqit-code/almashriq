@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MessageCircle, Search, Wrench } from "lucide-react";
-import { assetUrl, getCompany, getPartFacets, listParts, priceLabel, whatsapp, type PartFilters } from "@/lib/public-site";
+import { Camera, MessageCircle, Search, Wrench } from "lucide-react";
+import { publicImageUrl } from "@/lib/format";
+import { getBranches, getCompany, getPartFacets, listParts, priceLabel, whatsapp, type PartFilters } from "@/lib/public-site";
 import { partFits } from "@/lib/parts";
 import { InquiryForm } from "@/components/site/inquiry-form";
+import { CardPhotos } from "@/components/site/card-photos";
+import { ShipsFrom } from "@/components/site/ships-from";
 
 export const revalidate = 300;
 const SIZE = 24;
 
 export const metadata: Metadata = {
   title: "Japanese used auto parts for export",
-  description: "Genuine Japanese used and new spare parts — engines, gearboxes, body parts, lights and more. Shipped worldwide by Al Mashriq Trading.",
+  description: "Genuine used and new spare parts from Japan, Singapore, Taiwan and Thailand — engines, gearboxes, body parts, lights and more. Shipped worldwide by Al Mashriq Trading.",
   alternates: { canonical: "/parts" },
 };
 
@@ -18,7 +21,7 @@ const CONDITION: Record<string, string> = { new: "New", used: "Used", rebuilt: "
 
 export default async function PartsPage({ searchParams }: { searchParams: Promise<PartFilters> }) {
   const f = await searchParams;
-  const [{ parts, total, page }, facets, company] = await Promise.all([listParts(f, SIZE), getPartFacets(), getCompany()]);
+  const [{ parts, total, page }, facets, company, branches] = await Promise.all([listParts(f, SIZE), getPartFacets(), getCompany(), getBranches()]);
   const pages = Math.max(1, Math.ceil(total / SIZE));
   const href = (patch: Partial<PartFilters>) => {
     const p = new URLSearchParams();
@@ -26,15 +29,26 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
     const s = p.toString();
     return s ? `/parts?${s}` : "/parts";
   };
-  const filtered = !!(f.q || f.category || f.make || f.condition);
+  const filtered = !!(f.q || f.category || f.make || f.condition || f.branch);
+  const stocked = branches.filter((b) => b.n_parts > 0 || b.code === f.branch?.toUpperCase());
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
       <h1 className="border-l-4 border-brand-600 pl-3 text-3xl font-black text-navy-950">Spare parts</h1>
-      <p className="mt-1 pl-4 text-slate-500">Quality Japanese used and new auto parts, checked and shipped worldwide. Can&apos;t find a part? Send us an inquiry — we source from Japanese auctions and dismantlers every day.</p>
+      <p className="mt-1 pl-4 text-slate-500">Quality used and new auto parts, checked and shipped worldwide. Can&apos;t find a part? Send us an inquiry — we source from dismantlers every day.</p>
 
-      <form action="/parts" className="mt-6 flex flex-col gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200 sm:flex-row" role="search">
-        <input name="q" defaultValue={f.q ?? ""} placeholder="Part name, OEM no., model code…" aria-label="Search parts" className="input flex-1" />
+      <form action="/parts" className="mt-6 flex flex-col gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200 sm:flex-row sm:flex-wrap" role="search">
+        <input name="q" defaultValue={f.q ?? ""} placeholder="Part name, OEM no., model code…" aria-label="Search parts" className="input min-w-0 flex-1" />
+        {stocked.length > 1 && (
+          <select name="branch" defaultValue={f.branch?.toUpperCase() ?? ""} className="input sm:w-40" aria-label="Ships from">
+            <option value="">Any country</option>
+            {stocked.map((b) => (
+              <option key={b.code} value={b.code}>
+                {b.name} ({b.n_parts})
+              </option>
+            ))}
+          </select>
+        )}
         <select name="category" defaultValue={f.category ?? ""} className="input sm:w-44" aria-label="Category">
           <option value="">All categories</option>
           {facets.category.map(([c]) => (
@@ -117,27 +131,37 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
               {parts.map((p) => {
                 const price = priceLabel(p);
                 const fits = partFits(p);
+                const detail = `/parts/${encodeURIComponent(p.part_no)}`;
+                const imgs = (p.images?.length ? p.images : p.cover ? [p.cover] : []).map(publicImageUrl);
                 const wa = whatsapp(company, `Hello Al Mashriq, I'm interested in part ${p.part_no} — ${p.name}${fits ? ` for ${fits}` : ""}.`);
                 return (
-                  <article key={p.id} className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-                    <div className="relative aspect-[4/3] bg-navy-50">
-                      {p.photo_path ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={assetUrl(p.photo_path)!} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+                  <article key={p.id} className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-lg">
+                    <Link href={detail} className="relative block aspect-[4/3] bg-navy-50">
+                      {imgs.length ? (
+                        <CardPhotos images={imgs} alt={`${p.name} ${p.part_no}`} />
                       ) : (
                         <div className="flex h-full items-center justify-center text-navy-200">
                           <Wrench className="h-12 w-12" />
                         </div>
                       )}
                       <span className="absolute left-2 top-2 rounded-md bg-navy-900/85 px-2 py-0.5 text-[11px] font-bold text-white">{p.part_no}</span>
-                      {p.status === "reserved" && <span className="absolute right-2 top-2 rounded-md bg-amber-500 px-2 py-0.5 text-[11px] font-bold text-white">Reserved</span>}
-                    </div>
+                      {p.image_count > 1 && (
+                        <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded bg-black/55 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                          <Camera className="h-3 w-3" />
+                          {p.image_count}
+                        </span>
+                      )}
+                      {p.status === "reserved" && <span className="absolute inset-x-0 bottom-0 bg-amber-500/95 py-1 text-center text-xs font-black uppercase tracking-widest text-white">Reserved</span>}
+                    </Link>
                     <div className="flex flex-1 flex-col p-4">
-                      <div className="flex flex-wrap gap-1.5 text-[11px] font-semibold">
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
                         {p.category && <span className="rounded bg-navy-50 px-1.5 py-0.5 text-navy-700">{p.category}</span>}
                         <span className={`rounded px-1.5 py-0.5 ${p.condition === "new" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{CONDITION[p.condition]}</span>
+                        <ShipsFrom code={p.branch} compact className="ml-auto text-navy-700" />
                       </div>
-                      <h2 className="mt-2 font-bold text-navy-950">{p.name}</h2>
+                      <Link href={detail} className="mt-2 font-bold text-navy-950 hover:text-brand-700">
+                        {p.name}
+                      </Link>
                       {fits && <p className="text-sm text-slate-600">Fits {fits}</p>}
                       {p.oem_no && <p className="text-xs text-slate-500">OEM {p.oem_no}</p>}
                       {p.description && <p className="mt-1 line-clamp-2 text-sm text-slate-500">{p.description}</p>}

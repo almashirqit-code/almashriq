@@ -4,38 +4,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, FileSpreadsheet, FileArchive, Download, AlertTriangle, Loader2 } from "lucide-react";
-import type JSZipType from "jszip";
 import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n/client";
 import { normalizeHeader, parseVehicle, TEMPLATE_HEADERS, TEMPLATE_SAMPLE, type VehicleInput } from "@/lib/vehicle";
-import { IMAGE_EXT, pool, resizeImage } from "@/lib/images";
+import { pool, resizeImage } from "@/lib/images";
+import { groupZipImages, mimeFor, readZipImages, type ZipFile } from "@/lib/photo-zip";
 import type { Currency, VehicleField } from "@/lib/types";
 import { DEFAULT_BRANCHES, jpyRate } from "@/lib/branches";
 
 type Row = { line: number; data: VehicleInput; errors: string[] };
-type ZipFile = { path: string; name: string; entry: JSZipType.JSZipObject };
 type DbVehicle = { id: string; stock_no: string; chassis_no: string | null };
 type Result = { vehicles: number; photos: number; errors: string[] };
-
-const SEP = /^[_\-\s\.\(\[#]/;
-
-function mimeFor(name: string) {
-  const ext = name.split(".").pop()?.toLowerCase();
-  return ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : ext === "gif" ? "image/gif" : "image/jpeg";
-}
-
-/** Find the longest known identifier that `s` equals or starts with (followed by a separator). */
-function matchKey(s: string, keys: string[]): string | null {
-  const v = s.toLowerCase();
-  let best: string | null = null;
-  for (const k of keys) {
-    if (!k) continue;
-    if (v === k || (v.startsWith(k) && SEP.test(v.slice(k.length)))) {
-      if (!best || k.length > best.length) best = k;
-    }
-  }
-  return best;
-}
 
 export function Importer() {
   const { t } = useT();
@@ -134,17 +113,7 @@ export function Importer() {
     setResult(null);
     setLoading("zip");
     try {
-      const JSZip = (await import("jszip")).default;
-      const zip = await JSZip.loadAsync(file);
-      const files: ZipFile[] = [];
-      zip.forEach((path, entry) => {
-        if (entry.dir) return;
-        const parts = path.split("/");
-        const name = parts[parts.length - 1];
-        if (path.startsWith("__MACOSX") || name.startsWith(".") || !IMAGE_EXT.test(name)) return;
-        files.push({ path, name, entry });
-      });
-      setZipFiles(files);
+      setZipFiles(await readZipImages(file));
       setZipName(file.name);
     } catch (e) {
       setParseError((e as Error).message);
@@ -168,24 +137,7 @@ export function Importer() {
       keys.add(v.stock_no.toLowerCase());
       if (v.chassis_no) keys.add(v.chassis_no.toLowerCase());
     }
-    const keyList = [...keys];
-    const groups = new Map<string, ZipFile[]>();
-    const unmatched = new Set<string>();
-    for (const f of zipFiles) {
-      const parts = f.path.split("/");
-      let key: string | null = null;
-      // Folder names, nearest first
-      for (let i = parts.length - 2; i >= 0 && !key; i--) key = matchKey(parts[i], keyList);
-      if (!key) key = matchKey(f.name.replace(/\.[^.]+$/, ""), keyList);
-      if (key) {
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key)!.push(f);
-      } else {
-        unmatched.add(parts.length > 1 ? parts[parts.length - 2] : f.name.replace(/\.[^.]+$/, ""));
-      }
-    }
-    for (const list of groups.values()) list.sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }));
-    return { groups, unmatched: [...unmatched] };
+    return groupZipImages(zipFiles, keys);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zipFiles, rows, db]);
 
