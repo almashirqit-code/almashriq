@@ -48,6 +48,7 @@ export interface Settings {
   mobile: string | null;
   stamp_url: string | null;
   intermediary_bank: string | null;
+  show_bank_on_website?: boolean;
 }
 
 export interface Customer {

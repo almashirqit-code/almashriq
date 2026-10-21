@@ -46,6 +46,7 @@ export async function saveSettings(_prev: SettingsState, formData: FormData): Pr
       mobile: s("mobile"),
       stamp_url: s("stamp_url"),
       intermediary_bank: s("intermediary_bank"),
+      show_bank_on_website: formData.get("show_bank_on_website") === "on",
       next_invoice_no: Number.isInteger(nextNo) && nextNo > 0 ? nextNo : 1,
       tax_rate: Math.max(0, Number(formData.get("tax_rate")) || 0),
       exchange_rates: rates,

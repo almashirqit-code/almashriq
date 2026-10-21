@@ -29,6 +29,7 @@ export default async function PublicLayout({ children }: { children: React.React
     { href: "/", label: "Home" },
     { href: "/cars", label: "Stock list" },
     { href: "/how-to-buy", label: "How to buy" },
+    { href: "/payment", label: "Payment" },
     { href: "/reviews", label: "Reviews" },
     { href: "/blog", label: "Blog" },
     { href: "/contact", label: "Contact" },
@@ -194,7 +195,7 @@ export default async function PublicLayout({ children }: { children: React.React
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">Information</div>
             <ul className="mt-3 space-y-1.5 text-sm">
-              {[...links.slice(1), { href: "/sitemap.xml", label: "Sitemap" }].map((l) => (
+              {links.slice(1).map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className="hover:text-white">
                     {l.label}

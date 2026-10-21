@@ -227,3 +227,10 @@ export async function getMakeTiles() {
   });
   return tiles.sort((a, b) => Number(b.featured) - Number(a.featured) || a.sort - b.sort || b.n - a.n);
 }
+
+/** Bank details printed on invoices, if the company chose to show them on the website. */
+export const getBank = cache(async () => {
+  const { data } = await anon().rpc("public_bank");
+  const row = ((data ?? [])[0] ?? null) as { bank_details: string | null; intermediary_bank: string | null } | null;
+  return row && (row.bank_details || row.intermediary_bank) ? row : null;
+});

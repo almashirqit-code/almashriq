@@ -159,6 +159,10 @@ export function SettingsForm({ settings }: { settings: Settings }) {
             <label className="label">{t("settings_intermediary")}</label>
             <textarea name="intermediary_bank" rows={5} defaultValue={settings.intermediary_bank ?? ""} className="input" />
           </div>
+          <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+            <input type="checkbox" name="show_bank_on_website" defaultChecked={settings.show_bank_on_website ?? true} className="h-4 w-4 rounded border-slate-300" />
+            {t("settings_bank_public")}
+          </label>
           <div className="sm:col-span-2">
             <label className="label">{t("settings_terms")}</label>
             <textarea name="invoice_terms" rows={5} defaultValue={settings.invoice_terms ?? ""} className="input" />
