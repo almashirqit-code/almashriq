@@ -385,7 +385,7 @@ export function ReservationForm({
                     {matches.length === 0 && (
                       <p className="mt-1.5 text-xs text-slate-500">
                         {t("rv_no_rate")}{" "}
-                        <Link href="/admin/freight" className="font-semibold text-sky-700 underline" target="_blank">
+                        <Link href="/admin/settings?tab=freight" className="font-semibold text-sky-700 underline" target="_blank">
                           {t("nav_freight")}
                         </Link>
                       </p>

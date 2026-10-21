@@ -160,3 +160,18 @@ export function parseDetail(html: string, url: string): SiteCar | null {
     addedOn: blank(specs["added on"]),
   };
 }
+
+/** Reviews from the old website's /reviews page. */
+export function parseReviews(html: string) {
+  return html
+    .split('class="review-wrap"')
+    .slice(1)
+    .map((part) => {
+      const name = decode(part.match(/review-client">([\s\S]*?)<\/div>/)?.[1] ?? "");
+      const before = part.split("review-text")[0];
+      const rating = Math.max(1, Math.min(5, (before.match(/fa fa-star"/g) ?? []).length || 5));
+      const body = decode(part.match(/review-text">([\s\S]*?)<\/div>/)?.[1] ?? "");
+      return { name, rating, body };
+    })
+    .filter((r) => r.name && r.body);
+}

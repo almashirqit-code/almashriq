@@ -15,10 +15,11 @@ import {
   Menu,
   X,
   Store,
+  Inbox,
+  Newspaper,
+  Star,
   Banknote,
-  Anchor,
   ExternalLink,
-  Ship,
   BookmarkCheck,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
@@ -47,25 +48,31 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
     items: [
       { href: "/admin/stock", label: "nav_stock", icon: Car, grad: "from-rose-500 to-brand-600", idle: "text-rose-300" },
       { href: "/admin/stock/import", label: "nav_import", icon: Upload, grad: "from-amber-400 to-orange-500", idle: "text-amber-300", roles: ["admin", "manager"] },
-      { href: "/admin/masters", label: "nav_masters", icon: Anchor, grad: "from-cyan-400 to-sky-600", idle: "text-cyan-300" },
     ],
   },
   {
     label: "grp_sales",
     items: [
+      { href: "/admin/inquiries", label: "nav_inquiries", icon: Inbox, grad: "from-rose-500 to-fuchsia-600", idle: "text-rose-300" },
       { href: "/admin/customers", label: "nav_customers", icon: Users, grad: "from-sky-400 to-blue-600", idle: "text-sky-300" },
       { href: "/admin/reservations", label: "nav_reservations", icon: BookmarkCheck, grad: "from-amber-400 to-orange-500", idle: "text-orange-300" },
       { href: "/admin/invoices", label: "nav_invoices", icon: FileText, grad: "from-fuchsia-500 to-pink-600", idle: "text-fuchsia-300" },
       { href: "/admin/remittances", label: "nav_remittances", icon: Banknote, grad: "from-emerald-400 to-teal-600", idle: "text-emerald-300" },
-      { href: "/admin/freight", label: "nav_freight", icon: Ship, grad: "from-blue-400 to-indigo-600", idle: "text-blue-300" },
+    ],
+  },
+  {
+    label: "grp_website",
+    items: [
+      { href: "/admin/blog", label: "nav_blog", icon: Newspaper, grad: "from-sky-400 to-indigo-600", idle: "text-sky-300", roles: ["admin", "manager"] },
+      { href: "/admin/reviews", label: "nav_reviews", icon: Star, grad: "from-amber-400 to-orange-500", idle: "text-amber-300", roles: ["admin", "manager"] },
+      { href: "/", label: "nav_showroom", icon: Store, grad: "from-amber-400 to-rose-500", idle: "text-amber-300", newTab: true },
     ],
   },
   {
     label: "grp_admin",
     items: [
       { href: "/admin/users", label: "nav_users", icon: UserCog, grad: "from-indigo-400 to-violet-600", idle: "text-indigo-300", roles: ["admin"] },
-      { href: "/admin/settings", label: "nav_settings", icon: Settings, grad: "from-slate-400 to-slate-600", idle: "text-slate-300", roles: ["admin"] },
-      { href: "/", label: "nav_showroom", icon: Store, grad: "from-amber-400 to-rose-500", idle: "text-amber-300", newTab: true },
+      { href: "/admin/settings", label: "nav_settings", icon: Settings, grad: "from-slate-400 to-slate-600", idle: "text-slate-300", roles: ["admin", "manager"] },
     ],
   },
 ];

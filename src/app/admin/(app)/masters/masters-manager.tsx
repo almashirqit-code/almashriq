@@ -146,7 +146,7 @@ export function MastersManager({
               setTab(key);
               cancel();
               setQ("");
-              router.replace(`/admin/masters?tab=${key}`, { scroll: false });
+              router.replace(`/admin/settings?tab=ports&sub=${key}`, { scroll: false });
             }}
             className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-medium ${
               tab === key ? "border-brand-600 text-brand-700" : "border-transparent text-slate-500 hover:text-slate-800"

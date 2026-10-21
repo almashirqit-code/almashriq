@@ -25,7 +25,7 @@ function friendly(error: { code?: string; message: string }) {
 }
 
 function refresh() {
-  revalidatePath("/admin/masters");
+  revalidatePath("/admin/settings");
   revalidatePath("/admin/stock");
 }
 

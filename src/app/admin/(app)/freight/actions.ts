@@ -40,7 +40,7 @@ export async function saveFreightRate(id: string | null, v: FreightInput): Promi
   const supabase = await createClient();
   const { error } = id ? await supabase.from("freight_rates").update(row).eq("id", id) : await supabase.from("freight_rates").insert(row);
   if (error) return { error: error.code === "23505" ? "fr_dup" : error.message };
-  revalidatePath("/admin/freight");
+  revalidatePath("/admin/settings");
   return { ok: true };
 }
 
@@ -49,6 +49,6 @@ export async function deleteFreightRate(id: string): Promise<Result> {
   const supabase = await createClient();
   const { error } = await supabase.from("freight_rates").delete().eq("id", id);
   if (error) return { error: error.message };
-  revalidatePath("/admin/freight");
+  revalidatePath("/admin/settings");
   return { ok: true };
 }
