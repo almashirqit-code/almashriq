@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { updateInquiry, INQUIRY_STATUSES, type InquiryStatus } from "./actions";
+import { updateInquiry } from "./actions";
+import { INQUIRY_STATUSES, type InquiryStatus } from "./status";
 import { INQ_LABEL, INQ_STYLE } from "./status";
 
 export function AssignSelect({ id, value, staff, disabled }: { id: string; value: string | null; staff: { id: string; name: string }[]; disabled?: boolean }) {

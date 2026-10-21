@@ -7,7 +7,7 @@ import { PageHeader, Badge, Empty, Stat, NumberedPagination } from "@/components
 import { loadStaff } from "../customers/staff";
 import { AssignSelect } from "./inquiry-controls";
 import { INQ_LABEL, INQ_STYLE } from "./status";
-import { INQUIRY_STATUSES } from "./actions";
+import { INQUIRY_STATUSES } from "./status";
 
 export const metadata = { title: "Inquiries" };
 const SIZE = 25;

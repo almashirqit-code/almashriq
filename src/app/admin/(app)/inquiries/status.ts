@@ -1,3 +1,6 @@
+export const INQUIRY_STATUSES = ["new", "contacted", "quoted", "won", "lost", "spam"] as const;
+export type InquiryStatus = (typeof INQUIRY_STATUSES)[number];
+
 export const INQ_STYLE: Record<string, string> = {
   new: "bg-rose-50 text-rose-700 ring-rose-600/25",
   contacted: "bg-sky-50 text-sky-700 ring-sky-600/20",

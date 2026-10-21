@@ -5,8 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole, getProfile } from "@/lib/auth";
 
-export const INQUIRY_STATUSES = ["new", "contacted", "quoted", "won", "lost", "spam"] as const;
-export type InquiryStatus = (typeof INQUIRY_STATUSES)[number];
+import { INQUIRY_STATUSES, type InquiryStatus } from "./status";
 
 function refresh(id?: string) {
   revalidatePath("/admin/inquiries");
