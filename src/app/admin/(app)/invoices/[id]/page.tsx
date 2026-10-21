@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Printer, Send, Ban, Trash2, X } from "lucide-react";
+import { Pencil, Printer, Gavel, Send, Ban, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -66,6 +66,12 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <Printer className="h-4 w-4" />
               {t("print")} 日本語
             </a>
+            {can.seeCost(profile.role) && (
+              <a href={`/admin/print/auction?invoice=${id}`} target="_blank" className="btn-secondary">
+                <Gavel className="h-4 w-4" />
+                Auction breakdown
+              </a>
+            )}
             {can.deleteRecords(profile.role) && invoice.status !== "cancelled" && invoice.status !== "draft" && (
               <ConfirmButton action={cancelInvoice.bind(null, id)} message={`${t("inv_cancel_invoice")}?`}>
                 <Ban className="h-4 w-4" />

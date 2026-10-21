@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Trash2, FileText, Car, BookmarkPlus, BookmarkCheck, Ship } from "lucide-react";
+import { Trash2, FileText, Car, BookmarkPlus, BookmarkCheck, Ship, Gavel } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -97,6 +97,12 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
               <Ship className="h-4 w-4" />
               {t("sh_edit")}
             </Link>
+            {seeCost && Number(v.purchase_price) > 0 && (
+              <a href={`/admin/print/auction?vehicle=${v.id}`} target="_blank" className="btn-secondary">
+                <Gavel className="h-4 w-4" />
+                Auction breakdown
+              </a>
+            )}
             {canEdit && v.status !== "in_stock" && <MakeAvailableButton vehicleId={v.id} stockNo={v.stock_no} />}
             {can.deleteStock(profile.role) && (
               <ConfirmButton action={del}>
