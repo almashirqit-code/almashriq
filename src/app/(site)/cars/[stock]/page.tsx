@@ -155,7 +155,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
             {!sold && (
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {wa && (
-                  <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-white shadow-lg shadow-black/25 hover:brightness-110">
+                  <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
                     <MessageCircle className="h-5 w-5" /> WhatsApp
                   </a>
                 )}

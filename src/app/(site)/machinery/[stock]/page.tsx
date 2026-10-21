@@ -116,7 +116,7 @@ export default async function MachinePage({ params }: { params: Promise<{ stock:
                 <div className={`text-3xl font-black ${sold ? "text-slate-500" : "text-brand-600"}`}>{sold ? "Sold" : price ?? "Ask for price"}</div>
               </div>
               {wa && !sold && (
-                <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-white shadow-lg shadow-black/25 hover:brightness-110">
+                <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
                   <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
               )}

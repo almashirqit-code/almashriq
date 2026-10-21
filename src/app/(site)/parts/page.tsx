@@ -213,11 +213,11 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
                           {p.quantity > 1 && <div className="text-xs text-white/45">{p.quantity} in stock</div>}
                         </div>
                         {wa ? (
-                          <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-white hover:brightness-110">
+                          <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 hover:brightness-110">
                             <MessageCircle className="h-4 w-4" /> Ask
                           </a>
                         ) : (
-                          <Link href="/contact" className="inline-flex h-11 items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white hover:bg-red-600">
+                          <Link href="/contact" className="inline-flex h-11 items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white hover:bg-brand-700">
                             Inquire
                           </Link>
                         )}
@@ -232,7 +232,7 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
           {pages > 1 && (
             <nav className="mt-8 flex flex-wrap justify-center gap-1.5" aria-label="Pages">
               {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
-                <Link key={n} href={href({ page: n > 1 ? String(n) : undefined })} className={`flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-center text-sm font-bold ${n === page ? "bg-[var(--accent)] text-white shadow-lg shadow-red-900/40" : "glass-lite hover:bg-white/15"}`}>
+                <Link key={n} href={href({ page: n > 1 ? String(n) : undefined })} className={`flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-center text-sm font-bold ${n === page ? "bg-[var(--accent)] text-white shadow-lg shadow-brand-900/40" : "glass-lite hover:bg-white/15"}`}>
                   {n}
                 </Link>
               ))}

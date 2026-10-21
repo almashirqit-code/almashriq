@@ -35,8 +35,8 @@ const STEP_ICON: Record<ShippingStatus, React.ElementType> = {
 };
 const STEP_GRAD: Record<ShippingStatus, string> = {
   not_booked: "from-slate-400 to-slate-500",
-  booked: "from-sky-400 to-blue-600",
-  shipped: "from-violet-500 to-indigo-600",
+  booked: "from-cerulean-400 to-cerulean-700",
+  shipped: "from-jet-800 to-jet-950",
   delivered: "from-emerald-400 to-teal-600",
 };
 /** Documents that move the shipping status — highlighted on the cards. */
@@ -190,7 +190,7 @@ export function ShippingEditor({
               setMsg(null);
             }}
             className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
-              tab === k ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow" : "text-slate-600 hover:bg-slate-50"
+              tab === k ? "bg-cerulean-600 text-white shadow" : "text-slate-600 hover:bg-slate-50"
             }`}
           >
             <Icon className="h-4 w-4" />

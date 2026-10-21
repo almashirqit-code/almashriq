@@ -204,7 +204,7 @@ export function SiteImporter() {
 
       {phase !== "idle" && (
         <section className="card p-5">
-          <Bar label={`Reading website pages · ${pages.done} / ${pages.total || "…"}`} value={pct(pages.done, pages.total)} grad="from-sky-400 to-blue-600" />
+          <Bar label={`Reading website pages · ${pages.done} / ${pages.total || "…"}`} value={pct(pages.done, pages.total)} grad="from-cerulean-400 to-cerulean-700" />
           <div className="mt-4">
             <Bar label={`Importing cars · ${cars.done} / ${cars.total || "…"}`} value={pct(cars.done, cars.total)} grad="from-rose-500 to-brand-600" />
           </div>

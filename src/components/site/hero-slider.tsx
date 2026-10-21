@@ -54,7 +54,7 @@ export function HeroSlider({ slides }: { slides: Slide[] }) {
               <img src={s.image} alt={s.title} className="relative h-full w-full object-contain" loading={k === 0 ? "eager" : "lazy"} fetchPriority={k === 0 ? "high" : "auto"} />
             </>
           )}
-          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#0b1020]/90 via-[#0b1020]/35 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#0a0a0c]/90 via-[#0a0a0c]/35 to-transparent" />
           {/* glass title panel */}
           <div className="absolute inset-x-2.5 bottom-2.5 rounded-2xl border border-white/15 bg-black/35 px-3.5 py-2.5 text-white backdrop-blur-md sm:inset-x-5 sm:bottom-5 sm:p-5">
             <div className="flex items-center gap-2">

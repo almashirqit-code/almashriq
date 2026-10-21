@@ -11,9 +11,9 @@ import { branchFlag, branchName, costJpy } from "@/lib/branches";
 type T = (k: DictKey, v?: Record<string, string | number>) => string;
 
 export const PAYMENT_STYLE: Record<PaymentStatus, { badge: string; bar: string; row: string }> = {
-  available: { badge: "bg-sky-50 text-sky-700 ring-sky-600/20", bar: "from-sky-400 to-blue-500", row: "" },
+  available: { badge: "bg-sky-50 text-sky-700 ring-sky-600/20", bar: "from-cerulean-400 to-cerulean-600", row: "" },
   reserved: { badge: "bg-amber-50 text-amber-700 ring-amber-600/25", bar: "from-amber-400 to-orange-500", row: "bg-amber-50/20" },
-  invoiced: { badge: "bg-indigo-50 text-indigo-700 ring-indigo-600/20", bar: "from-indigo-400 to-violet-600", row: "bg-indigo-50/20" },
+  invoiced: { badge: "bg-indigo-50 text-indigo-700 ring-indigo-600/20", bar: "from-jet-800 to-jet-950", row: "bg-indigo-50/20" },
   partial: { badge: "bg-orange-50 text-orange-700 ring-orange-600/25", bar: "from-orange-400 to-rose-500", row: "bg-orange-50/30" },
   paid: { badge: "bg-emerald-50 text-emerald-700 ring-emerald-600/25", bar: "from-emerald-400 to-teal-600", row: "bg-emerald-50/30" },
 };

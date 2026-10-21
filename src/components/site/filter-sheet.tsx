@@ -45,8 +45,8 @@ export function FilterPanel({ children }: { children: React.ReactNode }) {
 /** Submit button that stays visible at the bottom of the phone sheet. */
 export function FilterSubmit({ label = "Show results" }: { label?: string }) {
   return (
-    <div className="sticky -bottom-4 -mx-4 bg-gradient-to-t from-[#14163a] via-[#14163a]/95 to-transparent px-4 pb-2 pt-4 lg:static lg:mx-0 lg:bg-none lg:p-0">
-      <button className="h-12 w-full rounded-xl bg-[var(--accent)] text-sm font-bold text-white shadow-lg shadow-red-900/40 hover:bg-red-600">{label}</button>
+    <div className="sticky -bottom-4 -mx-4 bg-gradient-to-t from-[#111114] via-[#111114]/95 to-transparent px-4 pb-2 pt-4 lg:static lg:mx-0 lg:bg-none lg:p-0">
+      <button className="h-12 w-full rounded-xl bg-[var(--accent)] text-sm font-bold text-white shadow-lg shadow-brand-900/40 hover:bg-brand-700">{label}</button>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 /*
- * Public website — "Midnight glass" theme.
+ * Public website — glass theme in the Al Mashriq palette: jet black ground, cerulean blue, neon rose.
+ * Neon rose (#FF2E88) is for glows and large shapes; buttons with white text use #E0156F (≥ 4.5:1).
  * Everything is scoped under .site-glass (the public layout wrapper), so the admin is untouched.
  *
  *  1. tokens + page background
@@ -11,24 +12,27 @@
 
 html:has(.site-glass),
 body:has(.site-glass) {
-  background: #0b1020;
+  background: #0a0a0c;
 }
 
 .site-glass {
-  --ink: #f3f5fb;
-  --ink-2: #c9d0e6;
-  --ink-3: #a9b2cc;
-  --ink-4: #8a94b3;
-  --glass: rgb(255 255 255 / 0.09);
-  --glass-hi: rgb(255 255 255 / 0.14);
-  --glass-lo: rgb(255 255 255 / 0.05);
-  --line: rgb(255 255 255 / 0.16);
-  --accent: #e11d2e;
-  --accent-text: #ff7a86;
-  --focus: #5b8cff;
+  --ink: #f4f6f8;
+  --ink-2: #c9cfd7;
+  --ink-3: #a5adb8;
+  --ink-4: #949ca8;
+  --glass: rgb(255 255 255 / 0.07);
+  --glass-hi: rgb(255 255 255 / 0.12);
+  --glass-lo: rgb(255 255 255 / 0.04);
+  --line: rgb(255 255 255 / 0.14);
+  --accent: #e0156f;
+  --accent-hi: #ff2e88;
+  --accent-text: #ff5ca4;
+  --cerulean: #007ba7;
+  --cerulean-text: #5cc3ee;
+  --focus: #2ea8df;
   color-scheme: dark;
   color: var(--ink);
-  background: linear-gradient(160deg, #0b1020 0%, #141238 55%, #1b1440 100%);
+  background: linear-gradient(160deg, #0a0a0c 0%, #0c1114 55%, #110a0e 100%);
   min-height: 100vh;
   position: relative;
   isolation: isolate;
@@ -42,12 +46,12 @@ body:has(.site-glass) {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(40rem 28rem at 105% -5%, rgb(225 29 46 / 0.22), transparent 60%),
-    radial-gradient(38rem 30rem at -10% 28%, rgb(91 140 255 / 0.2), transparent 60%),
-    radial-gradient(34rem 26rem at 60% 115%, rgb(139 92 246 / 0.18), transparent 60%);
+    radial-gradient(40rem 28rem at 105% -5%, rgb(255 46 136 / 0.16), transparent 60%),
+    radial-gradient(38rem 30rem at -10% 28%, rgb(0 123 167 / 0.2), transparent 60%),
+    radial-gradient(34rem 26rem at 60% 115%, rgb(0 123 167 / 0.1), transparent 60%);
 }
 .site-glass ::selection {
-  background: rgb(225 29 46 / 0.4);
+  background: rgb(255 46 136 / 0.4);
   color: #fff;
 }
 .site-glass :focus-visible {
@@ -57,6 +61,19 @@ body:has(.site-glass) {
 .site-glass a,
 .site-glass button {
   touch-action: manipulation;
+}
+/* No single orphaned word on the last line of paragraphs and headings */
+.site-glass p,
+.site-glass h1,
+.site-glass h2,
+.site-glass h3 {
+  text-wrap: pretty;
+}
+/* Faint white text sits on glass, not on pure black: lift it to ≥ 4.5:1 on the lightest panels */
+.site-glass .text-white\/40,
+.site-glass .text-white\/45,
+.site-glass .text-white\/50 {
+  color: rgb(255 255 255 / 0.6);
 }
 
 /* ---------- 2. glass surfaces ---------- */
@@ -68,7 +85,7 @@ body:has(.site-glass) {
   box-shadow: 0 8px 32px rgb(0 0 0 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.12);
 }
 .site-glass .glass-strong {
-  background: rgb(14 16 42 / 0.7);
+  background: rgb(10 10 12 / 0.74);
   border: 1px solid var(--line);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   backdrop-filter: blur(22px) saturate(160%);
@@ -91,11 +108,9 @@ body:has(.site-glass) {
 .site-glass .glass-hover:active {
   transform: scale(0.99);
 }
+/* Highlighted words in headings: solid neon rose (gradient text reads as decoration, not emphasis) */
 .site-glass .text-gradient {
-  background: linear-gradient(90deg, #ff7a86, #ffb199);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent-text);
 }
 
 /* ---------- 3. form controls ---------- */
@@ -118,17 +133,17 @@ body:has(.site-glass) {
 .site-glass select:focus,
 .site-glass textarea:focus {
   border-color: var(--focus);
-  box-shadow: 0 0 0 3px rgb(91 140 255 / 0.25);
+  box-shadow: 0 0 0 3px rgb(46 168 223 / 0.3);
   outline: none;
 }
 .site-glass select option,
 .site-glass select optgroup {
-  background: #171a3d;
+  background: #17181c;
   color: var(--ink);
 }
 .site-glass input:-webkit-autofill {
   -webkit-text-fill-color: var(--ink);
-  box-shadow: 0 0 0 1000px #1b1d44 inset;
+  box-shadow: 0 0 0 1000px #17181c inset;
   caret-color: var(--ink);
 }
 @media (max-width: 1023px) {
@@ -157,11 +172,11 @@ body:has(.site-glass) {
 }
 .site-glass .bg-navy-50,
 .site-glass .bg-navy-100 {
-  background-color: rgb(91 140 255 / 0.14);
+  background-color: rgb(0 123 167 / 0.2);
 }
 .site-glass .bg-brand-50,
 .site-glass .bg-brand-100 {
-  background-color: rgb(225 29 46 / 0.16);
+  background-color: rgb(255 46 136 / 0.14);
 }
 .site-glass .bg-emerald-50 {
   background-color: rgb(16 185 129 / 0.16);
@@ -210,7 +225,13 @@ body:has(.site-glass) {
 }
 .site-glass .hover\:text-brand-700:hover,
 .site-glass .hover\:text-brand-600:hover {
-  color: #ffa3ab;
+  color: #ff94c5;
+}
+.site-glass .text-navy-500,
+.site-glass .text-sky-600,
+.site-glass .text-sky-700,
+.site-glass .text-blue-700 {
+  color: var(--cerulean-text);
 }
 .site-glass .text-emerald-900,
 .site-glass .text-emerald-700 {
@@ -282,10 +303,11 @@ body:has(.site-glass) {
 }
 .site-glass .prose-blog a {
   color: var(--accent-text);
-  text-decoration-color: rgb(255 122 134 / 0.4);
+  color: var(--cerulean-text);
+  text-decoration-color: rgb(92 195 238 / 0.4);
 }
 .site-glass .prose-blog blockquote {
-  background: rgb(225 29 46 / 0.12);
+  background: rgb(0 123 167 / 0.14);
   color: var(--ink-2);
 }
 .site-glass .prose-blog code {
@@ -370,10 +392,10 @@ body:has(.site-glass) {
 /* ---------- accessibility / performance fallbacks ---------- */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .site-glass .glass {
-    background: rgb(28 30 66 / 0.96);
+    background: rgb(23 24 28 / 0.96);
   }
   .site-glass .glass-strong {
-    background: rgb(14 16 40 / 0.98);
+    background: rgb(10 10 12 / 0.98);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
@@ -381,7 +403,7 @@ body:has(.site-glass) {
   .site-glass .glass-strong {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    background: rgb(22 24 56 / 0.98);
+    background: rgb(17 17 20 / 0.98);
   }
 }
 @media (prefers-reduced-motion: reduce) {

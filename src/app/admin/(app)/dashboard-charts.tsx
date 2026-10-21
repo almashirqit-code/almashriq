@@ -11,7 +11,7 @@ import {
   YAxis,
 } from "recharts";
 
-const VIBE = ["#8b5cf6", "#ec4899", "#f97316", "#10b981", "#0ea5e9", "#f43f5e", "#eab308", "#06b6d4"];
+const VIBE = ["#007ba7", "#e0156f", "#17181c", "#2ea8df", "#ff94c5", "#10b981", "#f59e0b", "#94a3b8"];
 
 const compact = (locale: string) =>
   new Intl.NumberFormat(locale === "ja" ? "ja-JP" : "en-US", { notation: "compact", maximumFractionDigits: 1 });
@@ -25,9 +25,9 @@ export function SalesChart({ data, locale }: { data: { label: string; value: num
         <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#fb7185" />
-              <stop offset="55%" stopColor="#d71920" />
-              <stop offset="100%" stopColor="#9d174d" />
+              <stop offset="0%" stopColor="#ff5ca4" />
+              <stop offset="55%" stopColor="#e0156f" />
+              <stop offset="100%" stopColor="#920d49" />
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} stroke="#e2e8f0" />
@@ -41,7 +41,7 @@ export function SalesChart({ data, locale }: { data: { label: string; value: num
             tickFormatter={(v: number) => "¥" + fmt.format(v)}
           />
           <Tooltip
-            cursor={{ fill: "#fff1f2" }}
+            cursor={{ fill: "#eaf6fc" }}
             formatter={(v) => [full.format(Number(v)), ""]}
             contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12, boxShadow: "0 10px 25px -10px rgb(15 23 42 / 0.2)" }}
           />
@@ -60,7 +60,7 @@ export function MakesChart({ data }: { data: { make: string; count: number }[] }
           <XAxis type="number" hide allowDecimals={false} />
           <YAxis type="category" dataKey="make" tickLine={false} axisLine={false} fontSize={12} width={84} stroke="#475569" />
           <Tooltip
-            cursor={{ fill: "#fff1f2" }}
+            cursor={{ fill: "#eaf6fc" }}
             contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12, boxShadow: "0 10px 25px -10px rgb(15 23 42 / 0.2)" }}
           />
           <Bar dataKey="count" radius={[0, 8, 8, 0]} maxBarSize={18}>

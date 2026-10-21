@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   applicationName: "Al Mashriq Trading",
 };
 
-export const viewport = { themeColor: "#d71920" };
+export const viewport = { themeColor: "#0a0a0c" };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
