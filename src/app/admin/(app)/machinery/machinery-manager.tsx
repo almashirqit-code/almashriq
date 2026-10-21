@@ -7,6 +7,7 @@ import { CURRENCIES, type BranchCode, type Currency, type VehicleStatus } from "
 import { publicImageUrl } from "@/lib/format";
 import { branchFlag, branchName, DEFAULT_BRANCHES, jpyRate } from "@/lib/branches";
 import { MACHINE_PHOTOS } from "@/lib/photo-zip";
+import { makeNames, modelNames, type CatalogMake } from "@/lib/catalog";
 import { blankMachine, machineCostJpy, machineTitle, MACHINE_CONDITIONS, MACHINE_MAKES, MACHINE_STATUSES, type MachineInput } from "@/lib/machinery";
 import { Badge, Empty, IconChip } from "@/components/ui";
 import { Modal } from "@/components/modal";
@@ -30,12 +31,15 @@ export function MachineryManager({
   seeCost,
   categories,
   rates,
+  catalog = [],
 }: {
   machines: MachineRow[];
   canEdit: boolean;
   seeCost: boolean;
   categories: string[];
   rates: Partial<Record<Currency, number>>;
+  /** Makes & models list (machinery), for suggestions. */
+  catalog?: CatalogMake[];
 }) {
   const router = useRouter();
   const [edit, setEdit] = useState<{ id: string | null; data: MachineInput; photos: StockPhoto[] } | null>(null);
@@ -275,15 +279,28 @@ export function MachineryManager({
             {field(
               "Make *",
               <>
-                <input className="input" list="machine-makes" value={edit.data.make} onChange={(e) => set("make", e.target.value)} placeholder="Komatsu" />
+                <input className="input" list="machine-makes" autoComplete="off" value={edit.data.make} onChange={(e) => set("make", e.target.value)} placeholder="Komatsu" />
                 <datalist id="machine-makes">
-                  {MACHINE_MAKES.map((c) => (
+                  {(catalog.length ? makeNames(catalog) : MACHINE_MAKES).map((c) => (
                     <option key={c} value={c} />
                   ))}
                 </datalist>
               </>
             )}
-            {field("Model *", <input className="input" value={edit.data.model} onChange={(e) => set("model", e.target.value)} placeholder="PC200-8" />)}
+            {field(
+              "Model *",
+              <>
+                <input className="input" list="machine-models" autoComplete="off" value={edit.data.model} onChange={(e) => set("model", e.target.value)} placeholder="PC200-8" />
+                <datalist id="machine-models">
+                  {modelNames(catalog, edit.data.make).map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
+                <a href="/admin/settings?tab=catalog" target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-semibold text-brand-600 hover:underline">
+                  Not in the list? Manage makes &amp; models →
+                </a>
+              </>
+            )}
             {field("Year", <input type="number" className="input" value={edit.data.year ?? ""} onChange={number("year")} />)}
             {field("Working hours", <input type="number" min={0} className="input" value={edit.data.hours ?? ""} onChange={number("hours")} />)}
             {field("Serial no.", <input className="input font-mono" value={edit.data.serial_no ?? ""} onChange={text("serial_no")} />)}

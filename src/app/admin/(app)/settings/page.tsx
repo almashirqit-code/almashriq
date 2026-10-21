@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Settings as SettingsIcon, Anchor, Ship, Tag, SlidersHorizontal, Globe } from "lucide-react";
+import { Settings as SettingsIcon, Anchor, Ship, Tag, SlidersHorizontal, Globe, ListTree } from "lucide-react";
+import type { CatalogMake } from "@/lib/catalog";
+import { CatalogManager } from "./catalog-manager";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -12,7 +14,7 @@ import { MastersManager } from "../masters/masters-manager";
 import { FreightManager } from "../freight/freight-manager";
 import { MakeLogos, type MakeRow } from "./make-logos";
 
-type Tab = "general" | "branches" | "ports" | "freight" | "makes";
+type Tab = "general" | "branches" | "catalog" | "ports" | "freight" | "makes";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string; sub?: string }> }) {
   const profile = await requireRole(["admin", "manager"]);
@@ -22,6 +24,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     ...(isAdmin ? [{ key: "general" as Tab, label: "General", icon: SlidersHorizontal }] : []),
     { key: "branches", label: t("settings_branches"), icon: Globe },
+    { key: "catalog", label: "Makes & models", icon: ListTree },
     { key: "ports", label: t("m_title"), icon: Anchor },
     { key: "freight", label: t("fr_title"), icon: Ship },
     { key: "makes", label: "Make logos", icon: Tag },
@@ -40,6 +43,22 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   } else if (tab === "branches") {
     const [{ data: branches }, { data: s }] = await Promise.all([supabase.from("branches").select("*"), supabase.from("settings").select("exchange_rates").single()]);
     body = <BranchesManager branches={mergeBranches(branches as Branch[] | null)} rates={(s?.exchange_rates ?? {}) as Partial<Record<Currency, number>>} canEdit={isAdmin} />;
+  } else if (tab === "catalog") {
+    const [{ data: cm }, vs, ms] = await Promise.all([
+      supabase.from("catalog_makes").select("id, kind, name, active, catalog_models(id, name, model_code, active)").order("name").limit(3000),
+      supabase.from("vehicles").select("make").limit(30000),
+      supabase.from("machinery").select("make").limit(30000),
+    ]);
+    const count = (rows: { make: string | null }[] | null) => {
+      const out: Record<string, number> = {};
+      for (const r of rows ?? []) {
+        const k = (r.make ?? "").trim().toLowerCase();
+        if (k) out[k] = (out[k] ?? 0) + 1;
+      }
+      return out;
+    };
+    const makes = ((cm ?? []) as unknown as (Omit<CatalogMake, "models"> & { catalog_models: CatalogMake["models"] | null })[]).map(({ catalog_models, ...m }) => ({ ...m, models: catalog_models ?? [] }));
+    body = <CatalogManager makes={makes} usage={{ vehicle: count(vs.data), machinery: count(ms.data) }} canEdit={can.editStock(profile.role)} />;
   } else if (tab === "ports") {
     const [ports, auctions, yards] = await Promise.all([
       supabase.from("ports").select("*").order("name"),

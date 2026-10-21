@@ -5,8 +5,9 @@ import { AlertTriangle, Anchor } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import type { AuctionHouse, Branch, Port, ShipmentMode, Vehicle, Yard } from "@/lib/types";
+import type { CatalogMake } from "@/lib/catalog";
 
-export type Masters = { ports: Port[]; auctions: AuctionHouse[]; yards: Yard[]; branches: Branch[] };
+export type Masters = { ports: Port[]; auctions: AuctionHouse[]; yards: Yard[]; branches: Branch[]; catalog: CatalogMake[] };
 
 /** Auction house + yard selects (grouped by port, limited to the branch's ports) and the resulting port shipment rule. */
 export function OriginPicker({ vehicle, masters, readOnly, branch }: { vehicle?: Partial<Vehicle>; masters: Masters; readOnly: boolean; branch?: string }) {

@@ -5,6 +5,7 @@ import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { CURRENCIES, VEHICLE_STATUSES, type BranchCode, type Currency, type Vehicle, type VehicleField } from "@/lib/types";
 import { DEFAULT_BRANCHES } from "@/lib/branches";
+import { makeNames, modelNames } from "@/lib/catalog";
 import { SubmitButton } from "@/components/buttons";
 import { CostCalculator } from "./cost-calculator";
 import { OriginPicker, type Masters } from "./origin-picker";
@@ -23,7 +24,7 @@ const SPECS: FieldDef[] = [
   { name: "stock_no", required: true },
   { name: "chassis_no" },
   { name: "make", required: true, list: "makes" },
-  { name: "model", required: true },
+  { name: "model", required: true, list: "models" },
   { name: "grade" },
   { name: "year", type: "number" },
   { name: "month", type: "number" },
@@ -75,6 +76,11 @@ export function VehicleForm({
   const [ownership, setOwnership] = useState(vehicle?.ownership ?? "own");
   const branches = masters?.branches ?? DEFAULT_BRANCHES;
   const [branch, setBranch] = useState<BranchCode>(vehicle?.branch ?? "JP");
+  // Make/model suggestions come from Configuration → Makes & models (built-in makes until that list exists).
+  const catalog = masters?.catalog ?? [];
+  const [make, setMake] = useState(vehicle?.make ?? "");
+  const makeOptions = catalog.length ? makeNames(catalog) : MAKES;
+  const modelOptions = modelNames(catalog, make);
 
   const render = (f: FieldDef) => {
     const value = vehicle?.[f.name as keyof Vehicle];
@@ -111,6 +117,8 @@ export function VehicleForm({
             min={f.name === "month" ? 1 : f.type === "number" ? 0 : undefined}
             max={f.name === "month" ? 12 : undefined}
             list={f.list}
+            autoComplete={f.list ? "off" : undefined}
+            onChange={f.name === "make" ? (e) => setMake(e.target.value) : undefined}
           />
         )}
       </div>
@@ -122,7 +130,12 @@ export function VehicleForm({
   return (
     <form action={formAction} className="space-y-5">
       <datalist id="makes">
-        {MAKES.map((m) => (
+        {makeOptions.map((m) => (
+          <option key={m} value={m} />
+        ))}
+      </datalist>
+      <datalist id="models">
+        {modelOptions.map((m) => (
           <option key={m} value={m} />
         ))}
       </datalist>
@@ -247,7 +260,14 @@ export function VehicleForm({
       )}
 
       <section className="card">
-        <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("stock_specs")}</h2>
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5">
+          <h2 className="text-sm font-semibold">{t("stock_specs")}</h2>
+          {!readOnly && (
+            <a href="/admin/settings?tab=catalog" target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand-600 hover:underline">
+              Make or model not in the list? Manage makes &amp; models →
+            </a>
+          )}
+        </div>
         <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-3">{SPECS.map(render)}</div>
       </section>
 

@@ -5,6 +5,7 @@ import { getProfile, can } from "@/lib/auth";
 import { rowsParam } from "@/lib/rows";
 import { DEFAULT_BRANCHES, parseBranch } from "@/lib/branches";
 import { MACHINE_CATEGORIES, MACHINE_STATUSES } from "@/lib/machinery";
+import { loadCatalog } from "@/lib/catalog-data";
 import { DEFAULT_RATES, type Currency } from "@/lib/types";
 import { RowsSelect } from "@/components/rows-select";
 import { PageHeader, Pagination, Stat } from "@/components/ui";
@@ -38,10 +39,11 @@ export default async function MachineryAdmin({ searchParams }: { searchParams: P
   const branch = parseBranch(sp.branch);
   if (branch) query = query.eq("branch", branch);
 
-  const [{ data, count }, { data: all }, { data: settings }] = await Promise.all([
+  const [{ data, count }, { data: all }, { data: settings }, catalog] = await Promise.all([
     query,
     supabase.from("machinery").select("status, category, show_on_website").limit(20000),
     supabase.from("settings").select("exchange_rates").single(),
+    loadCatalog("machinery"),
   ]);
   const rates = { ...DEFAULT_RATES, ...(settings?.exchange_rates ?? {}) } as Record<Currency, number>;
   const rows = (data ?? []) as MachineRow[];
@@ -108,7 +110,7 @@ export default async function MachineryAdmin({ searchParams }: { searchParams: P
             </Link>
           )}
         </form>
-        <MachineryManager machines={rows} canEdit={canEdit} seeCost={seeCost} categories={categories} rates={rates} />
+        <MachineryManager machines={rows} canEdit={canEdit} seeCost={seeCost} categories={categories} rates={rates} catalog={catalog} />
         <Pagination
           page={page}
           pages={pages}
