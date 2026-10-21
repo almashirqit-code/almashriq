@@ -15,7 +15,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
     <article className={`glass-lite glass-hover group flex flex-col overflow-hidden rounded-2xl ${sold ? "opacity-80" : ""}`}>
       <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-black/20" aria-label={`${carTitle(c)} — ${c.stock_no}`}>
         <CardPhotos images={imgs} alt={`${carTitle(c)} ${c.stock_no}`} dim={sold} />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0b1020]/70 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a0a0c]/70 to-transparent" />
         <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">{c.stock_no}</span>
         {c.image_count > 1 && (
           <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
@@ -58,7 +58,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
         </dl>
         <div className="mt-3 flex items-end justify-between gap-2 border-t border-white/10 pt-3">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-white/45">FOB price</div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-white/60">FOB price</div>
             {price ? <div className="text-xl font-black leading-tight text-white">{price}</div> : <div className="text-sm font-bold text-white/85">Ask for price</div>}
           </div>
           <div className="flex gap-2">
@@ -67,7 +67,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
                 <MessageCircle className="h-5 w-5" />
               </a>
             )}
-            <Link href={href} className="inline-flex h-11 items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white shadow-lg shadow-red-900/30 hover:bg-red-600">
+            <Link href={href} className="inline-flex h-11 items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white shadow-lg shadow-brand-900/30 hover:bg-brand-700">
               Details
             </Link>
           </div>

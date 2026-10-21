@@ -30,14 +30,12 @@ import type { DictKey } from "@/lib/i18n/dictionaries";
 import type { Role } from "@/lib/types";
 import { signOut } from "@/app/actions";
 import { AvatarPicker } from "./avatar-picker";
+import { Logo } from "./brand/logo";
 
 type Item = {
   href: string;
   label: DictKey;
   icon: React.ElementType;
-  /** gradient used for the icon chip when active, and the icon colour when idle */
-  grad: string;
-  idle: string;
   roles?: Role[];
   newTab?: boolean;
 };
@@ -45,41 +43,41 @@ type Item = {
 const GROUPS: { label: DictKey; items: Item[] }[] = [
   {
     label: "grp_overview",
-    items: [{ href: "/admin", label: "nav_dashboard", icon: LayoutDashboard, grad: "from-violet-500 to-indigo-600", idle: "text-violet-300" }],
+    items: [{ href: "/admin", label: "nav_dashboard", icon: LayoutDashboard }],
   },
   {
     label: "grp_inventory",
     items: [
-      { href: "/admin/stock", label: "nav_stock", icon: Car, grad: "from-rose-500 to-brand-600", idle: "text-rose-300" },
-      { href: "/admin/third-party", label: "nav_third_party", icon: Handshake, grad: "from-cyan-400 to-sky-600", idle: "text-cyan-300" },
-      { href: "/admin/parts", label: "nav_parts", icon: Wrench, grad: "from-teal-400 to-cyan-600", idle: "text-teal-300" },
-      { href: "/admin/machinery", label: "nav_machinery", icon: Tractor, grad: "from-yellow-400 to-amber-600", idle: "text-yellow-300" },
-      { href: "/admin/stock/import", label: "nav_import", icon: Upload, grad: "from-amber-400 to-orange-500", idle: "text-amber-300", roles: ["admin", "manager"] },
+      { href: "/admin/stock", label: "nav_stock", icon: Car },
+      { href: "/admin/third-party", label: "nav_third_party", icon: Handshake },
+      { href: "/admin/parts", label: "nav_parts", icon: Wrench },
+      { href: "/admin/machinery", label: "nav_machinery", icon: Tractor },
+      { href: "/admin/stock/import", label: "nav_import", icon: Upload, roles: ["admin", "manager"] },
     ],
   },
   {
     label: "grp_sales",
     items: [
-      { href: "/admin/inquiries", label: "nav_inquiries", icon: Inbox, grad: "from-rose-500 to-fuchsia-600", idle: "text-rose-300" },
-      { href: "/admin/customers", label: "nav_customers", icon: Users, grad: "from-sky-400 to-blue-600", idle: "text-sky-300" },
-      { href: "/admin/reservations", label: "nav_reservations", icon: BookmarkCheck, grad: "from-amber-400 to-orange-500", idle: "text-orange-300" },
-      { href: "/admin/invoices", label: "nav_invoices", icon: FileText, grad: "from-fuchsia-500 to-pink-600", idle: "text-fuchsia-300" },
-      { href: "/admin/remittances", label: "nav_remittances", icon: Banknote, grad: "from-emerald-400 to-teal-600", idle: "text-emerald-300" },
+      { href: "/admin/inquiries", label: "nav_inquiries", icon: Inbox },
+      { href: "/admin/customers", label: "nav_customers", icon: Users },
+      { href: "/admin/reservations", label: "nav_reservations", icon: BookmarkCheck },
+      { href: "/admin/invoices", label: "nav_invoices", icon: FileText },
+      { href: "/admin/remittances", label: "nav_remittances", icon: Banknote },
     ],
   },
   {
     label: "grp_website",
     items: [
-      { href: "/admin/blog", label: "nav_blog", icon: Newspaper, grad: "from-sky-400 to-indigo-600", idle: "text-sky-300", roles: ["admin", "manager"] },
-      { href: "/admin/reviews", label: "nav_reviews", icon: Star, grad: "from-amber-400 to-orange-500", idle: "text-amber-300", roles: ["admin", "manager"] },
-      { href: "/", label: "nav_showroom", icon: Store, grad: "from-amber-400 to-rose-500", idle: "text-amber-300", newTab: true },
+      { href: "/admin/blog", label: "nav_blog", icon: Newspaper, roles: ["admin", "manager"] },
+      { href: "/admin/reviews", label: "nav_reviews", icon: Star, roles: ["admin", "manager"] },
+      { href: "/", label: "nav_showroom", icon: Store, newTab: true },
     ],
   },
   {
     label: "grp_admin",
     items: [
-      { href: "/admin/users", label: "nav_users", icon: UserCog, grad: "from-indigo-400 to-violet-600", idle: "text-indigo-300", roles: ["admin"] },
-      { href: "/admin/settings", label: "nav_settings", icon: Settings, grad: "from-slate-400 to-slate-600", idle: "text-slate-300", roles: ["admin", "manager"] },
+      { href: "/admin/users", label: "nav_users", icon: UserCog, roles: ["admin"] },
+      { href: "/admin/settings", label: "nav_settings", icon: Settings, roles: ["admin", "manager"] },
     ],
   },
 ];
@@ -117,8 +115,8 @@ export function Sidebar({
   const nav = (
     <nav className="relative flex h-full flex-col overflow-hidden">
       {/* colour glows */}
-      <div className="pointer-events-none absolute -left-24 -top-24 h-64 w-64 rounded-full bg-brand-600/25 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-violet-600/20 blur-3xl" />
+      <div className="pointer-events-none absolute -left-24 -top-24 h-64 w-64 rounded-full bg-cerulean-600/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-brand-500/15 blur-3xl" />
 
       <Link href="/admin" className="relative block px-5 pb-3 pt-5" onClick={() => setOpen(false)}>
         {logoUrl ? (
@@ -127,8 +125,7 @@ export function Sidebar({
             <img src={logoUrl} alt={companyName} className="mx-auto h-10 w-auto object-contain" />
           </span>
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src="/brand/logo-light.png" alt={companyName} className="h-12 w-auto object-contain" />
+          <Logo size="md" alt={companyName} />
         )}
         <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 ring-1 ring-white/10">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
@@ -161,14 +158,14 @@ export function Sidebar({
                       >
                         <span
                           className={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
-                            active ? `bg-gradient-to-br ${i.grad} text-white shadow-lg` : `bg-white/[0.06] ${i.idle} group-hover:bg-white/10`
+                            active ? "bg-cerulean-600 text-white shadow-lg shadow-cerulean-900/40" : "bg-white/[0.06] text-slate-300 group-hover:bg-white/10 group-hover:text-white"
                           }`}
                         >
                           <Icon className="h-4 w-4" />
                         </span>
                         <span className="flex-1 truncate">{t(i.label)}</span>
                         {i.newTab && <ExternalLink className="h-3.5 w-3.5 text-slate-500" />}
-                        {active && <span className={`h-1.5 w-1.5 rounded-full bg-gradient-to-br ${i.grad}`} />}
+                        {active && <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_#ff2e88]" />}
                       </Link>
                     </li>
                   );
@@ -203,12 +200,12 @@ export function Sidebar({
     </nav>
   );
 
-  const bg = "bg-gradient-to-b from-[#0d1024] via-[#141233] to-[#1b0f24]";
+  const bg = "bg-jet-950";
 
   return (
     <>
       <button
-        className="no-print fixed left-3 top-2.5 z-40 rounded-xl bg-gradient-to-br from-rose-500 to-brand-600 p-2 text-white shadow-lg lg:hidden"
+        className="no-print fixed left-3 top-2.5 z-40 rounded-xl bg-jet-950 p-2 text-white shadow-lg ring-1 ring-white/10 lg:hidden"
         onClick={() => setOpen(true)}
         aria-label="Menu"
       >

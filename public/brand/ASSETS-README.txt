@@ -1,4 +1,8 @@
 BRAND AND FLAG ASSETS
+brand/logo.png              Al Mashriq Trading logo, transparent, original colours: for light backgrounds (invoices, auction sheets, print).
+brand/logo-light.png        same logo with chrome-white lettering and brighter red: for dark backgrounds (website, admin sidebar, login).
+brand/logo-emblem-light.png the car + speedometer emblem alone (used for the app icons src/app/icon.png and apple-icon.png).
+UI palette: jet #0A0A0C, cerulean #007BA7 / #2EA8DF, neon rose #FF2E88 / #E0156F. Documents use the logo red #D71920.
 logos/*.png   car and truck brand logos, trimmed, transparent background (from the open car-logos-dataset on GitHub).
 logos/hitachi.svg, john-deere.svg   vector marks from simple-icons (CC0), coloured with the brand colour.
 flags/*.svg   country flags, 4:3, named by 2-letter ISO code (from flag-icons, MIT licence).

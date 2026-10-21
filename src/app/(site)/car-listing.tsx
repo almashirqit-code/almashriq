@@ -147,7 +147,7 @@ export async function CarListing({ f, path, heading, intro, lockMake = false }: 
                     key={p}
                     href={href({ page: String(p) })}
                     aria-current={p === res.page ? "page" : undefined}
-                    className={`flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-center text-sm font-bold ${p === res.page ? "bg-[var(--accent)] text-white shadow-lg shadow-red-900/40" : "glass-lite hover:bg-white/15"}`}
+                    className={`flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-center text-sm font-bold ${p === res.page ? "bg-[var(--accent)] text-white shadow-lg shadow-brand-900/40" : "glass-lite hover:bg-white/15"}`}
                   >
                     {p}
                   </Link>

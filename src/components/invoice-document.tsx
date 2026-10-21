@@ -19,7 +19,7 @@ export type InvoiceItemWithVehicle = InvoiceItem & {
 /** Item select string that brings the vehicle columns the invoice prints. */
 export const INVOICE_ITEM_SELECT = "*, vehicles(stock_no, make, model, grade, chassis_no, engine_cc, color, year)";
 
-const BRAND_RED = "#d71920";
+const BRAND_RED = "#d71920"; // logo red
 
 /** The invoice as the customer sees it — detail page and print view. A4 portrait. */
 export function InvoiceDocument({
@@ -79,7 +79,7 @@ export function InvoiceDocument({
         {/* Header */}
         <header className="flex items-start justify-between gap-6 leading-normal">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={logo} alt={company} className="h-[60px] w-auto object-contain" />
+          <img src={logo} alt={company} className="h-[76px] w-auto object-contain" />
           <div className="text-right">
             <div className="text-[15px] font-extrabold uppercase tracking-wide text-slate-900">{company}</div>
             {companyJa && <div className="text-[11px] text-slate-500">{companyJa}</div>}
@@ -337,13 +337,13 @@ export function InvoiceDocument({
         {(settings?.bank_details || settings?.intermediary_bank) && (
           <div className="mt-3 grid grid-cols-2 gap-3 text-[10.5px] leading-snug [break-inside:avoid]">
             {settings?.bank_details && (
-              <section className="rounded-lg border-l-4 bg-slate-50 px-3 py-2.5" style={{ borderColor: BRAND_RED }}>
+              <section className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                 <Label>{t("inv_beneficiary_bank")}</Label>
                 <div className="whitespace-pre-line text-slate-700">{settings.bank_details}</div>
               </section>
             )}
             {settings?.intermediary_bank && (
-              <section className="rounded-lg border-l-4 border-slate-900 bg-slate-50 px-3 py-2.5">
+              <section className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                 <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-900">{t("inv_intermediary_bank")}</div>
                 <div className="whitespace-pre-line text-slate-700">{settings.intermediary_bank}</div>
               </section>

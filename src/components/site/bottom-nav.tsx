@@ -25,7 +25,7 @@ export function BottomNav({ wa }: { wa: string | null }) {
     <nav aria-label="Main" className="glass-strong fixed inset-x-2 bottom-2 z-50 flex rounded-2xl pb-[env(safe-area-inset-bottom)] lg:hidden">
       {TABS.map(({ href, label, icon: Icon }) => (
         <Link key={href} href={href} aria-current={active(href) ? "page" : undefined} className={`${item} ${active(href) ? "text-white" : "text-white/60 hover:text-white"}`}>
-          <span className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${active(href) ? "bg-[var(--accent)] shadow-lg shadow-red-900/40" : ""}`}>
+          <span className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${active(href) ? "bg-[var(--accent)] shadow-lg shadow-brand-900/40" : ""}`}>
             <Icon className="h-5 w-5" />
           </span>
           {label}

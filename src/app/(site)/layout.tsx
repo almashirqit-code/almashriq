@@ -9,6 +9,7 @@ import { MobileMenu } from "@/components/site/mobile-menu";
 import { BottomNav } from "@/components/site/bottom-nav";
 import { BodyIcon } from "@/components/site/body-icon";
 import { JsonLd } from "@/components/site/json-ld";
+import { Logo } from "@/components/brand/logo";
 import "./site.css";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export const viewport: Viewport = { themeColor: "#0b1020", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#0a0a0c", width: "device-width", initialScale: 1 };
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [company, facets, makes, fx] = await Promise.all([getCompany(), getFacets(), getMakeTiles(), getUsdJpy()]);
@@ -40,7 +41,14 @@ export default async function PublicLayout({ children }: { children: React.React
     { href: "/contact", label: "Contact" },
   ];
   const navLink = "block px-4 py-3 text-sm font-bold text-white/90 transition hover:bg-white/10 hover:text-white";
-  const logo = company.logo_url || "/brand/logo.png";
+  // A logo uploaded in Settings wins; otherwise the built-in Al Mashriq mark + wordmark (crisp SVG, light text on the dark site).
+  const custom = company.logo_url;
+  const logoImg = (h: string) => (
+    <span className="inline-block rounded-xl bg-white/95 px-2 py-1">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={custom!} alt={company.company_name} className={`${h} w-auto object-contain`} />
+    </span>
+  );
 
   return (
     <div className="site-glass pb-nav">
@@ -89,25 +97,24 @@ export default async function PublicLayout({ children }: { children: React.React
       {/* Desktop header: logo, search, contact buttons */}
       <header className="hidden lg:block">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3">
-          <Link href="/" className="shrink-0 rounded-xl bg-white/95 px-2 py-1">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logo} alt={company.company_name} className="h-11 w-auto object-contain" />
+          <Link href="/" className="shrink-0 rounded-xl" aria-label={`${company.company_name} home`}>
+            {custom ? logoImg("h-11") : <Logo size="md" />}
           </Link>
           <form action="/cars" className="mx-auto w-full max-w-xl" role="search">
             <div className="glass flex overflow-hidden rounded-2xl focus-within:ring-2 focus-within:ring-[var(--focus)]">
               <input name="q" placeholder="Search make, model, stock ID…" className="w-full !rounded-none !border-0 bg-transparent px-4 py-2.5 text-sm" aria-label="Search cars" />
-              <button className="inline-flex items-center gap-1.5 bg-[var(--accent)] px-5 text-sm font-bold text-white hover:bg-red-600">
+              <button className="inline-flex items-center gap-1.5 bg-[var(--accent)] px-5 text-sm font-bold text-white hover:bg-brand-700">
                 <Search className="h-4 w-4" /> Search
               </button>
             </div>
           </form>
           <div className="flex shrink-0 items-center gap-2">
             {wa && (
-              <a href={wa} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-bold text-white hover:brightness-110">
+              <a href={wa} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-bold text-jet-950 hover:brightness-110">
                 <MessageCircle className="h-4 w-4" /> WhatsApp
               </a>
             )}
-            <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-white hover:bg-red-600">
+            <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700">
               <Send className="h-4 w-4" /> Inquiry
             </Link>
           </div>
@@ -117,9 +124,15 @@ export default async function PublicLayout({ children }: { children: React.React
       {/* Sticky bar: compact logo + search + menu on phones, the full navigation on desktop */}
       <nav className="glass-strong sticky top-0 z-40 rounded-none border-x-0 border-t-0">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 lg:h-auto lg:px-4">
-          <Link href="/" className="shrink-0 rounded-lg bg-white/95 px-1.5 py-1 lg:hidden" aria-label="Al Mashriq Trading home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logo} alt="" className="h-8 w-auto object-contain" />
+          <Link href="/" className="shrink-0 rounded-xl lg:hidden" aria-label="Al Mashriq Trading home">
+            {custom ? (
+              <span className="inline-block rounded-lg bg-white/95 px-1.5 py-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={custom} alt="" className="h-8 w-auto object-contain" />
+              </span>
+            ) : (
+              <Logo size="sm" alt="" />
+            )}
           </Link>
           <ul className="hidden items-center lg:flex">
             {links.slice(0, 4).map((l) => (
@@ -180,7 +193,7 @@ export default async function PublicLayout({ children }: { children: React.React
             fx={fx}
           />
         </div>
-        <div className="hidden h-0.5 bg-gradient-to-r from-[var(--accent)] via-rose-400/60 to-transparent lg:block" />
+        <div className="hidden h-0.5 bg-gradient-to-r from-cerulean-500 via-brand-500/70 to-transparent lg:block" />
       </nav>
 
       <main>{children}</main>
@@ -189,10 +202,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <footer className="glass-lite mt-14 rounded-none border-x-0 border-b-0">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 lg:grid-cols-4 lg:px-6">
           <div className="col-span-2 lg:col-span-1">
-            <span className="inline-block rounded-xl bg-white/95 px-2 py-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/logo.png" alt={company.company_name} className="h-11 w-auto object-contain" />
-            </span>
+            {custom ? logoImg("h-11") : <Logo size="md" />}
             <p className="mt-4 text-sm leading-6 text-white/70">{company.company_name} exports quality Japanese used vehicles and spare parts worldwide by RoRo and container.</p>
           </div>
           <div>
@@ -243,7 +253,7 @@ export default async function PublicLayout({ children }: { children: React.React
               </a>
             )}
             {wa && (
-              <a href={wa} target="_blank" rel="noreferrer" className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-white hover:brightness-110">
+              <a href={wa} target="_blank" rel="noreferrer" className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950 hover:brightness-110">
                 <MessageCircle className="h-4 w-4" /> WhatsApp{company.mobile ? ` · ${company.mobile}` : ""}
               </a>
             )}
@@ -263,7 +273,7 @@ export default async function PublicLayout({ children }: { children: React.React
           target="_blank"
           rel="noreferrer"
           aria-label="WhatsApp"
-          className="fixed bottom-5 right-5 z-50 hidden h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-black/40 transition hover:scale-105 lg:flex"
+          className="fixed bottom-5 right-5 z-50 hidden h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-jet-950 shadow-xl shadow-black/40 transition hover:scale-105 lg:flex"
         >
           <MessageCircle className="h-6 w-6" />
         </a>

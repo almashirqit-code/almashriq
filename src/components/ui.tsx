@@ -4,13 +4,13 @@ import { branchFlag, branchName } from "@/lib/branches";
 
 /** Vibrant accent palette used for icon chips, stat cards and module colours. */
 export const TONES = {
-  brand: { chip: "from-rose-500 to-brand-600 shadow-brand-500/30", bar: "from-rose-500 to-brand-600", soft: "bg-rose-50 text-brand-700" },
-  violet: { chip: "from-violet-500 to-indigo-600 shadow-violet-500/30", bar: "from-violet-500 to-indigo-600", soft: "bg-violet-50 text-violet-700" },
+  brand: { chip: "from-brand-500 to-brand-700 shadow-brand-500/30", bar: "from-brand-500 to-brand-700", soft: "bg-brand-50 text-brand-700" },
+  violet: { chip: "from-jet-800 to-jet-950 shadow-black/25", bar: "from-cerulean-600 to-jet-900", soft: "bg-slate-100 text-jet-900" },
   emerald: { chip: "from-emerald-400 to-teal-600 shadow-emerald-500/30", bar: "from-emerald-400 to-teal-600", soft: "bg-emerald-50 text-emerald-700" },
   amber: { chip: "from-amber-400 to-orange-500 shadow-amber-500/30", bar: "from-amber-400 to-orange-500", soft: "bg-amber-50 text-amber-700" },
-  sky: { chip: "from-sky-400 to-blue-600 shadow-sky-500/30", bar: "from-sky-400 to-blue-600", soft: "bg-sky-50 text-sky-700" },
-  fuchsia: { chip: "from-fuchsia-500 to-pink-600 shadow-fuchsia-500/30", bar: "from-fuchsia-500 to-pink-600", soft: "bg-fuchsia-50 text-fuchsia-700" },
-  cyan: { chip: "from-cyan-400 to-sky-600 shadow-cyan-500/30", bar: "from-cyan-400 to-sky-600", soft: "bg-cyan-50 text-cyan-700" },
+  sky: { chip: "from-cerulean-400 to-cerulean-700 shadow-cerulean-500/30", bar: "from-cerulean-400 to-cerulean-700", soft: "bg-cerulean-50 text-cerulean-700" },
+  fuchsia: { chip: "from-brand-400 to-brand-600 shadow-brand-500/30", bar: "from-brand-400 to-brand-600", soft: "bg-brand-50 text-brand-700" },
+  cyan: { chip: "from-cerulean-300 to-cerulean-600 shadow-cerulean-500/30", bar: "from-cerulean-300 to-cerulean-600", soft: "bg-cerulean-50 text-cerulean-700" },
   slate: { chip: "from-slate-500 to-slate-700 shadow-slate-500/30", bar: "from-slate-400 to-slate-600", soft: "bg-slate-100 text-slate-700" },
 } as const;
 export type Tone = keyof typeof TONES;

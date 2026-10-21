@@ -11,7 +11,7 @@ import type { Role } from "@/lib/types";
 const NEW_ITEMS: { href: string; label: DictKey; icon: React.ElementType; grad: string; roles?: Role[] }[] = [
   { href: "/admin/stock/new", label: "top_new_vehicle", icon: Car, grad: "from-rose-500 to-brand-600", roles: ["admin", "manager"] },
   { href: "/admin/invoices/new", label: "top_new_invoice", icon: FileText, grad: "from-fuchsia-500 to-pink-600" },
-  { href: "/admin/customers/new", label: "top_new_customer", icon: Users, grad: "from-sky-400 to-blue-600" },
+  { href: "/admin/customers/new", label: "top_new_customer", icon: Users, grad: "from-cerulean-400 to-cerulean-700" },
   { href: "/admin/remittances/new", label: "top_new_remittance", icon: Banknote, grad: "from-emerald-400 to-teal-600", roles: ["admin", "manager"] },
 ];
 

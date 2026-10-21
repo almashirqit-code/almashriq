@@ -81,7 +81,7 @@ export default async function PublicHome() {
                   <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
                   <input name="q" placeholder="Model, stock ID or chassis" className={`${SELECT} pl-10`} aria-label="Keyword" enterKeyHint="search" />
                 </div>
-                <button className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-white shadow-lg shadow-red-900/40 hover:bg-red-600" aria-label="Search cars">
+                <button className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-white shadow-lg shadow-brand-900/40 hover:bg-brand-700" aria-label="Search cars">
                   <Search className="h-5 w-5" />
                 </button>
               </div>
@@ -127,7 +127,7 @@ export default async function PublicHome() {
                   </select>
                 </div>
               </details>
-              <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-sm font-bold text-white shadow-lg shadow-red-900/40 hover:bg-red-600">
+              <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-sm font-bold text-white shadow-lg shadow-brand-900/40 hover:bg-brand-700">
                 <Search className="h-4 w-4" /> Search {facets.available.toLocaleString()} cars
               </button>
             </div>
@@ -144,7 +144,7 @@ export default async function PublicHome() {
               { icon: FileCheck2, t: "Export documents", d: "Sent by DHL / FedEx" },
             ].map(({ icon: I, t, d }) => (
               <div key={t} className="glass-lite flex w-60 items-center gap-3 rounded-2xl px-4 py-3 lg:w-auto">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] shadow-lg shadow-red-900/40">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] shadow-lg shadow-brand-900/40">
                   <I className="h-5 w-5 text-white" />
                 </span>
                 <div>
@@ -169,7 +169,7 @@ export default async function PublicHome() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={m.logo} alt={`${m.label} logo`} loading="lazy" className="max-h-9 max-w-full object-contain" />
                   ) : (
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#141238] text-base font-black text-white">{m.label.slice(0, 1)}</span>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#17181c] text-base font-black text-white">{m.label.slice(0, 1)}</span>
                   )}
                 </span>
                 <span className="w-full truncate text-xs font-bold">{m.label}</span>
@@ -198,7 +198,7 @@ export default async function PublicHome() {
                       <BodyIcon type={b} className="h-9 w-[4.5rem] text-white/70" />
                     </div>
                   )}
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0b1020]/85 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0a0a0c]/85 to-transparent" />
                   <span className="absolute bottom-1.5 left-2.5 right-2 truncate text-[13px] font-extrabold uppercase tracking-wide text-white drop-shadow">{b}</span>
                 </div>
                 <div className="px-2.5 py-2 text-[11px] text-white/60">{n.toLocaleString()} cars</div>
@@ -300,7 +300,7 @@ export default async function PublicHome() {
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {BUY_STEPS.map((s, i) => (
             <li key={s.title} className="glass-lite flex gap-4 rounded-2xl p-4 sm:p-5">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent)] to-rose-400 text-lg font-black text-white shadow-lg shadow-red-900/40">{i + 1}</span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-lg font-black text-white shadow-lg shadow-brand-900/40">{i + 1}</span>
               <div>
                 <h3 className="font-bold">{s.title}</h3>
                 <p className="mt-1 text-sm leading-6 text-white/70">{s.body}</p>
@@ -366,7 +366,7 @@ export default async function PublicHome() {
               <p className="mt-1 text-white/75">Tell us the model, year and budget — we buy daily at Japanese auctions and ship to your port.</p>
             </div>
           </div>
-          <Link href="/contact" className="relative inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 font-bold text-white shadow-lg shadow-red-900/40 hover:bg-red-600 md:w-auto">
+          <Link href="/contact" className="relative inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 font-bold text-white shadow-lg shadow-brand-900/40 hover:bg-brand-700 md:w-auto">
             <Send className="h-4 w-4" /> Send an inquiry
           </Link>
         </div>

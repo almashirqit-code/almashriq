@@ -33,7 +33,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
   };
   const active = (["q", "category", "make", "branch", "min_price", "max_price", "min_year", "max_year"] as const).filter((k) => f[k]);
   const stocked = branches.filter((b) => (b.n_machines ?? 0) > 0 || b.code === f.branch?.toUpperCase());
-  const chip = (on: boolean) => `inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold ${on ? "bg-[var(--accent)] text-white shadow-lg shadow-red-900/30" : "glass-lite hover:bg-white/15"}`;
+  const chip = (on: boolean) => `inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold ${on ? "bg-[var(--accent)] text-white shadow-lg shadow-brand-900/30" : "glass-lite hover:bg-white/15"}`;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 lg:px-6 lg:py-6">
@@ -143,7 +143,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
               <Tractor className="mx-auto mb-3 h-8 w-8 text-white/30" />
               {active.length ? "No machines match your search — send us an inquiry and we'll find one for you." : "Our machinery stock is coming soon — send us an inquiry for any machine."}
               <div className="mt-4">
-                <Link href="/contact" className="inline-flex min-h-11 items-center rounded-xl bg-[var(--accent)] px-5 text-sm font-bold text-white hover:bg-red-600">
+                <Link href="/contact" className="inline-flex min-h-11 items-center rounded-xl bg-[var(--accent)] px-5 text-sm font-bold text-white hover:bg-brand-700">
                   Send an inquiry
                 </Link>
               </div>
@@ -205,7 +205,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                       </dl>
                       <div className="mt-3 flex items-end justify-between gap-2 border-t border-white/10 pt-3">
                         <div>
-                          <div className="text-[10px] font-bold uppercase tracking-wider text-white/45">FOB price</div>
+                          <div className="text-[11px] font-bold uppercase tracking-wider text-white/60">FOB price</div>
                           {price ? <div className="text-xl font-black leading-tight">{price}</div> : <div className="text-sm font-bold text-white/85">Ask for price</div>}
                         </div>
                         <div className="flex gap-2">
@@ -214,7 +214,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                               <MessageCircle className="h-5 w-5" />
                             </a>
                           )}
-                          <Link href={detail} className="inline-flex h-11 items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white shadow-lg shadow-red-900/30 hover:bg-red-600">
+                          <Link href={detail} className="inline-flex h-11 items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white shadow-lg shadow-brand-900/30 hover:bg-brand-700">
                             Details
                           </Link>
                         </div>
@@ -229,7 +229,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
           {pages > 1 && (
             <nav className="mt-8 flex flex-wrap justify-center gap-1.5" aria-label="Pages">
               {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
-                <Link key={n} href={href({ page: n > 1 ? String(n) : undefined })} className={`flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-center text-sm font-bold ${n === page ? "bg-[var(--accent)] text-white shadow-lg shadow-red-900/40" : "glass-lite hover:bg-white/15"}`}>
+                <Link key={n} href={href({ page: n > 1 ? String(n) : undefined })} className={`flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-center text-sm font-bold ${n === page ? "bg-[var(--accent)] text-white shadow-lg shadow-brand-900/40" : "glass-lite hover:bg-white/15"}`}>
                   {n}
                 </Link>
               ))}

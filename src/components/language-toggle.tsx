@@ -8,7 +8,7 @@ export function LanguageToggle({ locale, dark = false }: { locale: "en" | "ja"; 
   const base = dark
     ? "border-white/20 text-white/70"
     : "border-slate-200 bg-white text-slate-500 shadow-sm";
-  const active = dark ? "bg-white/15 text-white" : "bg-gradient-to-r from-violet-500 to-indigo-600 text-white";
+  const active = dark ? "bg-white/15 text-white" : "bg-jet-950 text-white";
 
   return (
     <div className={`inline-flex gap-0.5 overflow-hidden rounded-xl border p-0.5 text-xs font-medium ${base} ${pending ? "opacity-60" : ""}`}>

@@ -7,18 +7,17 @@
     color-scheme: light;
   }
   body {
-    @apply bg-[#f5f6fb] text-slate-900 antialiased;
+    @apply bg-[#f4f6f8] text-jet-950 antialiased;
   }
   /* Soft colour wash behind the app area */
   .app-bg {
     background:
-      radial-gradient(60rem 30rem at 100% -10%, rgb(244 63 94 / 0.07), transparent 60%),
-      radial-gradient(50rem 30rem at -10% 10%, rgb(139 92 246 / 0.07), transparent 60%),
-      radial-gradient(40rem 30rem at 50% 110%, rgb(14 165 233 / 0.06), transparent 60%),
-      #f5f6fb;
+      radial-gradient(60rem 30rem at 100% -10%, rgb(255 46 136 / 0.06), transparent 60%),
+      radial-gradient(50rem 30rem at -10% 10%, rgb(0 123 167 / 0.07), transparent 60%),
+      #f4f6f8;
   }
   ::selection {
-    @apply bg-brand-500/20;
+    @apply bg-cerulean-500/20;
   }
   * {
     scrollbar-width: thin;
@@ -32,12 +31,12 @@
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-semibold transition
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-1
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cerulean-500/60 focus-visible:ring-offset-1
       active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-gradient-to-r from-brand-600 to-rose-500 text-white shadow-md shadow-brand-600/25
-      hover:from-brand-700 hover:to-rose-600 hover:shadow-lg hover:shadow-brand-600/30;
+    @apply btn bg-brand-600 text-white shadow-md shadow-brand-600/25
+      hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/30;
   }
   .btn-secondary {
     @apply btn border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50;
@@ -50,7 +49,7 @@
   }
   .input {
     @apply block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none transition
-      placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-400 focus:ring-4 focus:ring-brand-500/10
+      placeholder:text-slate-400 hover:border-slate-300 focus:border-cerulean-500 focus:ring-4 focus:ring-cerulean-500/15
       disabled:bg-slate-50 disabled:text-slate-500;
   }
   .label {
@@ -69,7 +68,7 @@
     @apply transition-colors;
   }
   .table tbody tr:hover {
-    @apply bg-brand-50/40;
+    @apply bg-cerulean-50/50;
   }
   .table tbody tr:last-child td {
     @apply border-b-0;
@@ -100,7 +99,7 @@
   @apply my-4;
 }
 .prose-blog a {
-  @apply font-semibold text-brand-700 underline decoration-brand-200 underline-offset-2 hover:decoration-brand-600;
+  @apply font-semibold text-cerulean-700 underline decoration-cerulean-200 underline-offset-2 hover:decoration-cerulean-600;
 }
 .prose-blog ul {
   @apply my-4 list-disc space-y-1 pl-6;
@@ -109,7 +108,7 @@
   @apply my-4 list-decimal space-y-1 pl-6;
 }
 .prose-blog blockquote {
-  @apply my-6 border-l-4 border-brand-500 bg-brand-50/50 px-5 py-3 italic text-slate-700;
+  @apply my-6 rounded-2xl bg-cerulean-50/70 px-5 py-4 text-lg italic text-slate-700;
 }
 .prose-blog img {
   @apply my-6 w-full rounded-2xl;
