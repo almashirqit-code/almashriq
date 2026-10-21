@@ -16,9 +16,9 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
       <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-black/20" aria-label={`${carTitle(c)} — ${c.stock_no}`}>
         <CardPhotos images={imgs} alt={`${carTitle(c)} ${c.stock_no}`} dim={sold} />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a0a0c]/70 to-transparent" />
-        <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">{c.stock_no}</span>
+        <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{c.stock_no}</span>
         {c.image_count > 1 && (
-          <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
+          <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
             <Camera className="h-3 w-3" />
             {c.image_count}
           </span>
@@ -28,7 +28,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
             {sold ? "Sold" : "Reserved"}
           </span>
         )}
-        {c.for_parts && !sold && !reserved && <span className="absolute bottom-2 left-2.5 rounded-lg bg-[var(--accent)] px-2 py-0.5 text-[11px] font-bold text-white">Parts car</span>}
+        {c.for_parts && !sold && !reserved && <span className="absolute bottom-2 left-2.5 rounded-lg bg-[var(--accent)] px-2 py-0.5 text-xs font-bold text-white">Parts car</span>}
       </Link>
       <div className="flex flex-1 flex-col p-3.5">
         <Link href={href} className="line-clamp-1 py-1 text-[15px] font-extrabold text-white group-hover:text-[var(--accent-text)]">
@@ -36,7 +36,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
         </Link>
         <div className="flex h-4 items-center justify-between gap-2 text-xs text-white/60">
           <span className="line-clamp-1">{c.grade ?? ""}</span>
-          <ShipsFrom code={c.branch} compact className="shrink-0 text-[11px] font-semibold text-white/80" />
+          <ShipsFrom code={c.branch} compact className="shrink-0 text-xs font-semibold text-white/80" />
         </div>
         <dl className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs text-white/75">
           <div className="flex items-center gap-1.5 truncate">
@@ -58,7 +58,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
         </dl>
         <div className="mt-3 flex items-end justify-between gap-2 border-t border-white/10 pt-3">
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-wider text-white/60">FOB price</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-white/60">FOB price</div>
             {price ? <div className="text-xl font-black leading-tight text-white">{price}</div> : <div className="text-sm font-bold text-white/85">Ask for price</div>}
           </div>
           <div className="flex gap-2">
