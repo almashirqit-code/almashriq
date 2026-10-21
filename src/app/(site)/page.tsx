@@ -182,13 +182,13 @@ export default async function PublicHome() {
       {/* Body types — real photos from stock */}
       <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">
         <SectionHead title="Search by body type" href="/cars" link="All stock" />
-        <div className="hscroll sm:grid sm:grid-cols-3 sm:overflow-visible md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+        <div className="hscroll sm:grid sm:grid-cols-4 sm:overflow-visible md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
           {bodies.map(([b, n]) => {
             const path = bodyPhoto[b.toLowerCase()];
             const photo = path ? publicImageUrl(path) : null;
             return (
               <Link key={b} href={`/cars?body=${encodeURIComponent(b)}`} className="glass-lite glass-hover group w-40 overflow-hidden rounded-2xl sm:w-auto">
-                <div className="relative aspect-[4/3] bg-black/20">
+                <div className="relative aspect-[4/3] bg-black/20 sm:aspect-[16/10]">
                   {photo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} alt={`${b} cars`} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />

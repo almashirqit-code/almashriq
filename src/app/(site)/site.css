@@ -302,8 +302,13 @@ body:has(.site-glass) {
 .site-glass main .flex > .min-w-0 {
   min-width: 0;
 }
-/* Horizontal swipe row (make tiles, price chips…): bleeds to the screen edge on phones */
-.site-glass .hscroll {
+/*
+ * Horizontal swipe row (make tiles, body-type photos, price chips…): bleeds to the screen edge on phones.
+ * Written with :where() (zero specificity) on purpose: markup adds `sm:grid`, `lg:grid-cols-6`,
+ * `lg:overflow-visible`, `lg:flex-wrap`… to turn the row into a normal grid/wrap on larger screens,
+ * and those utilities must win over these defaults.
+ */
+:where(.site-glass .hscroll) {
   display: flex;
   gap: 0.75rem;
   overflow-x: auto;
@@ -316,15 +321,15 @@ body:has(.site-glass) {
   scroll-padding-inline: 1rem;
   padding-bottom: 0.25rem;
 }
-.site-glass .hscroll::-webkit-scrollbar {
+:where(.site-glass .hscroll)::-webkit-scrollbar {
   display: none;
 }
-.site-glass .hscroll > * {
+:where(.site-glass .hscroll) > * {
   flex: none;
   scroll-snap-align: start;
 }
 @media (min-width: 1024px) {
-  .site-glass .hscroll {
+  :where(.site-glass .hscroll) {
     margin-inline: 0;
     padding-inline: 0;
   }
