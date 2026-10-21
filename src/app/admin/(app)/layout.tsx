@@ -19,6 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         role={profile.role}
         name={profile.full_name || profile.email}
         email={profile.email}
+        office={[profile.office, profile.shift].filter(Boolean).join(" · ") || null}
         companyName={companyName}
         logoUrl={settings?.logo_url}
       />

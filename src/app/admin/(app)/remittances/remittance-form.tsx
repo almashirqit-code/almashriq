@@ -17,12 +17,16 @@ export function RemittanceForm({
   customers,
   offices,
   shifts,
+  defaultOffice = null,
+  defaultShift = null,
   rates,
   initial,
 }: {
   customers: CustomerOption[];
   offices: string[];
   shifts: string[];
+  defaultOffice?: string | null;
+  defaultShift?: string | null;
   rates: Record<Currency, number>;
   initial?: Partial<Remittance>;
 }) {
@@ -34,8 +38,8 @@ export function RemittanceForm({
 
   const empty = {
     customer_id: "",
-    office: offices.length === 1 ? offices[0] : "",
-    shift: "",
+    office: offices.length === 1 ? offices[0] : defaultOffice && offices.includes(defaultOffice) ? defaultOffice : "",
+    shift: defaultShift ?? "",
     currency: "" as Currency | "",
     remitter: "",
     bank: "",

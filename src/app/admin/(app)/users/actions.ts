@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { assertRole } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { ROLES, type Role } from "@/lib/types";
 
 export type FormState = { error?: string; ok?: boolean };
@@ -13,6 +14,8 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
   const password = String(formData.get("password") || "");
   const full_name = String(formData.get("full_name") || "").trim();
   const role = String(formData.get("role") || "sales") as Role;
+  const office = String(formData.get("office") || "").trim() || null;
+  const shift = String(formData.get("shift") || "").trim() || null;
   if (!email || password.length < 8) return { error: "Email and a password of at least 8 characters are required." };
   if (!ROLES.includes(role)) return { error: "Invalid role." };
 
@@ -26,7 +29,7 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
   if (error) return { error: error.message };
 
   // The signup trigger creates the profile as 'sales'; apply the chosen role.
-  const { error: pErr } = await admin.from("profiles").update({ role, full_name: full_name || null }).eq("id", data.user.id);
+  const { error: pErr } = await admin.from("profiles").update({ role, full_name: full_name || null, office, shift }).eq("id", data.user.id);
   if (pErr) return { error: pErr.message };
 
   revalidatePath("/admin/users");
@@ -41,6 +44,19 @@ export async function setRole(userId: string, role: Role) {
   const { error } = await admin.from("profiles").update({ role }).eq("id", userId);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/users");
+}
+
+/** Office and shift decide which customers, reservations and TTs a manager or sales agent works with. */
+export async function setOfficeShift(userId: string, office: string | null, shift: string | null) {
+  await assertRole(["admin"]);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ office: office?.trim() || null, shift: shift?.trim() || null })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/users");
+  revalidatePath("/admin", "layout");
 }
 
 export async function setActive(userId: string, active: boolean) {

@@ -21,6 +21,8 @@ export interface Profile {
   full_name: string | null;
   role: Role;
   active: boolean;
+  office: string | null;
+  shift: string | null;
   created_at: string;
 }
 

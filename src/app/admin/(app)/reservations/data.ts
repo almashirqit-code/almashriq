@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { getProfile } from "@/lib/auth";
 import { convert } from "@/lib/format";
 import type { Currency, FreightRate, Settings, ShipmentMode } from "@/lib/types";
 
@@ -95,14 +96,20 @@ export async function loadReserveVehicle(id: string, rates: Record<Currency, num
 
 export async function loadFormLists() {
   const supabase = await createClient();
+  const me = await getProfile();
   const [customers, agents, freight] = await Promise.all([
     supabase.from("customers").select("id, customer_no, name, company, country, port").order("name").limit(5000),
-    supabase.from("profiles").select("id, full_name, email, role").order("full_name"),
+    supabase.from("profiles").select("id, full_name, email, role, office, active").order("full_name"),
     supabase.from("freight_rates").select("*").eq("active", true).order("destination").limit(5000),
   ]);
   return {
     customers: (customers.data ?? []) as { id: string; customer_no: number; name: string; company: string | null; country: string | null; port: string | null }[],
-    agents: (agents.data ?? []) as { id: string; full_name: string | null; email: string; role: string }[],
+    // Sales agents book only for themselves; office managers pick from their office.
+    agents: ((agents.data ?? []) as { id: string; full_name: string | null; email: string; role: string; office: string | null; active: boolean }[]).filter(
+      (a) =>
+        a.active &&
+        (me.role === "admin" || (me.role === "sales" ? a.id === me.id : !me.office || !a.office || a.office === me.office))
+    ),
     freightRates: (freight.data ?? []) as FreightRate[],
   };
 }

@@ -61,7 +61,7 @@ export async function saveReservation(p: ReservationPayload): Promise<{ id?: str
   const row = {
     vehicle_id: p.vehicle_id,
     customer_id: p.customer_id,
-    sales_agent_id: p.sales_agent_id || profile.id,
+    sales_agent_id: profile.role === "sales" ? profile.id : p.sales_agent_id || profile.id,
     price_term: term,
     shipment_type: shipment,
     port_of_loading: p.port_of_loading?.trim() || null,

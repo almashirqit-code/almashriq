@@ -76,12 +76,14 @@ export function Sidebar({
   email,
   companyName,
   logoUrl,
+  office = null,
 }: {
   role: Role;
   name: string;
   email: string;
   companyName: string;
   logoUrl?: string | null;
+  office?: string | null;
 }) {
   const { t } = useT();
   const pathname = usePathname();
@@ -172,7 +174,10 @@ export function Sidebar({
           </span>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold text-white">{name}</div>
-            <div className="truncate text-[11px] text-slate-400">{t(`role_${role}` as DictKey)}</div>
+            <div className="truncate text-[11px] text-slate-400">
+              {t(`role_${role}` as DictKey)}
+              {office ? ` · ${office}` : ""}
+            </div>
           </div>
           <form action={signOut}>
             <button

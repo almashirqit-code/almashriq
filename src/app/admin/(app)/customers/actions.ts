@@ -78,6 +78,8 @@ function mapDbError(error: { code?: string; message: string }) {
 export async function createCustomer(_prev: FormState, formData: FormData): Promise<FormState> {
   const profile = await getProfile();
   const data = read(formData);
+  // Sales agents always own the customers they register.
+  if (profile.role === "sales") data.assigned_to = profile.id;
   const invalid = await validate(data);
   if (invalid) return { error: invalid };
 
@@ -94,8 +96,9 @@ export async function createCustomer(_prev: FormState, formData: FormData): Prom
 }
 
 export async function updateCustomer(id: string, _prev: FormState, formData: FormData): Promise<FormState> {
-  await getProfile();
+  const profile = await getProfile();
   const data = read(formData);
+  if (profile.role === "sales") data.assigned_to = profile.id;
   const invalid = await validate(data, id);
   if (invalid) return { error: invalid };
 

@@ -25,7 +25,7 @@ const STATUS_COLOR: Record<string, string> = {
 export default async function RemittancesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; page?: string; size?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; office?: string; shift?: string; page?: string; size?: string }>;
 }) {
   const sp = await searchParams;
   const profile = await getProfile();
@@ -46,6 +46,8 @@ export default async function RemittancesPage({
     .range((page - 1) * size, page * size - 1);
 
   if (sp.status && (REMITTANCE_STATUSES as string[]).includes(sp.status)) query = query.eq("status", sp.status);
+  if (sp.office) query = query.eq("office", sp.office);
+  if (sp.shift) query = query.eq("shift", sp.shift);
   if (q) {
     const ors = [`remitter.ilike.%${q}%`, `bank.ilike.%${q}%`];
     if (/^\d+$/.test(q)) ors.push(`id.eq.${q}`);
@@ -67,10 +69,13 @@ export default async function RemittancesPage({
     query = query.or(ors.join(","));
   }
 
-  const [{ data, count }, { data: staff }] = await Promise.all([
+  const [{ data, count }, { data: staff }, { data: settings }] = await Promise.all([
     query,
     supabase.from("profiles").select("id, full_name, email"),
+    supabase.from("settings").select("offices, shifts").single(),
   ]);
+  const offices = profile.role !== "admin" && profile.office ? [profile.office] : ((settings?.offices ?? []) as string[]);
+  const shifts = (settings?.shifts ?? []) as string[];
   const rows = (data ?? []) as unknown as Row[];
   const staffName = new Map((staff ?? []).map((p) => [p.id, p.full_name || p.email]));
   const pages = Math.max(1, Math.ceil((count ?? 0) / size));
@@ -80,6 +85,8 @@ export default async function RemittancesPage({
     const u = new URLSearchParams();
     if (sp.q) u.set("q", sp.q);
     if (sp.status) u.set("status", sp.status);
+    if (sp.office) u.set("office", sp.office);
+    if (sp.shift) u.set("shift", sp.shift);
     if (size !== 10) u.set("size", String(size));
     u.set("page", String(p));
     return `/admin/remittances?${u}`;
@@ -122,6 +129,26 @@ export default async function RemittancesPage({
               </option>
             ))}
           </select>
+          {offices.length > 1 && (
+            <select name="office" defaultValue={sp.office ?? ""} className="input w-auto">
+              <option value="">
+                {t("rem_office")}: {t("all")}
+              </option>
+              {offices.map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+          )}
+          {shifts.length > 0 && (
+            <select name="shift" defaultValue={sp.shift ?? ""} className="input w-auto">
+              <option value="">
+                {t("rem_shift")}: {t("all")}
+              </option>
+              {shifts.map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+          )}
           {size !== 10 && <input type="hidden" name="size" value={size} />}
           <button className="btn-secondary">{t("search")}</button>
         </form>
@@ -168,6 +195,10 @@ export default async function RemittancesPage({
                         </div>
                         <div>
                           {t("rem_received")}: {r.received_date}
+                        </div>
+                        <div className="mt-1 inline-flex rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20">
+                          {r.office}
+                          {r.shift ? ` · ${r.shift}` : ""}
                         </div>
                       </td>
                       <td className="px-3 py-3 leading-5">

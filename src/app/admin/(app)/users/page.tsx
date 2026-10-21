@@ -8,12 +8,18 @@ import type { DictKey } from "@/lib/i18n/dictionaries";
 import { PageHeader, Badge } from "@/components/ui";
 import { NewUserForm } from "./new-user-form";
 import { UserRowActions } from "./user-row-actions";
+import { OfficeShiftPicker } from "./office-shift-picker";
 
 export default async function UsersPage() {
   const me = await requireRole(["admin"]);
   const { t, locale } = await getT();
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select("*").order("created_at");
+  const [{ data }, { data: settings }] = await Promise.all([
+    supabase.from("profiles").select("*").order("created_at"),
+    supabase.from("settings").select("offices, shifts").single(),
+  ]);
+  const offices = (settings?.offices ?? []) as string[];
+  const shifts = (settings?.shifts ?? []) as string[];
   const users = (data ?? []) as Profile[];
   const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -31,6 +37,9 @@ export default async function UsersPage() {
                 <tr>
                   <th>{t("users_full_name")}</th>
                   <th>{t("role")}</th>
+                  <th>
+                    {t("rem_office")} / {t("rem_shift")}
+                  </th>
                   <th>{t("status")}</th>
                   <th className="text-right">{t("actions")}</th>
                 </tr>
@@ -49,6 +58,9 @@ export default async function UsersPage() {
                     </td>
                     <td>{t(`role_${u.role}` as DictKey)}</td>
                     <td>
+                      <OfficeShiftPicker userId={u.id} office={u.office} shift={u.shift} offices={offices} shifts={shifts} />
+                    </td>
+                    <td>
                       {u.active ? (
                         <Badge className="bg-emerald-50 text-emerald-700 ring-emerald-600/20">{t("users_active")}</Badge>
                       ) : (
@@ -62,7 +74,7 @@ export default async function UsersPage() {
             </table>
           </div>
         </div>
-        {hasServiceKey && <NewUserForm />}
+        {hasServiceKey && <NewUserForm offices={offices} shifts={shifts} />}
       </div>
     </>
   );

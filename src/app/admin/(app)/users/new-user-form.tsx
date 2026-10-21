@@ -8,7 +8,7 @@ import { SubmitButton } from "@/components/buttons";
 import { createUser } from "./actions";
 import { PasswordInput } from "@/components/password-input";
 
-export function NewUserForm() {
+export function NewUserForm({ offices, shifts }: { offices: string[]; shifts: string[] }) {
   const { t } = useT();
   const [state, action] = useActionState(createUser, {});
   const ref = useRef<HTMLFormElement>(null);
@@ -47,6 +47,26 @@ export function NewUserForm() {
             </option>
           ))}
         </select>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="label">{t("rem_office")}</label>
+          <select name="office" className="input" defaultValue="">
+            <option value="">—</option>
+            {offices.map((o) => (
+              <option key={o}>{o}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="label">{t("rem_shift")}</label>
+          <select name="shift" className="input" defaultValue="">
+            <option value="">—</option>
+            {shifts.map((o) => (
+              <option key={o}>{o}</option>
+            ))}
+          </select>
+        </div>
       </div>
       <SubmitButton>{t("users_new")}</SubmitButton>
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
