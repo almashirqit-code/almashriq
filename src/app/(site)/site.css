@@ -1,0 +1,390 @@
+/*
+ * Public website — "Midnight glass" theme.
+ * Everything is scoped under .site-glass (the public layout wrapper), so the admin is untouched.
+ *
+ *  1. tokens + page background
+ *  2. glass surfaces (.glass / .glass-strong / .glass-lite)
+ *  3. form controls (16px on phones: iOS zooms smaller text on focus)
+ *  4. remap of the older light-theme utilities used across the public pages
+ *  5. helpers (horizontal scroll rows, safe areas) and accessibility fallbacks
+ */
+
+html:has(.site-glass),
+body:has(.site-glass) {
+  background: #0b1020;
+}
+
+.site-glass {
+  --ink: #f3f5fb;
+  --ink-2: #c9d0e6;
+  --ink-3: #a9b2cc;
+  --ink-4: #8a94b3;
+  --glass: rgb(255 255 255 / 0.09);
+  --glass-hi: rgb(255 255 255 / 0.14);
+  --glass-lo: rgb(255 255 255 / 0.05);
+  --line: rgb(255 255 255 / 0.16);
+  --accent: #e11d2e;
+  --accent-text: #ff7a86;
+  --focus: #5b8cff;
+  color-scheme: dark;
+  color: var(--ink);
+  background: linear-gradient(160deg, #0b1020 0%, #141238 55%, #1b1440 100%);
+  min-height: 100vh;
+  position: relative;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Soft colour glows (static: no animation, cheap to paint) */
+.site-glass::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40rem 28rem at 105% -5%, rgb(225 29 46 / 0.22), transparent 60%),
+    radial-gradient(38rem 30rem at -10% 28%, rgb(91 140 255 / 0.2), transparent 60%),
+    radial-gradient(34rem 26rem at 60% 115%, rgb(139 92 246 / 0.18), transparent 60%);
+}
+.site-glass ::selection {
+  background: rgb(225 29 46 / 0.4);
+  color: #fff;
+}
+.site-glass :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.site-glass a,
+.site-glass button {
+  touch-action: manipulation;
+}
+
+/* ---------- 2. glass surfaces ---------- */
+.site-glass .glass {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+.site-glass .glass-strong {
+  background: rgb(14 16 42 / 0.7);
+  border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  box-shadow: 0 10px 40px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+/* Same look without blur: long lists of cards stay smooth on low-end phones */
+.site-glass .glass-lite {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.22), inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+.site-glass .glass-hover {
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+.site-glass .glass-hover:hover {
+  background: var(--glass-hi);
+  border-color: rgb(255 255 255 / 0.28);
+  transform: translateY(-2px);
+}
+.site-glass .glass-hover:active {
+  transform: scale(0.99);
+}
+.site-glass .text-gradient {
+  background: linear-gradient(90deg, #ff7a86, #ffb199);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- 3. form controls ---------- */
+.site-glass input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.site-glass select,
+.site-glass textarea,
+.site-glass .input {
+  background-color: rgb(255 255 255 / 0.08);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 0.75rem;
+  box-shadow: none;
+}
+.site-glass input::placeholder,
+.site-glass textarea::placeholder {
+  color: var(--ink-4);
+  opacity: 1;
+}
+.site-glass input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):focus,
+.site-glass select:focus,
+.site-glass textarea:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgb(91 140 255 / 0.25);
+  outline: none;
+}
+.site-glass select option,
+.site-glass select optgroup {
+  background: #171a3d;
+  color: var(--ink);
+}
+.site-glass input:-webkit-autofill {
+  -webkit-text-fill-color: var(--ink);
+  box-shadow: 0 0 0 1000px #1b1d44 inset;
+  caret-color: var(--ink);
+}
+@media (max-width: 1023px) {
+  /* 16px stops iOS Safari zooming the page when a field is focused; 44px+ is a comfortable tap target */
+  .site-glass input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  .site-glass select,
+  .site-glass textarea,
+  .site-glass .input {
+    font-size: 16px;
+  }
+  .site-glass input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  .site-glass select {
+    min-height: 46px;
+  }
+}
+
+/* ---------- 4. remap of the older light-theme utilities ---------- */
+/* surfaces */
+.site-glass .bg-white {
+  background-color: var(--glass);
+}
+.site-glass .bg-slate-50,
+.site-glass .bg-slate-100,
+.site-glass .bg-slate-200 {
+  background-color: var(--glass-lo);
+}
+.site-glass .bg-navy-50,
+.site-glass .bg-navy-100 {
+  background-color: rgb(91 140 255 / 0.14);
+}
+.site-glass .bg-brand-50,
+.site-glass .bg-brand-100 {
+  background-color: rgb(225 29 46 / 0.16);
+}
+.site-glass .bg-emerald-50 {
+  background-color: rgb(16 185 129 / 0.16);
+}
+.site-glass .bg-amber-50 {
+  background-color: rgb(245 158 11 / 0.16);
+}
+.site-glass .hover\:bg-navy-50:hover,
+.site-glass .hover\:bg-slate-50:hover,
+.site-glass .hover\:bg-slate-100:hover {
+  background-color: var(--glass-hi);
+}
+.site-glass .hover\:bg-brand-600:hover {
+  background-color: var(--accent);
+}
+.site-glass .hover\:text-white:hover {
+  color: #fff;
+}
+/* text */
+.site-glass .text-navy-950,
+.site-glass .text-navy-900,
+.site-glass .text-navy-800,
+.site-glass .text-slate-900,
+.site-glass .text-slate-800 {
+  color: var(--ink);
+}
+.site-glass .text-navy-700,
+.site-glass .text-navy-600,
+.site-glass .text-slate-700 {
+  color: var(--ink-2);
+}
+.site-glass .text-navy-500,
+.site-glass .text-navy-400,
+.site-glass .text-slate-600,
+.site-glass .text-slate-500 {
+  color: var(--ink-3);
+}
+.site-glass .text-slate-400,
+.site-glass .text-slate-300 {
+  color: var(--ink-4);
+}
+.site-glass .text-brand-600,
+.site-glass .text-brand-700,
+.site-glass .text-brand-800 {
+  color: var(--accent-text);
+}
+.site-glass .hover\:text-brand-700:hover,
+.site-glass .hover\:text-brand-600:hover {
+  color: #ffa3ab;
+}
+.site-glass .text-emerald-900,
+.site-glass .text-emerald-700 {
+  color: #6ee7b7;
+}
+.site-glass .text-amber-700,
+.site-glass .text-amber-800,
+.site-glass .text-amber-900 {
+  color: #fde68a;
+}
+.site-glass .text-amber-600,
+.site-glass .text-amber-500 {
+  color: #fbbf24;
+}
+.site-glass .text-emerald-800 {
+  color: #6ee7b7;
+}
+.site-glass .ring-amber-200 {
+  --tw-ring-color: rgb(251 191 36 / 0.4);
+}
+/* solid navy chips/buttons from the old theme become translucent glass */
+.site-glass .bg-navy-700,
+.site-glass .bg-navy-800,
+.site-glass .bg-navy-900 {
+  background-color: rgb(255 255 255 / 0.13);
+}
+.site-glass .hover\:bg-navy-900:hover,
+.site-glass .hover\:bg-navy-800:hover {
+  background-color: rgb(255 255 255 / 0.2);
+}
+.site-glass .text-red-700,
+.site-glass .text-red-600 {
+  color: var(--accent-text);
+}
+/* lines */
+.site-glass .border-slate-100,
+.site-glass .border-slate-200,
+.site-glass .border-slate-300 {
+  border-color: var(--line);
+}
+.site-glass .ring-slate-100,
+.site-glass .ring-slate-200,
+.site-glass .ring-slate-300,
+.site-glass .ring-navy-200,
+.site-glass .ring-navy-300,
+.site-glass .ring-emerald-200 {
+  --tw-ring-color: var(--line);
+}
+.site-glass .hover\:ring-navy-300:hover,
+.site-glass .hover\:ring-brand-300:hover {
+  --tw-ring-color: rgb(255 255 255 / 0.32);
+}
+.site-glass .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--line);
+}
+.site-glass .shadow-sm,
+.site-glass .shadow-md,
+.site-glass .shadow-lg {
+  --tw-shadow-color: rgb(0 0 0 / 0.35);
+}
+/* blog article typography (defined globally for the light theme) */
+.site-glass .prose-blog {
+  color: var(--ink-2);
+}
+.site-glass .prose-blog h2,
+.site-glass .prose-blog h3,
+.site-glass .prose-blog h4 {
+  color: var(--ink);
+}
+.site-glass .prose-blog a {
+  color: var(--accent-text);
+  text-decoration-color: rgb(255 122 134 / 0.4);
+}
+.site-glass .prose-blog blockquote {
+  background: rgb(225 29 46 / 0.12);
+  color: var(--ink-2);
+}
+.site-glass .prose-blog code {
+  background: var(--glass);
+  color: var(--ink);
+}
+.site-glass .prose-blog hr {
+  border-color: var(--line);
+}
+
+/* ---------- 5. helpers ---------- */
+/* Grid/flex cells may shrink below their content, so a swipe row inside one can never stretch the page sideways */
+.site-glass .grid > *,
+.site-glass main .flex > .min-w-0 {
+  min-width: 0;
+}
+/* Horizontal swipe row (make tiles, price chips…): bleeds to the screen edge on phones */
+.site-glass .hscroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+  scroll-padding-inline: 1rem;
+  padding-bottom: 0.25rem;
+}
+.site-glass .hscroll::-webkit-scrollbar {
+  display: none;
+}
+.site-glass .hscroll > * {
+  flex: none;
+  scroll-snap-align: start;
+}
+@media (min-width: 1024px) {
+  .site-glass .hscroll {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+}
+/* Filter bottom sheet (phones). Opens via the #filters hash — see components/site/filter-sheet.tsx */
+@media (max-width: 1023px) {
+  .site-glass .filter-panel {
+    display: none;
+  }
+  .site-glass .filter-panel:target {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+  }
+}
+@media (min-width: 1024px) {
+  .site-glass .filter-sheet {
+    background: var(--glass);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.22), inset 0 1px 0 rgb(255 255 255 / 0.1);
+  }
+}
+.site-glass #results {
+  scroll-margin-top: 7.5rem;
+}
+/* Reserve room for the fixed bottom bar (phones) */
+.site-glass .pb-nav {
+  padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 1024px) {
+  .site-glass .pb-nav {
+    padding-bottom: 0;
+  }
+}
+
+/* ---------- accessibility / performance fallbacks ---------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-glass .glass {
+    background: rgb(28 30 66 / 0.96);
+  }
+  .site-glass .glass-strong {
+    background: rgb(14 16 40 / 0.98);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .site-glass .glass,
+  .site-glass .glass-strong {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgb(22 24 56 / 0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-glass *,
+  .site-glass *::before,
+  .site-glass *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
