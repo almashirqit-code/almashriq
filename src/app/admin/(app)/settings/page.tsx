@@ -1,16 +1,18 @@
 import Link from "next/link";
-import { Settings as SettingsIcon, Anchor, Ship, Tag, SlidersHorizontal } from "lucide-react";
+import { Settings as SettingsIcon, Anchor, Ship, Tag, SlidersHorizontal, Globe } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
-import type { AuctionHouse, FreightRate, Port, Settings, Yard } from "@/lib/types";
+import { mergeBranches } from "@/lib/branches";
+import type { AuctionHouse, Branch, Currency, FreightRate, Port, Settings, Yard } from "@/lib/types";
+import { BranchesManager } from "./branches-manager";
 import { PageHeader } from "@/components/ui";
 import { SettingsForm } from "./settings-form";
 import { MastersManager } from "../masters/masters-manager";
 import { FreightManager } from "../freight/freight-manager";
 import { MakeLogos, type MakeRow } from "./make-logos";
 
-type Tab = "general" | "ports" | "freight" | "makes";
+type Tab = "general" | "branches" | "ports" | "freight" | "makes";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string; sub?: string }> }) {
   const profile = await requireRole(["admin", "manager"]);
@@ -19,6 +21,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const isAdmin = profile.role === "admin";
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     ...(isAdmin ? [{ key: "general" as Tab, label: "General", icon: SlidersHorizontal }] : []),
+    { key: "branches", label: t("settings_branches"), icon: Globe },
     { key: "ports", label: t("m_title"), icon: Anchor },
     { key: "freight", label: t("fr_title"), icon: Ship },
     { key: "makes", label: "Make logos", icon: Tag },
@@ -34,6 +37,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <SettingsForm settings={data as Settings} />
       </div>
     );
+  } else if (tab === "branches") {
+    const [{ data: branches }, { data: s }] = await Promise.all([supabase.from("branches").select("*"), supabase.from("settings").select("exchange_rates").single()]);
+    body = <BranchesManager branches={mergeBranches(branches as Branch[] | null)} rates={(s?.exchange_rates ?? {}) as Partial<Record<Currency, number>>} canEdit={isAdmin} />;
   } else if (tab === "ports") {
     const [ports, auctions, yards] = await Promise.all([
       supabase.from("ports").select("*").order("name"),

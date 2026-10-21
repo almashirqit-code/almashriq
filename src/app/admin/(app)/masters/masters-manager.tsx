@@ -8,7 +8,8 @@ import { en, type DictKey } from "@/lib/i18n/dictionaries";
 import { SHIPMENT_MODES, type AuctionHouse, type Port, type ShipmentMode, type Yard } from "@/lib/types";
 import { saveMaster, deleteMaster, type MasterKind } from "./actions";
 import { Modal } from "@/components/modal";
-import { IconChip } from "@/components/ui";
+import { BranchBadge, IconChip } from "@/components/ui";
+import { DEFAULT_BRANCHES } from "@/lib/branches";
 
 type Tab = "ports" | "auctions" | "yards";
 type Draft = Record<string, unknown>;
@@ -81,7 +82,7 @@ export function MastersManager({
 
   const blank = (): Draft =>
     tab === "ports"
-      ? { name: "", shipment_modes: ["roro", "container"], region: "", notes: "", active: true }
+      ? { name: "", shipment_modes: ["roro", "container"], region: "", notes: "", active: true, branch: "JP" }
       : tab === "auctions"
         ? { name: "", port_id: portFilter || "", notes: "", active: true }
         : { name: "", port_id: portFilter || "", address: "", contact: "", phone: "", notes: "", active: true };
@@ -192,6 +193,7 @@ export function MastersManager({
             <thead>
               <tr>
                 <th>{t("m_name")}</th>
+                <th>{t("f_branch")}</th>
                 <th>{t("m_modes")}</th>
                 <th>{t("m_region")}</th>
                 <th>{t("m_auctions")}</th>
@@ -205,6 +207,9 @@ export function MastersManager({
                     <td className="font-medium">
                       {p.name}
                       {inactive(p.active)}
+                    </td>
+                    <td>
+                      <BranchBadge code={p.branch ?? "JP"} />
                     </td>
                     <td>
                       <span
@@ -360,6 +365,16 @@ export function MastersManager({
                 </div>
               )}
               {fld(t("m_region"), input("region"))}
+              {fld(
+                t("f_branch"),
+                <select className="input" value={String(draft.branch ?? "JP")} onChange={(e) => set("branch", e.target.value)}>
+                  {DEFAULT_BRANCHES.map((b) => (
+                    <option key={b.code} value={b.code}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </>
           )}
           {tab !== "ports" && fld(t("m_port"), portSelect())}

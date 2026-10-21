@@ -3,7 +3,8 @@
 import { useActionState, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
-import { CURRENCIES, VEHICLE_STATUSES, type Vehicle, type VehicleField } from "@/lib/types";
+import { CURRENCIES, VEHICLE_STATUSES, type BranchCode, type Currency, type Vehicle, type VehicleField } from "@/lib/types";
+import { DEFAULT_BRANCHES } from "@/lib/branches";
 import { SubmitButton } from "@/components/buttons";
 import { CostCalculator } from "./cost-calculator";
 import { OriginPicker, type Masters } from "./origin-picker";
@@ -57,6 +58,7 @@ export function VehicleForm({
   showCost,
   readOnly = false,
   defaultFx = 0,
+  rates = {},
   masters,
 }: {
   masters?: Masters;
@@ -65,10 +67,14 @@ export function VehicleForm({
   showCost: boolean;
   readOnly?: boolean;
   defaultFx?: number;
+  /** Configuration exchange rates (1 unit = N JPY), used to suggest the cost FX rate. */
+  rates?: Partial<Record<Currency, number>>;
 }) {
   const { t } = useT();
   const [state, formAction] = useActionState(action, {});
   const [ownership, setOwnership] = useState(vehicle?.ownership ?? "own");
+  const branches = masters?.branches ?? DEFAULT_BRANCHES;
+  const [branch, setBranch] = useState<BranchCode>(vehicle?.branch ?? "JP");
 
   const render = (f: FieldDef) => {
     const value = vehicle?.[f.name as keyof Vehicle];
@@ -122,7 +128,22 @@ export function VehicleForm({
       </datalist>
 
       <section className="card">
-        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div>
+            <label className="label" htmlFor="branch">
+              {t("f_branch")}
+            </label>
+            <select id="branch" name="branch" className="input" value={branch} disabled={readOnly} onChange={(e) => setBranch(e.target.value as BranchCode)}>
+              {branches
+                .filter((b) => b.active || b.code === branch)
+                .map((b) => (
+                  <option key={b.code} value={b.code}>
+                    {b.name}
+                  </option>
+                ))}
+            </select>
+            <p className="mt-1 text-xs text-slate-500">{t("branch_help")}</p>
+          </div>
           <div>
             <label className="label" htmlFor="ownership">
               {t("f_ownership")}
@@ -236,12 +257,14 @@ export function VehicleForm({
             {t("f_auction_house")} · {t("f_yard")}
           </h2>
           <div className="p-5">
-            <OriginPicker vehicle={vehicle} masters={masters} readOnly={readOnly} />
+            <OriginPicker vehicle={vehicle} masters={masters} readOnly={readOnly} branch={branch} />
           </div>
         </section>
       )}
 
-      {showCost && <CostCalculator vehicle={vehicle} defaultFx={defaultFx} readOnly={readOnly} />}
+      {showCost && (
+        <CostCalculator vehicle={vehicle} defaultFx={defaultFx} readOnly={readOnly} branch={branches.find((b) => b.code === branch) ?? DEFAULT_BRANCHES[0]} rates={rates} />
+      )}
 
       <section className="card">
         <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("stock_pricing")}</h2>

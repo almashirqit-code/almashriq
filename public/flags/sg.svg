@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-sg" viewBox="0 0 640 480">
+  <defs>
+    <path id="sg-star" fill="#fff" d="M0-17 4-5.3h12.2L6.4 2l3.7 11.7L0 6.5l-10.1 7.2L-6.4 2l-9.8-7.3H-4z"/>
+  </defs>
+  <path fill="#fff" d="M0 0h640v480H0z"/>
+  <path fill="#df0000" d="M0 0h640v240H0z"/>
+  <circle cx="150" cy="120" r="70" fill="#fff"/>
+  <circle cx="178" cy="120" r="70" fill="#df0000"/>
+  <use xlink:href="#sg-star" x="205" y="78"/>
+  <use xlink:href="#sg-star" x="173" y="101"/>
+  <use xlink:href="#sg-star" x="237" y="101"/>
+  <use xlink:href="#sg-star" x="185" y="139"/>
+  <use xlink:href="#sg-star" x="225" y="139"/>
+</svg>

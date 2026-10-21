@@ -7,7 +7,8 @@ import { getT } from "@/lib/i18n/server";
 import { money, convert, date, vehicleTitle } from "@/lib/format";
 import type { Currency, InvoiceStatus, Vehicle, VehicleImage } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
-import { PageHeader, VehicleStatusBadge, InvoiceStatusBadge, Stat, Badge, PartsBadge } from "@/components/ui";
+import { PageHeader, VehicleStatusBadge, InvoiceStatusBadge, Stat, Badge, PartsBadge, BranchBadge } from "@/components/ui";
+import { costJpy, expensesJpy } from "@/lib/branches";
 import { ConfirmButton } from "@/components/buttons";
 import { VehicleForm } from "../vehicle-form";
 import { updateVehicle, deleteVehicle } from "../actions";
@@ -47,9 +48,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
   const rates = (settings?.exchange_rates ?? {}) as Record<Currency, number>;
   const thirdParty = v.ownership === "third_party";
   // Own stock: what we paid. Third-party: what we owe the supplier (+ any expenses we incurred).
-  const cost = thirdParty
-    ? convert(Number(v.supplier_price || 0), v.supplier_currency ?? "JPY", "JPY", rates) + Number(v.expenses || 0)
-    : Number(v.purchase_price || 0) + Number(v.purchase_tax || 0) + Number(v.expenses || 0);
+  const cost = thirdParty ? convert(Number(v.supplier_price || 0), v.supplier_currency ?? "JPY", "JPY", rates) + expensesJpy(v) : costJpy(v);
   const priceJpy = v.price != null ? convert(Number(v.price), v.price_currency, "JPY", rates) : null;
 
   type Inv = { id: string; invoice_no: string; status: InvoiceStatus; currency: Currency; issue_date: string; customers: { name: string } | null };
@@ -67,6 +66,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
           <span className="flex flex-wrap items-center gap-3">
             {v.stock_no}
             <VehicleStatusBadge status={v.status} label={t(`vs_${v.status}` as DictKey)} />
+            <BranchBadge code={v.branch} />
             {v.for_parts && <PartsBadge label={t("parts_badge")} />}
             {thirdParty && <Badge className="bg-amber-50 text-amber-800 ring-amber-600/20">{t("own_third_party")}</Badge>}
             {v.show_on_website && <Badge className="bg-sky-50 text-sky-700 ring-sky-600/20">{t("stock_on_website")}</Badge>}
@@ -120,7 +120,13 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
             tone="violet"
             label={thirdParty ? t("f_supplier_price") : t("stock_total_cost")}
             value={money(cost, "JPY", locale)}
-            hint={thirdParty && v.supplier_name ? v.supplier_name : undefined}
+            hint={
+              thirdParty && v.supplier_name
+                ? v.supplier_name
+                : !thirdParty && v.cost_currency !== "JPY"
+                  ? `${money(Number(v.purchase_price || 0) + Number(v.purchase_tax || 0) + Number(v.expenses || 0), v.cost_currency, locale)} × ${v.cost_fx_rate}`
+                  : undefined
+            }
           />
           <Stat tone="sky" label={t("f_price")} value={v.price != null ? money(v.price, v.price_currency, locale) : "—"} hint={priceJpy != null && v.price_currency !== "JPY" ? `≈ ${money(priceJpy, "JPY", locale)}` : undefined} />
           <Stat
@@ -134,7 +140,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
         <div className="xl:col-span-3">
-          <VehicleForm vehicle={v} action={update} showCost={seeCost} readOnly={!canEdit} defaultFx={Number(rates.USD ?? 0)} masters={masters} />
+          <VehicleForm vehicle={v} action={update} showCost={seeCost} readOnly={!canEdit} defaultFx={Number(rates.USD ?? 0)} rates={rates} masters={masters} />
         </div>
         <div className="space-y-5 xl:col-span-2">
           <ImageManager vehicleId={id} images={(images ?? []) as VehicleImage[]} canEdit={canEdit} />

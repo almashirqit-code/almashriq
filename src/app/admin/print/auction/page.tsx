@@ -78,10 +78,13 @@ export default async function AuctionBreakdownPage({ searchParams }: { searchPar
       if (TAXED_EXPENSES.includes(e.type) && rate > 0) lines.push({ label: `${lang === "ja" ? "消費税" : "Consumption tax"} ${rate}%`, amount: Math.round((amt * rate) / 100), sub: true });
     }
     const total = lines.reduce((s, l) => s + l.amount, 0);
+    // Amounts are in the vehicle's cost currency; convert to JPY for the USD figure and grand total.
+    const cur = v.cost_currency ?? "JPY";
+    const totalJpy = Math.round(total * (Number(v.cost_fx_rate) || 1));
     const fx = Number(v.fob_fx_rate) || 0;
-    return { v, lines, total, fx, usd: fx > 0 ? Math.round((total / fx) * 100) / 100 : null };
+    return { v, lines, total, cur, totalJpy, fx, usd: fx > 0 ? Math.round((totalJpy / fx) * 100) / 100 : null };
   });
-  const grand = rows.reduce((s, r) => s + r.total, 0);
+  const grand = rows.reduce((s, r) => s + r.totalJpy, 0);
   const grandUsd = rows.every((r) => r.usd != null) ? rows.reduce((s, r) => s + (r.usd ?? 0), 0) : null;
 
   return (
@@ -142,7 +145,7 @@ export default async function AuctionBreakdownPage({ searchParams }: { searchPar
           </section>
         )}
 
-        {rows.map(({ v, lines, total, fx, usd }, i) => (
+        {rows.map(({ v, lines, total, cur, totalJpy, fx, usd }, i) => (
           <section key={v.id} className="mt-4 overflow-hidden rounded-lg border border-slate-200 [break-inside:avoid]">
             <div className="flex flex-wrap items-baseline justify-between gap-2 bg-slate-900 px-3 py-2 text-white">
               <div className="font-bold uppercase">
@@ -173,13 +176,21 @@ export default async function AuctionBreakdownPage({ searchParams }: { searchPar
                 {lines.map((l, k) => (
                   <tr key={k} className="border-b border-slate-100">
                     <td className={`px-3 py-1.5 ${l.sub ? "pl-8 text-slate-500" : "text-slate-800"}`}>{l.label}</td>
-                    <td className={`px-3 py-1.5 text-right tabular-nums ${l.sub ? "text-slate-500" : ""}`}>{yen(l.amount)}</td>
+                    <td className={`px-3 py-1.5 text-right tabular-nums ${l.sub ? "text-slate-500" : ""}`}>{money(l.amount, cur, lang)}</td>
                   </tr>
                 ))}
                 <tr className="bg-slate-50 font-bold">
-                  <td className="px-3 py-2">{lang === "ja" ? "合計（円）" : "Total (JPY)"}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{yen(total)}</td>
+                  <td className="px-3 py-2">{cur === "JPY" ? (lang === "ja" ? "合計（円）" : "Total (JPY)") : `${lang === "ja" ? "合計" : "Total"} (${cur})`}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{money(total, cur, lang)}</td>
                 </tr>
+                {cur !== "JPY" && (
+                  <tr className="text-slate-600">
+                    <td className="px-3 py-1.5">
+                      {lang === "ja" ? "円換算" : "JPY equivalent"} (1 {cur} = {num(Number(v.cost_fx_rate))} JPY)
+                    </td>
+                    <td className="px-3 py-1.5 text-right tabular-nums">{yen(totalJpy)}</td>
+                  </tr>
+                )}
                 {usd != null && (
                   <tr className="text-slate-600">
                     <td className="px-3 py-1.5">

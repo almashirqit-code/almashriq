@@ -12,12 +12,13 @@ import { PageHeader, Empty, Pagination } from "@/components/ui";
 import { StockRow } from "./stock-row";
 import { loadRowExtras } from "./row-data";
 import { loadRates } from "../reservations/data";
+import { BRANCH_CODES, DEFAULT_BRANCHES } from "@/lib/branches";
 import { Handshake } from "lucide-react";
 
 const SALE_STATUSES = ["in_stock", "reserved", "sold"] as const;
 
 
-export type StockSearch = { q?: string; status?: string; ship?: string; make?: string; page?: string; rows?: string };
+export type StockSearch = { q?: string; status?: string; ship?: string; make?: string; branch?: string; page?: string; rows?: string };
 
 /** Vehicle list for one ownership scope: own stock (/admin/stock) or third-party units (/admin/third-party). */
 export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" | "third_party" }) {
@@ -43,6 +44,7 @@ export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" |
   if (sp.status && (SALE_STATUSES as readonly string[]).includes(sp.status)) query = query.eq("status", sp.status);
   if (sp.ship && (SHIPPING_STATUSES as string[]).includes(sp.ship)) query = query.eq("shipping_status", sp.ship);
   if (sp.make) query = query.eq("make", sp.make);
+  if (sp.branch && (BRANCH_CODES as string[]).includes(sp.branch)) query = query.eq("branch", sp.branch);
   if (q) {
     const s = q.replace(/[%,()]/g, " ");
     query = query.or(
@@ -76,7 +78,7 @@ export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" |
 
   const qs = (over: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
-    const merged = { q: sp.q, status: sp.status, ship: sp.ship, make: sp.make, rows: sp.rows, page: String(page), ...over };
+    const merged = { q: sp.q, status: sp.status, ship: sp.ship, make: sp.make, branch: sp.branch, rows: sp.rows, page: String(page), ...over };
     for (const [k, v] of Object.entries(merged)) if (v !== undefined && v !== "") p.set(k, String(v));
     return `${base}?${p.toString()}`;
   };
@@ -90,7 +92,7 @@ export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" |
         subtitle={t("total_records", { count: num(count ?? 0, locale) })}
         actions={
           <>
-            <a href={`/admin/stock/export?${new URLSearchParams({ q, status: sp.status ?? "", make: sp.make ?? "", own: scope })}`} className="btn-secondary">
+            <a href={`/admin/stock/export?${new URLSearchParams({ q, status: sp.status ?? "", make: sp.make ?? "", branch: sp.branch ?? "", own: scope })}`} className="btn-secondary">
               <Download className="h-4 w-4" />
               {t("stock_export_csv")}
             </a>
@@ -147,6 +149,16 @@ export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" |
             {makes.map((m) => (
               <option key={m} value={m}>
                 {m}
+              </option>
+            ))}
+          </select>
+          <select name="branch" defaultValue={sp.branch ?? ""} className="input w-auto">
+            <option value="">
+              {t("f_branch")}: {t("all")}
+            </option>
+            {DEFAULT_BRANCHES.map((b) => (
+              <option key={b.code} value={b.code}>
+                {b.name}
               </option>
             ))}
           </select>

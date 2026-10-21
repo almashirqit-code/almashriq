@@ -4,12 +4,12 @@ import { useMemo, useState } from "react";
 import { AlertTriangle, Anchor } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
-import type { AuctionHouse, Port, ShipmentMode, Vehicle, Yard } from "@/lib/types";
+import type { AuctionHouse, Branch, Port, ShipmentMode, Vehicle, Yard } from "@/lib/types";
 
-export type Masters = { ports: Port[]; auctions: AuctionHouse[]; yards: Yard[] };
+export type Masters = { ports: Port[]; auctions: AuctionHouse[]; yards: Yard[]; branches: Branch[] };
 
-/** Auction house + yard selects (grouped by port) and the resulting port shipment rule. */
-export function OriginPicker({ vehicle, masters, readOnly }: { vehicle?: Partial<Vehicle>; masters: Masters; readOnly: boolean }) {
+/** Auction house + yard selects (grouped by port, limited to the branch's ports) and the resulting port shipment rule. */
+export function OriginPicker({ vehicle, masters, readOnly, branch }: { vehicle?: Partial<Vehicle>; masters: Masters; readOnly: boolean; branch?: string }) {
   const { t } = useT();
   const [auctionId, setAuctionId] = useState(vehicle?.auction_house_id ?? "");
   const [yardId, setYardId] = useState(vehicle?.yard_id ?? "");
@@ -23,6 +23,8 @@ export function OriginPicker({ vehicle, masters, readOnly }: { vehicle?: Partial
     const groups = new Map<string, T[]>();
     for (const it of items) {
       if (!it.active && it.id !== current) continue;
+      const p = it.port_id ? portById.get(it.port_id) : null;
+      if (branch && p && p.branch && p.branch !== branch && it.id !== current) continue;
       const key = it.port_id ?? "";
       groups.set(key, [...(groups.get(key) ?? []), it]);
     }

@@ -33,9 +33,11 @@ export type PublicCard = {
   created_at: string;
   total_count: number;
   images: string[];
+  branch: string;
 };
 
-export type PublicCar = Omit<PublicCard, "cover" | "image_count" | "total_count" | "images"> & {
+export type PublicCar = Omit<PublicCard, "cover" | "image_count" | "total_count" | "images" | "branch"> & {
+  branch: string | null;
   model_code: string | null;
   month: number | null;
   drive: string | null;
@@ -70,7 +72,15 @@ export type Filters = {
   max_year?: string;
   sort?: string;
   page?: string;
+  branch?: string;
 };
+
+export type PublicBranch = { code: string; name: string; n_cars: number; n_parts: number; n_machines?: number };
+/** Active source branches with how much stock each has on the website. */
+export const getBranches = cache(async (): Promise<PublicBranch[]> => {
+  const { data } = await anon().rpc("public_branches");
+  return ((data ?? []) as PublicBranch[]).map((b) => ({ ...b, n_cars: Number(b.n_cars), n_parts: Number(b.n_parts), n_machines: Number(b.n_machines ?? 0) }));
+});
 
 function anon() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
@@ -98,6 +108,7 @@ export async function listCars(f: Filters, size = PAGE_SIZE) {
     p_sort: f.sort || "new",
     p_limit: size,
     p_offset: (page - 1) * size,
+    p_branch: f.branch || null,
   });
   const cars = (data ?? []) as PublicCard[];
   return { cars, total: cars[0] ? Number(cars[0].total_count) : 0, page, error: error?.message ?? null };
@@ -204,8 +215,9 @@ export type PublicPart = {
   status: "available" | "reserved";
   created_at: string;
   total_count: number;
+  branch: string;
 };
-export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; page?: string };
+export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; branch?: string; page?: string };
 
 export async function listParts(f: PartFilters, size = PAGE_SIZE) {
   const page = Math.max(1, Number(f.page) || 1);
@@ -216,6 +228,7 @@ export async function listParts(f: PartFilters, size = PAGE_SIZE) {
     p_condition: f.condition || null,
     p_limit: size,
     p_offset: (page - 1) * size,
+    p_branch: f.branch || null,
   });
   const parts = (data ?? []) as PublicPart[];
   return { parts, total: parts[0] ? Number(parts[0].total_count) : 0, page, error: error?.message ?? null };

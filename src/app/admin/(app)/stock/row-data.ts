@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { costJpy as totalCostJpy, expensesJpy } from "@/lib/branches";
 import type { Currency, InvoiceStatus, ShipmentType, VehicleStatus } from "@/lib/types";
 
 export type PaymentStatus = "available" | "reserved" | "invoiced" | "partial" | "paid";
@@ -18,7 +19,17 @@ export type RowExtra = {
   payment: PaymentStatus;
 };
 
-type Cost = { id: string; status: VehicleStatus; ownership: string; purchase_price: number | null; purchase_tax: number | null; expenses: number | null; supplier_price: number | null; supplier_currency: Currency | null };
+type Cost = {
+  id: string;
+  status: VehicleStatus;
+  ownership: string;
+  purchase_price: number | null;
+  purchase_tax: number | null;
+  expenses: number | null;
+  cost_fx_rate: number | null;
+  supplier_price: number | null;
+  supplier_currency: Currency | null;
+};
 
 /** Loads everything the stock rows show beyond the vehicle itself, in one round of queries. */
 export async function loadRowExtras(vehicles: Cost[], rates: Record<Currency, number>): Promise<Map<string, RowExtra>> {
@@ -77,8 +88,8 @@ export async function loadRowExtras(vehicles: Cost[], rates: Record<Currency, nu
     const al = alBy.get(v.id) ?? [];
     const costJpy =
       v.ownership === "third_party"
-        ? Number(v.supplier_price || 0) * (v.supplier_currency && v.supplier_currency !== "JPY" ? Number(rates[v.supplier_currency] || 0) : 1) + Number(v.expenses || 0)
-        : Number(v.purchase_price || 0) + Number(v.purchase_tax || 0) + Number(v.expenses || 0);
+        ? Number(v.supplier_price || 0) * (v.supplier_currency && v.supplier_currency !== "JPY" ? Number(rates[v.supplier_currency] || 0) : 1) + expensesJpy(v)
+        : totalCostJpy(v);
     const allocatedJpy = al.reduce((s, a) => s + Number(a.amount) * (a.remittances?.currency === "JPY" ? 1 : Number(a.remittances?.exchange_rate || 1)), 0);
 
     let sold: RowExtra["sold"] = null;

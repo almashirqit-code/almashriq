@@ -1,17 +1,20 @@
 import Link from "next/link";
 import { SlidersHorizontal, X, Car } from "lucide-react";
-import { carTitle, getCompany, getFacets, listCars, whatsapp, PAGE_SIZE, type Filters } from "@/lib/public-site";
+import { carTitle, getBranches, getCompany, getFacets, listCars, whatsapp, PAGE_SIZE, type Filters } from "@/lib/public-site";
+import { branchName } from "@/lib/branches";
 import { CarCard } from "./car-card";
 import { SortSelect } from "./sort-select";
 
 const FIELD = "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-navy-500 focus:ring-2 focus:ring-navy-500/15";
-const LABEL: Record<string, string> = { q: "Search", make: "Make", body: "Body", fuel: "Fuel", trans: "Transmission", steering: "Steering", min_price: "Min price", max_price: "Max price", min_year: "From year", max_year: "To year" };
+const LABEL: Record<string, string> = { q: "Search", make: "Make", body: "Body", fuel: "Fuel", trans: "Transmission", steering: "Steering", min_price: "Min price", max_price: "Max price", min_year: "From year", max_year: "To year", branch: "Ships from" };
 
 /** Filter sidebar + results grid + pagination, shared by /cars and /makes/[make]. */
 export async function CarListing({ f, path, heading, intro, lockMake = false }: { f: Filters; path: string; heading: string; intro?: React.ReactNode; lockMake?: boolean }) {
-  const [company, facets, res] = await Promise.all([getCompany(), getFacets(), listCars(f)]);
+  const [company, facets, res, branches] = await Promise.all([getCompany(), getFacets(), listCars(f), getBranches()]);
   const pages = Math.max(1, Math.ceil(res.total / PAGE_SIZE));
-  const active = (["q", "make", "body", "fuel", "trans", "steering", "min_price", "max_price", "min_year", "max_year"] as const).filter((k) => f[k] && !(lockMake && k === "make"));
+  const active = (["q", "make", "body", "fuel", "trans", "steering", "min_price", "max_price", "min_year", "max_year", "branch"] as const).filter((k) => f[k] && !(lockMake && k === "make"));
+  // Only offer a "Ships from" filter once stock comes from more than one country.
+  const stocked = branches.filter((b) => b.n_cars > 0 || b.code === f.branch?.toUpperCase());
 
   const href = (over: Partial<Filters>) => {
     const p = new URLSearchParams();
@@ -60,6 +63,19 @@ export async function CarListing({ f, path, heading, intro, lockMake = false }: 
               <SlidersHorizontal className="h-4 w-4" /> Search filters
             </div>
             <input name="q" defaultValue={f.q ?? ""} placeholder="Model, stock ID…" className={FIELD} aria-label="Keyword" />
+            {stocked.length > 1 && (
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Ships from</label>
+                <select name="branch" defaultValue={f.branch?.toUpperCase() ?? ""} className={FIELD}>
+                  <option value="">Any country</option>
+                  {stocked.map((b) => (
+                    <option key={b.code} value={b.code}>
+                      {b.name} ({b.n_cars})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {!lockMake && sel("make", "Make", facets.make)}
             {sel("body", "Body type", facets.body)}
             {sel("fuel", "Fuel", facets.fuel)}
@@ -94,7 +110,7 @@ export async function CarListing({ f, path, heading, intro, lockMake = false }: 
             <div className="mb-4 flex flex-wrap gap-2">
               {active.map((k) => (
                 <Link key={k} href={href({ [k]: undefined, page: undefined })} className="inline-flex items-center gap-1 rounded-full bg-navy-50 px-3 py-1 text-xs font-bold text-navy-800 ring-1 ring-navy-200 hover:bg-navy-100">
-                  {LABEL[k]}: {f[k]}
+                  {LABEL[k]}: {k === "branch" ? branchName(f[k]!.toUpperCase()) : f[k]}
                   <X className="h-3 w-3" />
                 </Link>
               ))}

@@ -9,7 +9,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n/client";
 import { normalizeHeader, parseVehicle, TEMPLATE_HEADERS, TEMPLATE_SAMPLE, type VehicleInput } from "@/lib/vehicle";
 import { IMAGE_EXT, pool, resizeImage } from "@/lib/images";
-import type { VehicleField } from "@/lib/types";
+import type { Currency, VehicleField } from "@/lib/types";
+import { DEFAULT_BRANCHES, jpyRate } from "@/lib/branches";
 
 type Row = { line: number; data: VehicleInput; errors: string[] };
 type ZipFile = { path: string; name: string; entry: JSZipType.JSZipObject };
@@ -197,11 +198,13 @@ export function Importer() {
     let uploaded = 0;
     setResult(null);
 
-    // 0) Auction house / yard names → ids
-    const [{ data: ahs }, { data: yds }] = await Promise.all([
+    // 0) Auction house / yard names → ids; exchange rates for local-currency costs
+    const [{ data: ahs }, { data: yds }, { data: settings }] = await Promise.all([
       supabase.from("auction_houses").select("id, name").limit(5000),
       supabase.from("yards").select("id, name").limit(5000),
+      supabase.from("settings").select("exchange_rates").single(),
     ]);
+    const rates = (settings?.exchange_rates ?? {}) as Partial<Record<Currency, number>>;
     const ahByName = new Map<string, string>((ahs ?? []).map((a): [string, string] => [String(a.name).toLowerCase().trim(), a.id as string]));
     const ydByName = new Map<string, string>((yds ?? []).map((y): [string, string] => [String(y.name).toLowerCase().trim(), y.id as string]));
     const isUuid = (s: string) => /^[0-9a-f-]{36}$/i.test(s);
@@ -219,8 +222,18 @@ export function Importer() {
       const d = { ...r.data };
       if ("auction_house_id" in d) d.auction_house_id = resolve(d.auction_house_id, ahByName, "auction house", d.stock_no);
       if ("yard_id" in d) d.yard_id = resolve(d.yard_id, ydByName, "yard", d.stock_no);
+      // Branch without a cost currency column: costs are in that branch's currency.
+      if (d.branch && !("cost_currency" in d)) d.cost_currency = DEFAULT_BRANCHES.find((b) => b.code === d.branch)?.currency ?? "JPY";
+      // Cost currency without a rate (no column, or blank → 1): use today's rate from Configuration.
+      if (d.cost_currency && d.cost_currency !== "JPY" && (!(Number(d.cost_fx_rate) > 0) || Number(d.cost_fx_rate) === 1)) {
+        const rate = jpyRate(d.cost_currency as Currency, rates);
+        if (rate) d.cost_fx_rate = rate;
+        else errors.push(`${d.stock_no}: no exchange rate for ${d.cost_currency} in Configuration`);
+      }
       return d;
     });
+    // Rows in one upsert must share columns; JPY-cost rows get the rate 1.
+    if (data.some((d) => "cost_fx_rate" in d)) for (const d of data) if (!("cost_fx_rate" in d)) d.cost_fx_rate = 1;
     const returned: DbVehicle[] = [];
     setProgress({ label: t("import_vehicles_saved"), done: 0, total: data.length });
     for (let i = 0; i < data.length; i += 100) {

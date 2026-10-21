@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { SHIPMENT_MODES, type ShipmentMode } from "@/lib/types";
+import { parseBranch } from "@/lib/branches";
 
 export type MasterKind = "ports" | "auction_houses" | "yards";
 type Result = { error?: string; ok?: boolean };
@@ -41,7 +42,7 @@ export async function saveMaster(kind: MasterKind, id: string | null, values: Re
       SHIPMENT_MODES.includes(m as ShipmentMode)
     );
     if (!modes.length) return { error: "m_pick_mode" };
-    row = { name, shipment_modes: modes, region: str(values.region), notes: str(values.notes), active: values.active !== false };
+    row = { name, shipment_modes: modes, region: str(values.region), notes: str(values.notes), active: values.active !== false, branch: parseBranch(values.branch) ?? "JP" };
   } else if (kind === "auction_houses") {
     row = { name, port_id: uuidOrNull(values.port_id), notes: str(values.notes), active: values.active !== false };
   } else {

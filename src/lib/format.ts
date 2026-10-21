@@ -1,6 +1,6 @@
 import type { Currency } from "./types";
 
-const DECIMALS: Record<Currency, number> = { JPY: 0, USD: 2, EUR: 2, GBP: 2 };
+const DECIMALS: Record<Currency, number> = { JPY: 0, USD: 2, EUR: 2, GBP: 2, SGD: 2, TWD: 0, THB: 2 };
 
 export function money(value: number | null | undefined, currency: Currency = "JPY", locale = "en") {
   const v = Number(value ?? 0);

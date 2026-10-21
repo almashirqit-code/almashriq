@@ -6,6 +6,7 @@ import type { DictKey } from "@/lib/i18n/dictionaries";
 import { Badge, PartsBadge } from "@/components/ui";
 import { VehicleRowActions } from "./row-actions";
 import type { PaymentStatus, RowExtra } from "./row-data";
+import { branchFlag, branchName, costJpy } from "@/lib/branches";
 
 type T = (k: DictKey, v?: Record<string, string | number>) => string;
 
@@ -50,7 +51,8 @@ export function StockRow({
   const img = v.vehicle_images?.[0];
   const style = PAYMENT_STYLE[x.payment];
   const port = v.yards?.ports?.name ?? v.auction_houses?.ports?.name ?? null;
-  const cost = Number(v.purchase_price || 0) + Number(v.purchase_tax || 0) + Number(v.expenses || 0);
+  const cost = costJpy(v);
+  const flag = branchFlag(v.branch);
   const chip = "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-bold ring-1 ring-inset transition hover:-translate-y-px";
 
   return (
@@ -74,6 +76,10 @@ export function StockRow({
               <Link href={`/admin/stock/${v.id}`} className="font-bold text-brand-700 hover:underline">
                 {v.stock_no}
               </Link>
+              {flag && v.branch !== "JP" && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={flag} alt={branchName(v.branch)} title={branchName(v.branch)} className="h-3.5 w-5 rounded-[2px] object-cover ring-1 ring-black/10" />
+              )}
               {v.for_parts && <PartsBadge label={t("parts_badge")} />}
               {v.ownership === "third_party" && <Badge className="bg-amber-50 text-amber-800 ring-amber-600/20">{t("own_third_party_short")}</Badge>}
               {v.show_on_website && <Badge className="bg-sky-50 text-sky-700 ring-sky-600/20">Web</Badge>}
