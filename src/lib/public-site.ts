@@ -1,21 +1,11 @@
 import "server-only";
 import { cache } from "react";
-import { headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import type { Currency, VehicleStatus } from "./types";
 
-/** Hosts that serve the public website at the root (set PUBLIC_SITE_HOSTS in Vercel to override). */
-export const PUBLIC_HOSTS = (process.env.PUBLIC_SITE_HOSTS ?? "almashriqtrading.site,www.almashriqtrading.site")
-  .split(",")
-  .map((h) => h.trim().toLowerCase())
-  .filter(Boolean);
-
-export const isPublicHost = (host: string | null | undefined) => !!host && PUBLIC_HOSTS.includes(host.split(":")[0].toLowerCase());
-
-/** "" on the public domain, "/showroom" when browsing it inside the ERP. */
+/** Public pages live at the site root (the ERP is under /admin). Kept as a helper so links stay in one place. */
 export async function siteBase() {
-  const h = await headers();
-  return isPublicHost(h.get("x-forwarded-host") ?? h.get("host")) ? "" : "/showroom";
+  return "";
 }
 
 export type PublicCard = {

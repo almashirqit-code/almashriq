@@ -1,76 +1,54 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_HOSTS = (process.env.PUBLIC_SITE_HOSTS ?? "almashriqtrading.site,www.almashriqtrading.site")
-  .split(",")
-  .map((h) => h.trim().toLowerCase())
-  .filter(Boolean);
-
+/**
+ * Layout of the site:
+ *   /            public car website (no login)
+ *   /admin/...   the ERP — staff must be signed in (except /admin/login and /admin/setup)
+ * This middleware only runs for /admin and the staff-only image proxy (see `config.matcher`).
+ */
 export async function middleware(request: NextRequest) {
-  // Public website domain: serve the showroom at the root, no staff login involved.
-  const host = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "").split(":")[0].toLowerCase();
-  if (PUBLIC_HOSTS.includes(host)) {
-    const path = request.nextUrl.pathname;
-    if (path.startsWith("/showroom") || path.startsWith("/api/public") || path.startsWith("/brand/")) return NextResponse.next();
-    const url = request.nextUrl.clone();
-    url.pathname = path === "/" ? "/showroom" : `/showroom${path}`;
-    return NextResponse.rewrite(url);
-  }
-
+  const path = request.nextUrl.pathname;
   let response = NextResponse.next({ request });
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    if (request.nextUrl.pathname !== "/setup") {
-      return NextResponse.redirect(new URL("/setup", request.url));
-    }
+    if (path !== "/admin/setup") return NextResponse.redirect(new URL("/admin/setup", request.url));
     return response;
   }
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
+  const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
       },
-    }
-  );
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        response = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+      },
+    },
+  });
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
-  const isPublic =
-    path.startsWith("/login") ||
-    path.startsWith("/setup") ||
-    path.startsWith("/showroom") ||
-    path.startsWith("/api/public");
-
-  if (!user && !isPublic) {
+  const open = path.startsWith("/admin/login") || path.startsWith("/admin/setup");
+  if (!user && !open && path.startsWith("/admin")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/admin/login";
     url.search = "";
     return NextResponse.redirect(url);
   }
-  if (user && path.startsWith("/login")) {
+  if (user && path.startsWith("/admin/login")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/admin";
+    url.search = "";
     return NextResponse.redirect(url);
   }
-
   return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|csv)$).*)"],
+  matcher: ["/admin", "/admin/:path*", "/api/site-image"],
 };

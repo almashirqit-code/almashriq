@@ -9,10 +9,10 @@ import type { DictKey } from "@/lib/i18n/dictionaries";
 import type { Role } from "@/lib/types";
 
 const NEW_ITEMS: { href: string; label: DictKey; icon: React.ElementType; grad: string; roles?: Role[] }[] = [
-  { href: "/stock/new", label: "top_new_vehicle", icon: Car, grad: "from-rose-500 to-brand-600", roles: ["admin", "manager"] },
-  { href: "/invoices/new", label: "top_new_invoice", icon: FileText, grad: "from-fuchsia-500 to-pink-600" },
-  { href: "/customers/new", label: "top_new_customer", icon: Users, grad: "from-sky-400 to-blue-600" },
-  { href: "/remittances/new", label: "top_new_remittance", icon: Banknote, grad: "from-emerald-400 to-teal-600", roles: ["admin", "manager"] },
+  { href: "/admin/stock/new", label: "top_new_vehicle", icon: Car, grad: "from-rose-500 to-brand-600", roles: ["admin", "manager"] },
+  { href: "/admin/invoices/new", label: "top_new_invoice", icon: FileText, grad: "from-fuchsia-500 to-pink-600" },
+  { href: "/admin/customers/new", label: "top_new_customer", icon: Users, grad: "from-sky-400 to-blue-600" },
+  { href: "/admin/remittances/new", label: "top_new_remittance", icon: Banknote, grad: "from-emerald-400 to-teal-600", roles: ["admin", "manager"] },
 ];
 
 export function TopbarSearch() {
@@ -39,7 +39,7 @@ export function TopbarSearch() {
       className="relative hidden w-full max-w-md md:block"
       onSubmit={(e) => {
         e.preventDefault();
-        router.push(`/stock?q=${encodeURIComponent(q.trim())}`);
+        router.push(`/admin/stock?q=${encodeURIComponent(q.trim())}`);
       }}
     >
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />

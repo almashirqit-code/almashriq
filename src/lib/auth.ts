@@ -4,25 +4,25 @@ import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
 import type { Profile, Role } from "./types";
 
-/** Current signed-in profile (cached per request). Redirects to /login if missing. */
+/** Current signed-in profile (cached per request). Redirects to /admin/login if missing. */
 export const getProfile = cache(async (): Promise<Profile> => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/admin/login");
 
   const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   if (!data || !data.active) {
     await supabase.auth.signOut();
-    redirect("/login?disabled=1");
+    redirect("/admin/login?disabled=1");
   }
   return data as Profile;
 });
 
 export async function requireRole(roles: Role[]) {
   const profile = await getProfile();
-  if (!roles.includes(profile.role)) redirect("/");
+  if (!roles.includes(profile.role)) redirect("/admin");
   return profile;
 }
 

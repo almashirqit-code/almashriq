@@ -8,7 +8,7 @@ const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans",
 const notoJp = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "500", "700"], display: "swap", variable: "--font-jp" });
 
 export const metadata: Metadata = {
-  title: { default: "Al Mashriq Trading — ERP", template: "%s · Al Mashriq ERP" },
+  title: { default: "Al Mashriq Trading Co., Ltd. — Japanese used cars", template: "%s · Al Mashriq" },
   description: "Al Mashriq Trading Co., Ltd. — car & spare parts export ERP",
   applicationName: "Al Mashriq ERP",
 };

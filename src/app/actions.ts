@@ -13,5 +13,5 @@ export async function setLocale(locale: "en" | "ja") {
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
+  redirect("/admin/login");
 }
