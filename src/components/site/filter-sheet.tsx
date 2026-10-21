@@ -9,7 +9,7 @@ import { SlidersHorizontal, X } from "lucide-react";
  */
 export function FilterToolbar({ count, children }: { count: number; children?: React.ReactNode }) {
   return (
-    <div className="glass-strong sticky top-14 z-30 -mx-4 mb-3 flex items-center gap-2 rounded-none border-x-0 px-4 py-2 lg:hidden">
+    <div className="glass-strong sticky top-[4.25rem] z-30 -mx-4 mb-3 flex items-center gap-2 rounded-none border-x-0 px-4 py-2 lg:hidden">
       <a href="#filters" className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-white/10 text-sm font-bold ring-1 ring-white/15 hover:bg-white/15">
         <SlidersHorizontal className="h-4 w-4" />
         Filters

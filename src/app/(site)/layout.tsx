@@ -123,7 +123,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
       {/* Sticky bar: compact logo + search + menu on phones, the full navigation on desktop */}
       <nav className="glass-strong sticky top-0 z-40 rounded-none border-x-0 border-t-0">
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 lg:h-auto lg:px-4">
+        <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center gap-2 px-3 lg:h-auto lg:px-4">
           <Link href="/" className="shrink-0 rounded-xl lg:hidden" aria-label="Al Mashriq Trading home">
             {custom ? (
               <span className="inline-block rounded-lg bg-white/95 px-1.5 py-1">
@@ -202,7 +202,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <footer className="glass-lite mt-14 rounded-none border-x-0 border-b-0">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 lg:grid-cols-4 lg:px-6">
           <div className="col-span-2 lg:col-span-1">
-            {custom ? logoImg("h-11") : <Logo size="md" />}
+            {custom ? logoImg("h-11") : <Logo size="lg" />}
             <p className="mt-4 text-sm leading-6 text-white/70">{company.company_name} exports quality Japanese used vehicles and spare parts worldwide by RoRo and container.</p>
           </div>
           <div>

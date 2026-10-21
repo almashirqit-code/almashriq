@@ -1,6 +1,6 @@
 /*
- * Public website — glass theme in the Al Mashriq palette: jet black ground, cerulean blue, neon rose.
- * Neon rose (#FF2E88) is for glows and large shapes; buttons with white text use #E0156F (≥ 4.5:1).
+ * Public website — glass theme in the Al Mashriq palette: jet black ground, cerulean blue, logo red.
+ * Buttons use the logo red #D71920 (white text 5.2:1); red text on the dark ground uses #FF6B70 (≥ 5.5:1).
  * Everything is scoped under .site-glass (the public layout wrapper), so the admin is untouched.
  *
  *  1. tokens + page background
@@ -24,9 +24,9 @@ body:has(.site-glass) {
   --glass-hi: rgb(255 255 255 / 0.12);
   --glass-lo: rgb(255 255 255 / 0.04);
   --line: rgb(255 255 255 / 0.14);
-  --accent: #e0156f;
-  --accent-hi: #ff2e88;
-  --accent-text: #ff5ca4;
+  --accent: #d71920;
+  --accent-hi: #ec3a40;
+  --accent-text: #ff6b70;
   --cerulean: #007ba7;
   --cerulean-text: #5cc3ee;
   --focus: #2ea8df;
@@ -46,12 +46,12 @@ body:has(.site-glass) {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(40rem 28rem at 105% -5%, rgb(255 46 136 / 0.16), transparent 60%),
+    radial-gradient(40rem 28rem at 105% -5%, rgb(215 25 32 / 0.18), transparent 60%),
     radial-gradient(38rem 30rem at -10% 28%, rgb(0 123 167 / 0.2), transparent 60%),
     radial-gradient(34rem 26rem at 60% 115%, rgb(0 123 167 / 0.1), transparent 60%);
 }
 .site-glass ::selection {
-  background: rgb(255 46 136 / 0.4);
+  background: rgb(215 25 32 / 0.45);
   color: #fff;
 }
 .site-glass :focus-visible {
@@ -108,7 +108,7 @@ body:has(.site-glass) {
 .site-glass .glass-hover:active {
   transform: scale(0.99);
 }
-/* Highlighted words in headings: solid neon rose (gradient text reads as decoration, not emphasis) */
+/* Highlighted words in headings: solid logo red (gradient text reads as decoration, not emphasis) */
 .site-glass .text-gradient {
   color: var(--accent-text);
 }
@@ -176,7 +176,7 @@ body:has(.site-glass) {
 }
 .site-glass .bg-brand-50,
 .site-glass .bg-brand-100 {
-  background-color: rgb(255 46 136 / 0.14);
+  background-color: rgb(215 25 32 / 0.18);
 }
 .site-glass .bg-emerald-50 {
   background-color: rgb(16 185 129 / 0.16);
@@ -225,7 +225,7 @@ body:has(.site-glass) {
 }
 .site-glass .hover\:text-brand-700:hover,
 .site-glass .hover\:text-brand-600:hover {
-  color: #ff94c5;
+  color: #ffa3a6;
 }
 .site-glass .text-navy-500,
 .site-glass .text-sky-600,

@@ -29,7 +29,7 @@ export default async function LoginPage({
 
       <div className="relative w-full max-w-sm">
         <div className="mb-7 flex flex-col items-center">
-          <Logo size="lg" />
+          <Logo size="xl" />
           <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">ERP</div>
         </div>
         <div className="overflow-hidden rounded-xl bg-white shadow-2xl">

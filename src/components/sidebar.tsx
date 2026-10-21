@@ -165,7 +165,7 @@ export function Sidebar({
                         </span>
                         <span className="flex-1 truncate">{t(i.label)}</span>
                         {i.newTab && <ExternalLink className="h-3.5 w-3.5 text-slate-500" />}
-                        {active && <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_#ff2e88]" />}
+                        {active && <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_#ec3a40]" />}
                       </Link>
                     </li>
                   );

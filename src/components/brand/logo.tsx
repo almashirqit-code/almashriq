@@ -5,7 +5,8 @@
  * Both are 927 × 371 (2.5 : 1). App icons (src/app/icon.png, apple-icon.png) use the emblem on a jet-black tile.
  */
 
-const SIZES = { sm: "h-11", md: "h-14", lg: "h-24" } as const;
+// sm = phone top bar (≈ 150 px wide), md = desktop header / admin sidebar (≈ 200 px), lg = footer, xl = login
+const SIZES = { sm: "h-[3.75rem]", md: "h-20", lg: "h-24", xl: "h-32" } as const;
 
 /** `tone="dark"` = for dark backgrounds, `"light"` = for light backgrounds. */
 export function Logo({ tone = "dark", size = "md", className = "", alt = "Al Mashriq Trading — Car & Spare Parts" }: { tone?: "dark" | "light"; size?: keyof typeof SIZES; className?: string; alt?: string }) {

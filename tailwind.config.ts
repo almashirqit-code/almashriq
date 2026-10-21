@@ -1,10 +1,10 @@
 import type { Config } from "tailwindcss";
 
 /*
- * Al Mashriq brand palette: jet black · cerulean blue · neon rose.
+ * Al Mashriq brand palette: jet black · cerulean blue · logo red.
  * The scale names (navy / brand) are kept so every existing utility picks up the new colours.
  *  - navy:  light end = cerulean tints, 400–700 = cerulean (600 = #007BA7), 800–950 = jet black
- *  - brand: neon rose (500 = #FF2E88 for glows/decoration; 600+ carries white text at ≥ 4.5:1)
+ *  - brand: logo red (600 = #D71920, the red in the logo and on invoices; 600+ carries white text at ≥ 4.5:1)
  *  - rose / sky / blue are aliased to the brand colours so decorative gradients stay on-palette.
  * Semantic colours (red = error, emerald = success, amber = warning, violet/indigo status badges) are untouched.
  */
@@ -22,18 +22,18 @@ const cerulean = {
   950: "#04293a",
 };
 
-const neonRose = {
-  50: "#fff0f7",
-  100: "#ffe0ef",
-  200: "#ffc2df",
-  300: "#ff94c5",
-  400: "#ff5ca4",
-  500: "#ff2e88",
-  600: "#e0156f",
-  700: "#b80e5a",
-  800: "#920d49",
-  900: "#780f3e",
-  950: "#46031f",
+const logoRed = {
+  50: "#fef2f2",
+  100: "#fee2e3",
+  200: "#fecacc",
+  300: "#fca5a8",
+  400: "#f76d72",
+  500: "#ec3a40",
+  600: "#d71920",
+  700: "#b5141a",
+  800: "#95151a",
+  900: "#7c171c",
+  950: "#430709",
 };
 
 const config: Config = {
@@ -61,8 +61,8 @@ const config: Config = {
           900: "#111114",
           950: "#0a0a0c",
         },
-        brand: neonRose,
-        rose: neonRose,
+        brand: logoRed,
+        rose: logoRed,
         sky: cerulean,
         blue: { ...cerulean, 600: "#00658a", 700: "#05506d" },
       },

@@ -11,7 +11,7 @@ import {
   YAxis,
 } from "recharts";
 
-const VIBE = ["#007ba7", "#e0156f", "#17181c", "#2ea8df", "#ff94c5", "#10b981", "#f59e0b", "#94a3b8"];
+const VIBE = ["#007ba7", "#d71920", "#17181c", "#2ea8df", "#fca5a8", "#10b981", "#f59e0b", "#94a3b8"];
 
 const compact = (locale: string) =>
   new Intl.NumberFormat(locale === "ja" ? "ja-JP" : "en-US", { notation: "compact", maximumFractionDigits: 1 });
@@ -25,9 +25,9 @@ export function SalesChart({ data, locale }: { data: { label: string; value: num
         <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ff5ca4" />
-              <stop offset="55%" stopColor="#e0156f" />
-              <stop offset="100%" stopColor="#920d49" />
+              <stop offset="0%" stopColor="#f76d72" />
+              <stop offset="55%" stopColor="#d71920" />
+              <stop offset="100%" stopColor="#95151a" />
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} stroke="#e2e8f0" />
