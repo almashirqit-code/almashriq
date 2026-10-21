@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, Phone, MapPin, MessageCircle, Printer, Search, ChevronDown, Send, Car } from "lucide-react";
 import { getCompany, getFacets, getMakeTiles, whatsapp, SITE_URL } from "@/lib/public-site";
-import { JapanClock } from "@/components/site/japan-clock";
+import { WorldClock } from "@/components/world-clock";
+import { FxBadge } from "@/components/fx-badge";
+import { getUsdJpy } from "@/lib/fx";
 import { MobileMenu } from "@/components/site/mobile-menu";
 import { JsonLd } from "@/components/site/json-ld";
 
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
 const BODY_LINKS = ["SUV", "Sedan", "Hatchback", "Van", "Truck", "Wagon", "Pickup", "Bus"];
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const [company, facets, makes] = await Promise.all([getCompany(), getFacets(), getMakeTiles()]);
+  const [company, facets, makes, fx] = await Promise.all([getCompany(), getFacets(), getMakeTiles(), getUsdJpy()]);
   const wa = whatsapp(company, "Hello Al Mashriq, I'd like to know about your cars.");
   const bodies = facets.body.map(([b]) => b).filter((b) => BODY_LINKS.some((x) => b.toLowerCase().includes(x.toLowerCase()))).slice(0, 10);
   const topMakes = makes.slice(0, 24);
@@ -53,7 +55,8 @@ export default async function PublicLayout({ children }: { children: React.React
       <div className="bg-navy-950 text-[12px] text-navy-100">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-5 gap-y-1 px-4 py-1.5 lg:px-6">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
-            <JapanClock />
+            <WorldClock labelClass="text-navy-300" timeClass="font-semibold text-white" />
+            <FxBadge fx={fx} className="text-navy-200 [&_b]:text-white" />
             <span className="hidden sm:inline">
               <b className="text-white">{facets.available.toLocaleString()}</b> cars available now
             </span>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Mail, Phone, MapPin, MessageCircle, Printer, Clock } from "lucide-react";
 import { getCompany, whatsapp } from "@/lib/public-site";
 import { InquiryForm } from "@/components/site/inquiry-form";
-import { JapanClock } from "@/components/site/japan-clock";
+import { WorldClock } from "@/components/world-clock";
 
 export const revalidate = 300;
 
@@ -49,7 +49,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               </a>
             )}
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-brand-400" /> <JapanClock />
+              <Clock className="h-4 w-4 text-brand-400" /> <WorldClock zones={["japan"]} />
             </div>
             {wa && (
               <a href={wa} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 font-bold text-white hover:bg-emerald-600">
