@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { RowsSelect } from "@/components/rows-select";
+import { rowsParam } from "@/lib/rows";
 import { PlusCircle, Banknote } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
@@ -7,7 +9,7 @@ import { date, money } from "@/lib/format";
 import { REMITTANCE_STATUSES, type Remittance, type RemittanceDocument } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { Empty, NumberedPagination, IconChip } from "@/components/ui";
-import { PageSizeSelect, RowActions } from "./list-controls";
+import { RowActions } from "./list-controls";
 import { DocIcons } from "./doc-icons";
 
 type Row = Remittance & {
@@ -25,14 +27,14 @@ const STATUS_COLOR: Record<string, string> = {
 export default async function RemittancesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; office?: string; shift?: string; page?: string; size?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; office?: string; shift?: string; page?: string; size?: string; rows?: string }>;
 }) {
   const sp = await searchParams;
   const profile = await getProfile();
   const { t, locale } = await getT();
   const supabase = await createClient();
 
-  const size = [10, 25, 50, 100].includes(Number(sp.size)) ? Number(sp.size) : 10;
+  const size = rowsParam(sp.rows ?? sp.size);
   const page = Math.max(1, Number(sp.page) || 1);
   const q = (sp.q ?? "").trim().replace(/[%,()]/g, " ");
 
@@ -87,7 +89,7 @@ export default async function RemittancesPage({
     if (sp.status) u.set("status", sp.status);
     if (sp.office) u.set("office", sp.office);
     if (sp.shift) u.set("shift", sp.shift);
-    if (size !== 10) u.set("size", String(size));
+    if (size !== 100) u.set("rows", String(size));
     u.set("page", String(p));
     return `/admin/remittances?${u}`;
   };
@@ -117,7 +119,7 @@ export default async function RemittancesPage({
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <form action="/admin/remittances" className="flex flex-wrap items-center gap-2">
-          <PageSizeSelect value={size} />
+          <RowsSelect value={size} />
           <input name="q" defaultValue={sp.q ?? ""} placeholder={t("search_placeholder")} className="input w-56" />
           <select name="status" defaultValue={sp.status ?? ""} className="input w-auto">
             <option value="">
@@ -149,7 +151,6 @@ export default async function RemittancesPage({
               ))}
             </select>
           )}
-          {size !== 10 && <input type="hidden" name="size" value={size} />}
           <button className="btn-secondary">{t("search")}</button>
         </form>
         <NumberedPagination page={page} pages={pages} makeHref={href} />

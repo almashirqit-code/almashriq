@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { RowsSelect } from "@/components/rows-select";
+import { rowsParam } from "@/lib/rows";
 import { Inbox, Mail, Phone, Car } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
@@ -10,7 +12,6 @@ import { INQ_LABEL, INQ_STYLE } from "./status";
 import { INQUIRY_STATUSES } from "./status";
 
 export const metadata = { title: "Inquiries" };
-const SIZE = 25;
 
 type Row = {
   id: string;
@@ -29,7 +30,7 @@ type Row = {
   created_at: string;
 };
 
-export default async function InquiriesPage({ searchParams }: { searchParams: Promise<{ status?: string; who?: string; q?: string; page?: string }> }) {
+export default async function InquiriesPage({ searchParams }: { searchParams: Promise<{ status?: string; who?: string; q?: string; page?: string; rows?: string }> }) {
   const sp = await searchParams;
   const me = await getProfile();
   const supabase = await createClient();
@@ -37,6 +38,7 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
   const status = sp.status ?? "open";
   const q = (sp.q ?? "").trim().replace(/[%,()]/g, " ");
 
+  const SIZE = rowsParam(sp.rows);
   let query = supabase.from("inquiries").select("*", { count: "exact" }).order("created_at", { ascending: false }).range((page - 1) * SIZE, page * SIZE - 1);
   if (status === "open") query = query.in("status", ["new", "contacted", "quoted"]);
   else if ((INQUIRY_STATUSES as readonly string[]).includes(status)) query = query.eq("status", status);
@@ -54,7 +56,7 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
   const pages = Math.max(1, Math.ceil((count ?? 0) / SIZE));
   const staffName = new Map(staff.map((s) => [s.id, s.name]));
   const href = (over: Record<string, string>) => {
-    const u = new URLSearchParams({ status, ...(sp.who ? { who: sp.who } : {}), ...(sp.q ? { q: sp.q } : {}), ...over });
+    const u = new URLSearchParams({ status, ...(sp.who ? { who: sp.who } : {}), ...(sp.q ? { q: sp.q } : {}), ...(sp.rows ? { rows: sp.rows } : {}), ...over });
     return `/admin/inquiries?${u}`;
   };
 
@@ -69,6 +71,7 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
 
       <div className="card overflow-hidden">
         <form action="/admin/inquiries" className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3">
+          <RowsSelect value={SIZE} />
           <input name="q" defaultValue={sp.q ?? ""} placeholder="Name, email, phone, country, stock no…" className="input w-64" />
           <select name="status" defaultValue={status} className="input w-auto">
             <option value="open">Open (new, contacted, quoted)</option>

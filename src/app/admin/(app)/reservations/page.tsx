@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { RowsSelect } from "@/components/rows-select";
+import { rowsParam } from "@/lib/rows";
 import { BookmarkCheck, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
@@ -10,7 +12,6 @@ import { PageHeader, Badge, Empty, Stat, NumberedPagination } from "@/components
 import { RES_STATUS_BADGE } from "./status";
 
 export const metadata = { title: "Reservations" };
-const SIZE = 25;
 
 type Row = Reservation & {
   vehicles: { id: string; stock_no: string; make: string; model: string; grade: string | null; year: number | null } | null;
@@ -21,7 +22,7 @@ type Row = Reservation & {
 export default async function ReservationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; agent?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; agent?: string; page?: string; rows?: string }>;
 }) {
   const sp = await searchParams;
   const profile = await getProfile();
@@ -29,6 +30,7 @@ export default async function ReservationsPage({
   const supabase = await createClient();
   const seeCost = can.seeCost(profile.role);
   const page = Math.max(1, Number(sp.page) || 1);
+  const SIZE = rowsParam(sp.rows);
   const status = sp.status === undefined ? "active" : sp.status;
   const q = (sp.q ?? "").trim().replace(/[%,()]/g, " ");
 
@@ -70,6 +72,7 @@ export default async function ReservationsPage({
     if (sp.q) u.set("q", sp.q);
     u.set("status", status);
     if (sp.agent) u.set("agent", sp.agent);
+    if (sp.rows) u.set("rows", sp.rows);
     u.set("page", String(p));
     return `/admin/reservations?${u}`;
   };
@@ -88,6 +91,7 @@ export default async function ReservationsPage({
 
       <div className="card overflow-hidden">
         <form action="/admin/reservations" className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3">
+          <RowsSelect value={SIZE} />
           <input name="q" defaultValue={sp.q ?? ""} placeholder={t("search_placeholder")} className="input w-64" />
           <select name="status" defaultValue={status} className="input w-auto">
             <option value="all">

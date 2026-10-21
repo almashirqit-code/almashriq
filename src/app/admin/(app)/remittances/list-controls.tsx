@@ -2,35 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import { deleteRemittance, removeAllAllocations } from "./actions";
-
-export function PageSizeSelect({ value }: { value: number }) {
-  const router = useRouter();
-  const sp = useSearchParams();
-  const { t } = useT();
-  return (
-    <select
-      aria-label={t("rem_page_size")}
-      className="input w-24"
-      value={value}
-      onChange={(e) => {
-        const p = new URLSearchParams(sp.toString());
-        p.set("size", e.target.value);
-        p.delete("page");
-        router.push(`/admin/remittances?${p}`);
-      }}
-    >
-      {[10, 25, 50, 100].map((n) => (
-        <option key={n} value={n}>
-          {n}
-        </option>
-      ))}
-    </select>
-  );
-}
 
 export function RowActions({
   id,

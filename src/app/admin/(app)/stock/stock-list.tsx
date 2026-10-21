@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { RowsSelect } from "@/components/rows-select";
+import { rowsParam } from "@/lib/rows";
 import { Plus, Upload, Download, Car, Globe } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
@@ -14,9 +16,8 @@ import { Handshake } from "lucide-react";
 
 const SALE_STATUSES = ["in_stock", "reserved", "sold"] as const;
 
-const PAGE_SIZE = 25;
 
-export type StockSearch = { q?: string; status?: string; ship?: string; make?: string; page?: string };
+export type StockSearch = { q?: string; status?: string; ship?: string; make?: string; page?: string; rows?: string };
 
 /** Vehicle list for one ownership scope: own stock (/admin/stock) or third-party units (/admin/third-party). */
 export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" | "third_party" }) {
@@ -26,6 +27,8 @@ export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" |
   const supabase = await createClient();
 
   const page = Math.max(1, Number(sp.page) || 1);
+
+  const PAGE_SIZE = rowsParam(sp.rows);
   const q = (sp.q ?? "").trim();
 
   let query = supabase
@@ -73,7 +76,7 @@ export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" |
 
   const qs = (over: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
-    const merged = { q: sp.q, status: sp.status, ship: sp.ship, make: sp.make, page: String(page), ...over };
+    const merged = { q: sp.q, status: sp.status, ship: sp.ship, make: sp.make, rows: sp.rows, page: String(page), ...over };
     for (const [k, v] of Object.entries(merged)) if (v !== undefined && v !== "") p.set(k, String(v));
     return `${base}?${p.toString()}`;
   };
@@ -114,7 +117,8 @@ export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" |
       />
 
       <div className="card overflow-hidden">
-        <form className="flex flex-wrap gap-2 border-b border-slate-100 p-3" action={base}>
+        <form className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3" action={base}>
+          <RowsSelect value={PAGE_SIZE} />
           <input name="q" defaultValue={q} placeholder={t("search_placeholder")} className="input max-w-xs" />
           <select name="status" defaultValue={sp.status ?? ""} className="input w-auto">
             <option value="">

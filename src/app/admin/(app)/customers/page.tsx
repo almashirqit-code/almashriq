@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { RowsSelect } from "@/components/rows-select";
+import { rowsParam } from "@/lib/rows";
 import { Plus, Pencil, Users, Mail, Phone, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
@@ -6,17 +8,17 @@ import { num } from "@/lib/format";
 import type { Customer } from "@/lib/types";
 import { PageHeader, Empty, Pagination } from "@/components/ui";
 
-const PAGE_SIZE = 25;
 
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; rows?: string }>;
 }) {
   const sp = await searchParams;
   const { t, locale } = await getT();
   const supabase = await createClient();
   const page = Math.max(1, Number(sp.page) || 1);
+  const PAGE_SIZE = rowsParam(sp.rows);
   const q = (sp.q ?? "").trim();
 
   let query = supabase
@@ -50,7 +52,8 @@ export default async function CustomersPage({
         }
       />
       <div className="card overflow-hidden">
-        <form className="flex gap-2 border-b border-slate-100 p-3" action="/admin/customers">
+        <form className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3" action="/admin/customers">
+          <RowsSelect value={PAGE_SIZE} />
           <input name="q" defaultValue={q} placeholder={t("search_placeholder")} className="input max-w-xs" />
           <button className="btn-secondary">{t("search")}</button>
         </form>
@@ -137,7 +140,7 @@ export default async function CustomersPage({
         <Pagination
           page={page}
           pages={pages}
-          makeHref={(p) => `/admin/customers?${new URLSearchParams({ ...(q ? { q } : {}), page: String(p) })}`}
+          makeHref={(p) => `/admin/customers?${new URLSearchParams({ ...(q ? { q } : {}), ...(sp.rows ? { rows: sp.rows } : {}), page: String(p) })}`}
           labels={{ previous: t("previous"), next: t("next"), pageOf: t("page_of", { page, pages }) }}
         />
       </div>

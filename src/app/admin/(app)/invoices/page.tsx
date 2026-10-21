@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { RowsSelect } from "@/components/rows-select";
+import { rowsParam } from "@/lib/rows";
 import { Plus, FileText } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
@@ -7,17 +9,17 @@ import { INVOICE_STATUSES, type Invoice } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { PageHeader, InvoiceStatusBadge, Empty, Pagination } from "@/components/ui";
 
-const PAGE_SIZE = 25;
 
 export default async function InvoicesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; page?: string; rows?: string }>;
 }) {
   const sp = await searchParams;
   const { t, locale } = await getT();
   const supabase = await createClient();
   const page = Math.max(1, Number(sp.page) || 1);
+  const PAGE_SIZE = rowsParam(sp.rows);
   const q = (sp.q ?? "").trim().replace(/[%,()]/g, " ");
 
   let query = supabase
@@ -49,6 +51,7 @@ export default async function InvoicesPage({
     const params = new URLSearchParams();
     if (sp.q) params.set("q", sp.q);
     if (sp.status) params.set("status", sp.status);
+    if (sp.rows) params.set("rows", sp.rows);
     params.set("page", String(p));
     return `/admin/invoices?${params}`;
   };
@@ -68,7 +71,8 @@ export default async function InvoicesPage({
         }
       />
       <div className="card overflow-hidden">
-        <form className="flex flex-wrap gap-2 border-b border-slate-100 p-3" action="/admin/invoices">
+        <form className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3" action="/admin/invoices">
+          <RowsSelect value={PAGE_SIZE} />
           <input name="q" defaultValue={sp.q ?? ""} placeholder={t("search_placeholder")} className="input max-w-xs" />
           <select name="status" defaultValue={sp.status ?? ""} className="input w-auto">
             <option value="">
