@@ -5,6 +5,7 @@ import { assetUrl, getCompany, getPost, getPosts, SITE_URL } from "@/lib/public-
 import { headings, plainText, renderMarkdown } from "@/lib/markdown";
 import { JsonLd } from "@/components/site/json-ld";
 import { InquiryForm } from "@/components/site/inquiry-form";
+import { LOGO_SRC } from "@/components/brand/logo";
 
 export const revalidate = 300;
 
@@ -42,7 +43,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           datePublished: p.published_at,
           dateModified: p.updated_at,
           author: { "@type": "Organization", name: company.company_name },
-          publisher: { "@type": "Organization", name: company.company_name, logo: { "@type": "ImageObject", url: `${SITE_URL}/brand/logo.png` } },
+          publisher: { "@type": "Organization", name: company.company_name, logo: { "@type": "ImageObject", url: `${SITE_URL}${LOGO_SRC}` } },
           mainEntityOfPage: `${SITE_URL}/blog/${p.slug}`,
           keywords: p.tags.join(", ") || undefined,
         }}

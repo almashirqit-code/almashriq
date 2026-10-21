@@ -5,6 +5,7 @@ import { money, date, num } from "@/lib/format";
 import { translate, type DictKey, type Locale } from "@/lib/i18n/dictionaries";
 import { TAXED_EXPENSES, type Customer, type ExpenseItem, type Settings, type Vehicle } from "@/lib/types";
 import { PrintButton } from "@/components/buttons";
+import { LOGO_SRC } from "@/components/brand/logo";
 
 export const metadata = { title: "Auction invoice breakdown" };
 
@@ -98,7 +99,7 @@ export default async function AuctionBreakdownPage({ searchParams }: { searchPar
       <div className="mx-auto max-w-[210mm] bg-white px-10 py-8 text-[12px] leading-snug text-slate-800 shadow-lg print:max-w-none print:px-0 print:py-0 print:shadow-none">
         <header className="flex items-start justify-between gap-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={s?.logo_url || "/brand/logo.png"} alt={company} className="h-[72px] w-auto object-contain" />
+          <img src={s?.logo_url || LOGO_SRC} alt={company} className="h-[72px] w-auto object-contain" />
           <div className="text-right text-[11px] text-slate-600">
             <div className="text-[15px] font-extrabold uppercase tracking-wide text-slate-900">{company}</div>
             {s?.address && <div className="whitespace-pre-line">{s.address}</div>}

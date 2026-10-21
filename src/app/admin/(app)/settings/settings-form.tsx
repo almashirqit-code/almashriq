@@ -8,6 +8,7 @@ import { resizeImage } from "@/lib/images";
 import { CURRENCIES, type Settings } from "@/lib/types";
 import { SubmitButton } from "@/components/buttons";
 import { saveSettings, type SettingsState } from "./actions";
+import { LOGO_SRC } from "@/components/brand/logo";
 
 export function SettingsForm({ settings }: { settings: Settings }) {
   const { t } = useT();
@@ -88,7 +89,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
             <div className="flex items-center gap-3">
               {!logo && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src="/brand/logo.png" alt="" className="h-14 w-auto rounded border border-dashed border-slate-200 bg-white object-contain p-1 opacity-70" />
+                <img src={LOGO_SRC} alt="" className="h-14 w-auto rounded border border-dashed border-slate-200 bg-white object-contain p-1 opacity-70" />
               )}
               {logo ? (
                 <div className="relative">
