@@ -9,7 +9,7 @@ import { MobileMenu } from "@/components/site/mobile-menu";
 import { BottomNav } from "@/components/site/bottom-nav";
 import { BodyIcon } from "@/components/site/body-icon";
 import { JsonLd } from "@/components/site/json-ld";
-import { Logo } from "@/components/brand/logo";
+import { Logo, LOGO_SRC } from "@/components/brand/logo";
 import "./site.css";
 
 export const metadata: Metadata = {
@@ -58,7 +58,7 @@ export default async function PublicLayout({ children }: { children: React.React
           "@type": "AutoDealer",
           name: company.company_name,
           url: SITE_URL,
-          logo: `${SITE_URL}/brand/logo.png`,
+          logo: `${SITE_URL}${LOGO_SRC}`,
           email: company.email ?? undefined,
           telephone: company.phone ?? company.mobile ?? undefined,
           faxNumber: company.fax ?? undefined,

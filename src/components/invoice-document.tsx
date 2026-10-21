@@ -2,6 +2,7 @@ import { translate, type DictKey, type Locale } from "@/lib/i18n/dictionaries";
 import { money, date, num } from "@/lib/format";
 import { amountInWords } from "@/lib/words";
 import { INCOTERM_LABEL, hasFreight, hasInsurance, type Customer, type Invoice, type InvoiceItem, type Settings } from "@/lib/types";
+import { LOGO_SRC } from "@/components/brand/logo";
 
 export type InvoiceItemWithVehicle = InvoiceItem & {
   vehicles?: {
@@ -40,7 +41,7 @@ export function InvoiceDocument({
   const term = INCOTERM_LABEL[invoice.incoterm ?? "FOB"] ?? invoice.incoterm ?? "FOB";
   const company = settings?.company_name || "AL MASHRIQ TRADING CO., LTD.";
   const companyJa = settings?.company_name_ja;
-  const logo = settings?.logo_url || "/brand/logo.png";
+  const logo = settings?.logo_url || LOGO_SRC;
   const stamp = settings?.stamp_url || "/brand/stamp.png";
   const freight = Number(invoice.freight ?? 0);
   const insurance = Number(invoice.insurance ?? 0);
