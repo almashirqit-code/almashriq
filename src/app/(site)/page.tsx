@@ -7,6 +7,7 @@ import { publicImageUrl } from "@/lib/format";
 import { getCompany, getFacets, listCars, whatsapp, carTitle, priceLabel, getMakeTiles, getReviews, getPosts, assetUrl } from "@/lib/public-site";
 import { CarCard } from "./car-card";
 import { HeroSlider } from "@/components/site/hero-slider";
+import { BodyIcon } from "@/components/site/body-icon";
 import { Stars } from "@/components/site/stars";
 import { BUY_STEPS } from "@/components/site/buy-steps";
 
@@ -159,31 +160,40 @@ export default async function PublicHome() {
         </section>
       )}
 
-      {/* Body types + price bands */}
-      <section className="mx-auto grid max-w-7xl gap-6 px-4 pt-10 lg:grid-cols-2 lg:px-6">
-        <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <h2 className="mb-3 border-l-4 border-brand-600 pl-3 text-lg font-black text-navy-950">Search by body type</h2>
-          <div className="flex flex-wrap gap-2">
-            {facets.body.slice(0, 14).map(([b, n]) => (
-              <Link key={b} href={`/cars?body=${encodeURIComponent(b)}`} className="inline-flex items-center gap-2 rounded-lg bg-navy-50 px-3 py-2 text-sm font-semibold text-navy-900 hover:bg-navy-800 hover:text-white">
-                <Car className="h-4 w-4" /> {b} <span className="text-xs opacity-60">{n}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <h2 className="mb-3 border-l-4 border-brand-600 pl-3 text-lg font-black text-navy-950">Search by price</h2>
-          <div className="flex flex-wrap gap-2">
-            {PRICE_BANDS.map((p) => (
+      {/* Body types */}
+      <section className="mx-auto max-w-7xl px-4 pt-10 lg:px-6">
+        <SectionHead title="Search by body type" href="/cars" link="All stock" />
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+          {facets.body
+            .filter(([b]) => !/^others?$/i.test(b))
+            .slice(0, 16)
+            .map(([b, n]) => (
               <Link
-                key={p.label}
-                href={`/cars?${new URLSearchParams({ ...(p.min ? { min_price: String(p.min) } : {}), ...(p.max ? { max_price: String(p.max) } : {}), sort: "price_asc" })}`}
-                className="rounded-lg bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-800 hover:bg-brand-600 hover:text-white"
+                key={b}
+                href={`/cars?body=${encodeURIComponent(b)}`}
+                className="group flex flex-col items-center gap-1.5 rounded-xl bg-white p-3 text-center shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300"
               >
-                {p.label}
+                <BodyIcon type={b} className="h-9 w-[4.5rem] text-navy-800 transition group-hover:text-brand-600" />
+                <span className="text-xs font-bold text-navy-900">{b}</span>
+                <span className="text-[11px] text-slate-400">{n.toLocaleString()} cars</span>
               </Link>
             ))}
-          </div>
+        </div>
+      </section>
+
+      {/* Price bands */}
+      <section className="mx-auto max-w-7xl px-4 pt-6 lg:px-6">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+          <h2 className="mr-2 border-l-4 border-brand-600 pl-3 text-base font-black text-navy-950">Search by price</h2>
+          {PRICE_BANDS.map((p) => (
+            <Link
+              key={p.label}
+              href={`/cars?${new URLSearchParams({ ...(p.min ? { min_price: String(p.min) } : {}), ...(p.max ? { max_price: String(p.max) } : {}), sort: "price_asc" })}`}
+              className="rounded-lg bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-800 hover:bg-brand-600 hover:text-white"
+            >
+              {p.label}
+            </Link>
+          ))}
         </div>
       </section>
 

@@ -19,7 +19,7 @@ export function HeroSlider({ slides }: { slides: Slide[] }) {
   const go = (d: number) => setI((x) => (x + d + slides.length) % slides.length);
 
   return (
-    <div className="relative h-full min-h-[18rem] overflow-hidden rounded-3xl bg-navy-900" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl bg-navy-900 sm:aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[24rem]" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       {slides.map((s, k) => (
         <Link
           key={k}
@@ -29,8 +29,13 @@ export function HeroSlider({ slides }: { slides: Slide[] }) {
           tabIndex={k === i ? 0 : -1}
         >
           {s.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={s.image} alt={s.title} className={`h-full w-full object-cover transition-transform duration-[6000ms] ${k === i ? "scale-105" : "scale-100"}`} loading={k === 0 ? "eager" : "lazy"} />
+            <>
+              {/* Blurred copy fills the frame; the real photo is shown whole (no cropping). */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={s.image} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl" loading={k === 0 ? "eager" : "lazy"} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={s.image} alt={s.title} className="relative h-full w-full object-contain" loading={k === 0 ? "eager" : "lazy"} />
+            </>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/30 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">

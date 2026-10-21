@@ -6,6 +6,7 @@ import { WorldClock } from "@/components/world-clock";
 import { FxBadge } from "@/components/fx-badge";
 import { getUsdJpy } from "@/lib/fx";
 import { MobileMenu } from "@/components/site/mobile-menu";
+import { BodyIcon } from "@/components/site/body-icon";
 import { JsonLd } from "@/components/site/json-ld";
 
 export const metadata: Metadata = {
@@ -17,12 +18,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const BODY_LINKS = ["SUV", "Sedan", "Hatchback", "Van", "Truck", "Wagon", "Pickup", "Bus"];
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [company, facets, makes, fx] = await Promise.all([getCompany(), getFacets(), getMakeTiles(), getUsdJpy()]);
   const wa = whatsapp(company, "Hello Al Mashriq, I'd like to know about your cars.");
-  const bodies = facets.body.map(([b]) => b).filter((b) => BODY_LINKS.some((x) => b.toLowerCase().includes(x.toLowerCase()))).slice(0, 10);
+  const bodies = facets.body.map(([b]) => b).filter((b) => !/^others?$/i.test(b)).slice(0, 14);
   const topMakes = makes.slice(0, 24);
 
   const links = [
@@ -138,9 +138,10 @@ export default async function PublicLayout({ children }: { children: React.React
                 <span className="flex cursor-default items-center gap-1 px-4 py-3 text-sm font-bold text-white group-hover:bg-navy-900">
                   Body type <ChevronDown className="h-3.5 w-3.5" />
                 </span>
-                <div className="invisible absolute left-0 top-full w-56 rounded-b-2xl bg-white p-2 opacity-0 shadow-2xl ring-1 ring-slate-200 transition group-hover:visible group-hover:opacity-100">
+                <div className="invisible absolute left-0 top-full w-64 rounded-b-2xl bg-white p-2 opacity-0 shadow-2xl ring-1 ring-slate-200 transition group-hover:visible group-hover:opacity-100">
                   {bodies.map((b) => (
-                    <Link key={b} href={`/cars?body=${encodeURIComponent(b)}`} className="block rounded-lg px-3 py-1.5 text-sm text-slate-700 hover:bg-navy-50">
+                    <Link key={b} href={`/cars?body=${encodeURIComponent(b)}`} className="flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm text-slate-700 hover:bg-navy-50 hover:text-brand-700">
+                      <BodyIcon type={b} className="h-5 w-10 shrink-0 text-navy-700" />
                       {b}
                     </Link>
                   ))}
