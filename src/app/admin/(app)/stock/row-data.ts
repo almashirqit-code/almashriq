@@ -43,7 +43,8 @@ export async function loadRowExtras(vehicles: Cost[], rates: Record<Currency, nu
       .from("invoice_items")
       .select("vehicle_id, amount, invoices!inner(id, invoice_no, status, currency, exchange_rate, total, amount_paid, incoterm, customers(id, name, country))")
       .in("vehicle_id", ids)
-      .neq("invoices.status", "cancelled"),
+      .neq("invoices.status", "cancelled")
+      .eq("invoices.doc_type", "invoice"),
     supabase
       .from("reservations")
       .select("id, vehicle_id, status, sold_price, currency, exchange_rate, price_term, profit_jpy, customers(id, name, country)")

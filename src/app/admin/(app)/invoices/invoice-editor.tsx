@@ -6,7 +6,7 @@ import { Car, Trash2, Search, UserPlus, X, PenLine } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { convert, money, round, vehicleTitle, num } from "@/lib/format";
-import { CURRENCIES, INCOTERMS, INCOTERM_LABEL, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type Customer, type ExtVehicle, type ShipmentType, type Vehicle } from "@/lib/types";
+import { CURRENCIES, INCOTERMS, INCOTERM_LABEL, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type Customer, type DocType, type ExtVehicle, type ShipmentType, type Vehicle } from "@/lib/types";
 import { quickCreateCustomer } from "../customers/actions";
 import { saveInvoice, type InvoicePayload } from "./actions";
 
@@ -39,7 +39,10 @@ export function InvoiceEditor({
   initial,
   addVehicleId,
   addVehiclePrice,
+  docType = "invoice",
 }: {
+  /** Which document this editor makes: invoice, quotation (valid-until date) or auction deposit. */
+  docType?: DocType;
   customers: Pick<
     Customer,
     "id" | "name" | "company" | "country" | "port" | "address" | "phone" | "email" | "consignee_name" | "consignee_address" | "consignee_phone" | "notify_party"
@@ -65,11 +68,14 @@ export function InvoiceEditor({
 
   const today = new Date().toISOString().slice(0, 10);
   const in7 = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
+  const in14 = new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10);
   const initialCurrency = initial?.currency ?? defaults.currency;
+  const isQuote = docType === "quotation";
 
   const [customerId, setCustomerId] = useState(initial?.customer_id ?? "");
   const [issueDate, setIssueDate] = useState(initial?.issue_date ?? today);
-  const [dueDate, setDueDate] = useState(initial?.due_date ?? in7);
+  // Invoices/deposits: due date. Quotations: valid-until date (same field in the form).
+  const [dueDate, setDueDate] = useState((isQuote ? initial?.valid_until : initial?.due_date) ?? (isQuote ? in14 : in7));
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [rate, setRate] = useState<number>(initial?.exchange_rate ?? rates[initialCurrency] ?? 1);
   const [incoterm, setIncoterm] = useState(INCOTERMS.includes(initial?.incoterm ?? "") ? (initial?.incoterm as string) : "FOB");
@@ -94,9 +100,12 @@ export function InvoiceEditor({
   });
   const [discount, setDiscount] = useState<number>(initial?.discount ?? 0);
   const [taxRate, setTaxRate] = useState<number>(initial?.tax_rate ?? defaults.tax_rate);
-  const [lines, setLines] = useState<Line[]>(
-    (initial?.items ?? []).map((it) => ({ key: newKey(), ...it }))
-  );
+  const [lines, setLines] = useState<Line[]>(() => {
+    const ls = (initial?.items ?? []).map((it) => ({ key: newKey(), ...it }));
+    // New auction deposit: start with the deposit line ready to fill in.
+    if (!ls.length && docType === "auction_deposit") ls.push({ key: newKey(), vehicle_id: null, description: t("doc_deposit_line"), quantity: 1, unit_price: 0 });
+    return ls;
+  });
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
@@ -214,7 +223,9 @@ export function InvoiceEditor({
           .filter((v): v is VehicleOption => !!v && !!v.port && !v.port.shipment_modes.includes("roro"))
       : [];
 
-  const freightAmt = hasFreight(incoterm) ? Number(freight) || 0 : 0;
+  // RoRo: freight is built into each car's price, so there is no separate freight line.
+  const roro = shipmentType === "roro";
+  const freightAmt = hasFreight(incoterm) && !roro ? Number(freight) || 0 : 0;
   const insuranceAmt = hasInsurance(incoterm) ? Number(insurance) || 0 : 0;
   const fobTotal = round(subtotal - (Number(discount) || 0), currency);
   const total = round(fobTotal + freightAmt + insuranceAmt + tax, currency);
@@ -228,9 +239,11 @@ export function InvoiceEditor({
     if (roroBlocked.length) return setError(t("m_roro_blocked", { stock: roroBlocked[0].stock_no, port: roroBlocked[0].port!.name }));
     const payload: InvoicePayload = {
       id: initial?.id,
+      doc_type: docType,
       customer_id: customerId,
       issue_date: issueDate,
-      due_date: dueDate || null,
+      due_date: isQuote ? null : dueDate || null,
+      valid_until: isQuote ? dueDate || null : null,
       currency,
       exchange_rate: currency === "JPY" ? 1 : Number(rate) || 1,
       incoterm,
@@ -262,6 +275,11 @@ export function InvoiceEditor({
 
   return (
     <div className="space-y-5">
+      {docType !== "invoice" && (
+        <p className="rounded-xl border border-cerulean-200 bg-cerulean-50 px-4 py-3 text-sm text-cerulean-900">
+          {t(docType === "quotation" ? "doc_quotation_help" : "doc_deposit_help")}
+        </p>
+      )}
       <section className="card p-5">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div className="md:col-span-2">
@@ -347,7 +365,7 @@ export function InvoiceEditor({
             <input type="date" className="input" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
           </div>
           <div>
-            <label className="label">{t("inv_due_date")}</label>
+            <label className="label">{t(isQuote ? "doc_valid_until" : "inv_due_date")}</label>
             <input type="date" className="input" value={dueDate ?? ""} onChange={(e) => setDueDate(e.target.value)} />
           </div>
           <div>
@@ -644,7 +662,9 @@ export function InvoiceEditor({
             />
             {tax > 0 && <Row label={t("inv_tax")} value={money(tax, currency, locale)} />}
             <Row label={`${t("inv_total_fob")}`} value={money(fobTotal, currency, locale)} />
-            {hasFreight(incoterm) ? (
+            {hasFreight(incoterm) && roro ? (
+              <p className="text-right text-xs text-slate-500">RoRo: include the freight in each car&apos;s unit price. The customer sees one {INCOTERM_LABEL[incoterm]} total.</p>
+            ) : hasFreight(incoterm) ? (
               <Row
                 label={`${t("inv_freight")}${shipmentType ? ` (${t(`ship_${shipmentType}` as DictKey)})` : ""}`}
                 value={

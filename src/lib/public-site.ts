@@ -247,6 +247,27 @@ export const getPart = cache(async (partNo: string): Promise<PublicPartDetail | 
 });
 export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; branch?: string; page?: string };
 
+/** What a scanned invoice/quotation QR code shows (public_verify_document). Customer name is masked. */
+export type VerifiedDocument = {
+  doc_type: "invoice" | "quotation" | "auction_deposit";
+  invoice_no: string;
+  issue_date: string;
+  due_date: string | null;
+  valid_until: string | null;
+  currency: string;
+  total: number;
+  amount_paid: number;
+  status: "issued" | "partially_paid" | "paid" | "cancelled";
+  customer: string | null;
+  company: string | null;
+  units: number;
+};
+export async function verifyDocument(token: string): Promise<VerifiedDocument | null> {
+  if (!/^[0-9a-f]{32}$/.test(token)) return null;
+  const { data } = await anon().rpc("public_verify_document", { p_token: token });
+  return ((data ?? [])[0] as VerifiedDocument) ?? null;
+}
+
 export async function listParts(f: PartFilters, size = PAGE_SIZE) {
   const page = Math.max(1, Number(f.page) || 1);
   const { data, error } = await anon().rpc("public_parts", {

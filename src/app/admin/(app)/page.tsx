@@ -33,15 +33,17 @@ export default async function DashboardPage() {
       supabase
         .from("invoices")
         .select("issue_date, total, currency, exchange_rate")
+        .eq("doc_type", "invoice")
         .in("status", ACTIVE)
         .gte("issue_date", yearAgo)
         .limit(20000),
-      supabase.from("invoices").select("total, amount_paid, currency").in("status", ["issued", "partially_paid"]).limit(20000),
+      supabase.from("invoices").select("total, amount_paid, currency").neq("doc_type", "quotation").in("status", ["issued", "partially_paid"]).limit(20000),
       supabase
         .from("invoice_items")
         .select("vehicle_id, invoices!inner(issue_date, status)")
         .not("vehicle_id", "is", null)
         .gte("invoices.issue_date", monthStart)
+        .eq("invoices.doc_type", "invoice")
         .in("invoices.status", ACTIVE),
       supabase
         .from("invoices")

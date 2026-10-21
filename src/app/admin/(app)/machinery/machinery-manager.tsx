@@ -10,6 +10,7 @@ import { MACHINE_PHOTOS } from "@/lib/photo-zip";
 import { makeNames, modelNames, type CatalogMake } from "@/lib/catalog";
 import { blankMachine, machineCostJpy, machineTitle, MACHINE_CONDITIONS, MACHINE_MAKES, MACHINE_STATUSES, type MachineInput } from "@/lib/machinery";
 import { Badge, Empty, IconChip } from "@/components/ui";
+import { nextRef } from "@/lib/ref-actions";
 import { Modal } from "@/components/modal";
 import { StockPhotos, type StockPhoto } from "@/components/stock-photos";
 import { deleteMachine, machineryImported, saveMachine, setMachineStatus, toggleMachineWebsite } from "./actions";
@@ -86,7 +87,11 @@ export function MachineryManager({
     <>
       {canEdit && (
         <div className="flex border-b border-slate-100 px-3 py-2.5">
-          <button type="button" className="btn-primary" onClick={() => open(null, { ...blankMachine(), stock_no: nextNo() })}>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={async () => open(null, { ...blankMachine(), stock_no: await nextRef("machinery").catch(() => nextNo()) })}
+          >
             <Plus className="h-4 w-4" />
             Add machine
           </button>

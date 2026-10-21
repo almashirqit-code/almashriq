@@ -29,6 +29,67 @@ export async function resizeImage(blob: Blob, max = 1600, quality = 0.85): Promi
   }
 }
 
+// ---------------------------------------------------------------------------
+// Listing photos (cars, parts, machinery): resize + Al Mashriq watermark + compress
+// ---------------------------------------------------------------------------
+
+/** Longest side of a listing photo; plenty for a full-screen gallery, ~150–300 KB as WebP. */
+export const LISTING_MAX = 1600;
+const LISTING_QUALITY = 0.82;
+const WATERMARK_SRC = "/brand/logo-light.png?v=2";
+
+let watermark: Promise<ImageBitmap | null> | null = null;
+function loadWatermark() {
+  watermark ??= fetch(WATERMARK_SRC)
+    .then((r) => (r.ok ? r.blob() : null))
+    .then((b) => (b ? createImageBitmap(b) : null))
+    .catch(() => null);
+  return watermark;
+}
+
+/**
+ * Prepares a photo for the website: scales it to LISTING_MAX on the longest side, stamps the
+ * Al Mashriq logo faintly in the centre (with a soft shadow so it shows on white and black cars),
+ * and encodes it as WebP (JPEG where the browser can't encode WebP). Falls back to the original
+ * file if the browser can't decode it (e.g. HEIC on some devices).
+ */
+export async function prepareListingPhoto(blob: Blob, opts: { watermark?: boolean } = {}): Promise<Blob> {
+  try {
+    const bitmap = await createImageBitmap(blob);
+    const scale = Math.min(1, LISTING_MAX / Math.max(bitmap.width, bitmap.height));
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return blob;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close();
+
+    const mark = opts.watermark === false ? null : await loadWatermark();
+    if (mark) {
+      const mw = Math.round(w * 0.42);
+      const mh = Math.round((mark.height / mark.width) * mw);
+      ctx.save();
+      ctx.globalAlpha = 0.32;
+      ctx.shadowColor = "rgba(0,0,0,0.45)";
+      ctx.shadowBlur = Math.max(2, Math.round(w / 400));
+      ctx.drawImage(mark, Math.round((w - mw) / 2), Math.round((h - mh) / 2), mw, mh);
+      ctx.restore();
+    }
+
+    const encode = (type: string) => new Promise<Blob | null>((res) => canvas.toBlob(res, type, LISTING_QUALITY));
+    let out = await encode("image/webp");
+    // Some browsers (older Safari) silently return PNG for unsupported types.
+    if (!out || out.type !== "image/webp") out = await encode("image/jpeg");
+    return out ?? blob;
+  } catch {
+    return blob;
+  }
+}
+
 function extFor(blob: Blob, name: string) {
   if (blob.type === "image/jpeg") return "jpg";
   if (blob.type === "image/png") return "png";
@@ -50,7 +111,7 @@ export async function uploadVehicleImage(
   sortOrder: number,
   resize = true
 ) {
-  const body = resize ? await resizeImage(file) : file;
+  const body = resize ? await prepareListingPhoto(file) : file;
   const ext = extFor(body, name);
   const path = `vehicles/${vehicleId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const { error: upErr } = await supabase.storage

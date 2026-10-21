@@ -22,14 +22,16 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
 
   return (
     <>
-      <PageHeader title={`${t("inv_edit")} — ${invoice.invoice_no}`} back={{ href: `/admin/invoices/${id}`, label: invoice.invoice_no }} />
+      <PageHeader title={`${t("edit")} — ${invoice.invoice_no}`} back={{ href: `/admin/invoices/${id}`, label: invoice.invoice_no }} />
       <InvoiceEditor
         {...data}
+        docType={invoice.doc_type ?? "invoice"}
         initial={{
           id,
           customer_id: invoice.customer_id,
           issue_date: invoice.issue_date,
           due_date: invoice.due_date,
+          valid_until: invoice.valid_until,
           currency: invoice.currency,
           exchange_rate: Number(invoice.exchange_rate),
           incoterm: invoice.incoterm,

@@ -37,6 +37,7 @@ export default async function ShippingPage({
       .select("invoices!inner(port_of_loading, port_of_discharge, shipment_type, status)")
       .eq("vehicle_id", id)
       .neq("invoices.status", "cancelled")
+      .eq("invoices.doc_type", "invoice")
       .limit(1),
     supabase.from("vehicle_shipments").select("ship_company, forwarding_agent, courier_service, courier_company").limit(2000),
   ]);

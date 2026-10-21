@@ -5,6 +5,7 @@ import type { Customer, Invoice, Settings } from "@/lib/types";
 import { InvoiceDocument, INVOICE_ITEM_SELECT, type InvoiceItemWithVehicle } from "@/components/invoice-document";
 import { PrintButton } from "@/components/buttons";
 import { translate } from "@/lib/i18n/dictionaries";
+import { verifyQrSvg } from "@/lib/verify-qr";
 
 export default async function PrintInvoicePage({
   params,
@@ -21,10 +22,12 @@ export default async function PrintInvoicePage({
   const { data: inv } = await supabase.from("invoices").select("*").eq("id", id).maybeSingle();
   if (!inv) notFound();
   const invoice = inv as Invoice;
-  const [{ data: items }, { data: customer }, { data: settings }] = await Promise.all([
+  const [{ data: items }, { data: customer }, { data: settings }, qr] = await Promise.all([
     supabase.from("invoice_items").select(INVOICE_ITEM_SELECT).eq("invoice_id", id).order("sort_order"),
     supabase.from("customers").select("*").eq("id", invoice.customer_id).maybeSingle(),
     supabase.from("settings").select("*").single(),
+    // Drafts can't be verified, so they print without a QR code.
+    invoice.status === "draft" ? Promise.resolve(null) : verifyQrSvg(invoice.verify_token),
   ]);
 
   return (
@@ -39,6 +42,7 @@ export default async function PrintInvoicePage({
           customer={customer as Customer | null}
           settings={settings as Settings | null}
           lang={lang}
+          qr={qr}
         />
       </div>
     </div>
