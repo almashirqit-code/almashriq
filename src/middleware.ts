@@ -2,14 +2,48 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
+ * First-line rate limiter (per server instance, in memory). The database limiter
+ * (src/lib/rate-limit.ts) protects sign-in and inquiries across all instances.
+ */
+const buckets = new Map<string, { n: number; reset: number }>();
+const LIMITS = { post: [90, 60_000], api: [120, 60_000], page: [600, 60_000] } as const;
+
+function limited(ip: string, kind: keyof typeof LIMITS) {
+  const [max, windowMs] = LIMITS[kind];
+  const now = Date.now();
+  const key = `${kind}:${ip}`;
+  const b = buckets.get(key);
+  if (!b || b.reset < now) {
+    buckets.set(key, { n: 1, reset: now + windowMs });
+    if (buckets.size > 5000) for (const [k, v] of buckets) if (v.reset < now) buckets.delete(k);
+    return null;
+  }
+  b.n++;
+  return b.n > max ? Math.ceil((b.reset - now) / 1000) : null;
+}
+
+/**
  * Layout of the site:
  *   /            public car website (no login)
  *   /admin/...   the ERP — staff must be signed in (except /admin/login and /admin/setup)
- * This middleware only runs for /admin and the staff-only image proxy (see `config.matcher`).
+ * Every request passes the rate limiter; only /admin and the staff image proxy need a session.
  */
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  const ip = (request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || "unknown").trim();
+  const kind = request.method === "POST" ? "post" : path.startsWith("/api/") ? "api" : "page";
+  // Link prefetches are cheap and automatic — don't count them.
+  const prefetch = request.headers.has("next-router-prefetch") || request.headers.get("purpose") === "prefetch";
+  const wait = prefetch ? null : limited(ip, kind);
+  if (wait) {
+    return new NextResponse("Too many requests — please slow down and try again shortly.", {
+      status: 429,
+      headers: { "Retry-After": String(wait), "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
+
   let response = NextResponse.next({ request });
+  if (!path.startsWith("/admin") && path !== "/api/site-image") return response;
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     if (path !== "/admin/setup") return NextResponse.redirect(new URL("/admin/setup", request.url));
@@ -50,5 +84,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/api/site-image"],
+  // Everything except static files (Next.js assets, logos, flags, icons).
+  matcher: ["/((?!_next/static|_next/image|brand/|flags/|favicon.ico|icon.png|robots.txt|sitemap.xml).*)"],
 };

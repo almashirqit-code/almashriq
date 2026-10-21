@@ -77,6 +77,7 @@ export const en = {
   sign_in: "Sign in",
   signing_in: "Signing in…",
   login_failed: "Invalid email or password.",
+  login_too_many: "Too many sign-in attempts. Please wait 15 minutes and try again.",
   account_disabled: "Your account is disabled. Contact an administrator.",
 
   // roles
@@ -738,6 +739,7 @@ export const ja: Record<DictKey, string> = {
   sign_in: "ログイン",
   signing_in: "ログイン中…",
   login_failed: "メールアドレスまたはパスワードが正しくありません。",
+  login_too_many: "ログイン試行回数が多すぎます。15分後に再度お試しください。",
   account_disabled: "アカウントが無効です。管理者に連絡してください。",
 
   role: "権限",

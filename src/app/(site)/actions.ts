@@ -1,6 +1,7 @@
 "use server";
 
 import { submitInquiryRpc } from "@/lib/public-site";
+import { rateLimit } from "@/lib/rate-limit";
 
 export type InquiryState = { ok: boolean; message: string; no?: number | null } | null;
 
@@ -24,6 +25,7 @@ export async function sendInquiry(_prev: InquiryState, fd: FormData): Promise<In
   if (!v.email && !v.phone) return { ok: false, message: "Please enter your email or WhatsApp number so we can reply." };
   if (v.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return { ok: false, message: "Please enter a valid email address." };
   if (!v.message && !v.stock_no) return { ok: false, message: "Please write a short message." };
+  if (!(await rateLimit("inquiry", 8, 3600))) return { ok: false, message: "You've sent several inquiries already — we'll reply soon. Please try again later or use WhatsApp." };
   const res = await submitInquiryRpc(v);
   if (res.error) {
     if (/too many/i.test(res.error)) return { ok: false, message: "You've sent several inquiries already — we'll reply soon. Please wait an hour before sending more." };

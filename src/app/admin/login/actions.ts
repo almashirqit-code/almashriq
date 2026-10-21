@@ -2,11 +2,16 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function signIn(_prev: { error: string }, formData: FormData) {
+  const email = String(formData.get("email") || "").trim();
+  // Brute-force protection: 5 tries per email per 15 min, 30 per IP per 15 min.
+  const [perAccount, perIp] = await Promise.all([rateLimit("login", 5, 900, email), rateLimit("login-ip", 30, 900)]);
+  if (!perAccount || !perIp) return { error: "too_many" };
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: String(formData.get("email") || "").trim(),
+    email,
     password: String(formData.get("password") || ""),
   });
   if (error || !data.user) return { error: "invalid" };

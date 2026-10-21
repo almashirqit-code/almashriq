@@ -32,7 +32,7 @@ export function LoginForm() {
       </div>
       {state.error && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {state.error === "disabled" ? t("account_disabled") : t("login_failed")}
+          {state.error === "disabled" ? t("account_disabled") : state.error === "too_many" ? t("login_too_many") : t("login_failed")}
         </p>
       )}
       <button type="submit" disabled={pending} className="btn-primary w-full">
