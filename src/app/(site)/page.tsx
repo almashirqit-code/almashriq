@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { flagFor, FLAGS } from "@/lib/brand-assets";
 import { dicebear } from "@/lib/avatar";
 import Link from "next/link";
 import { Search, ShieldCheck, Ship, Banknote, ArrowRight, Car, Send, Quote, FileCheck2, Globe } from "lucide-react";
@@ -228,7 +229,13 @@ export default async function PublicHome() {
                     )}
                     <div>
                       <figcaption className="text-sm font-bold text-navy-950">{r.customer_name}</figcaption>
-                      <div className="text-xs text-slate-500">{[r.country, r.vehicle].filter(Boolean).join(" · ")}</div>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                        {flagFor(r.country) && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={flagFor(r.country)!} alt="" className="h-3 w-4 rounded-[2px] object-cover ring-1 ring-black/10" />
+                        )}
+                        {[r.country, r.vehicle].filter(Boolean).join(" · ")}
+                      </div>
                     </div>
                   </div>
                   <Stars value={r.rating} size="mt-3 h-3.5 w-3.5" />
@@ -257,6 +264,22 @@ export default async function PublicHome() {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* Destinations */}
+      <section className="mx-auto max-w-7xl px-4 pt-10 lg:px-6">
+        <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+          <h2 className="mb-4 border-l-4 border-brand-600 pl-3 text-lg font-black text-navy-950">We export worldwide — including</h2>
+          <ul className="flex flex-wrap gap-x-6 gap-y-3">
+            {Object.entries(FLAGS).map(([code, name]) => (
+              <li key={code} className="flex items-center gap-2 text-sm font-semibold text-navy-900">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/flags/${code}.svg`} alt="" className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" loading="lazy" />
+                {name}
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       {/* Blog */}

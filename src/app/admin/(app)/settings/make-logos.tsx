@@ -6,17 +6,18 @@ import { Upload, Star, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { resizeImage } from "@/lib/images";
 import { saveMakeLogo, type MakeLogoInput } from "./make-actions";
+import { defaultMakeLogo } from "@/lib/brand-assets";
 
 export type MakeRow = { make: string; label: string; logo_path: string | null; n: number; featured: boolean; sort_order: number };
 
-const assetUrl = (p: string) => (p.startsWith("http") ? p : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`);
+const assetUrl = (p: string) => (p.startsWith("http") || p.startsWith("/") ? p : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`);
 
 /** Upload a logo per make (shown in "Shop by make" on the website). */
 export function MakeLogos({ makes, canEdit }: { makes: MakeRow[]; canEdit: boolean }) {
   return (
     <div className="card overflow-hidden">
       <div className="border-b border-slate-100 px-5 py-3.5 text-sm text-slate-500">
-        Upload a logo image for each make, or paste a link to one (PNG/SVG with a transparent background works best — use the manufacturer’s official media/press logo where possible). Makes without a logo show a styled name badge on the website.
+        Common makes already use the bundled logo set. Upload or paste a link to override one or to add a missing make (PNG/SVG with a transparent background works best — use the manufacturer’s official media/press logo where possible). Makes without a logo show a styled name badge on the website.
         Featured makes appear on the homepage; lower sort numbers come first.
       </div>
       <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -46,9 +47,9 @@ function MakeCard({ row, canEdit }: { row: MakeRow; canEdit: boolean }) {
     <div className={`flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 ${pending ? "opacity-60" : ""}`}>
       <div className="flex items-center gap-3">
         <div className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200">
-          {v.logo_path ? (
+          {v.logo_path || defaultMakeLogo(row.make) ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={assetUrl(v.logo_path)} alt={v.label} className="max-h-12 max-w-[72px] object-contain" />
+            <img src={v.logo_path ? assetUrl(v.logo_path) : defaultMakeLogo(row.make)!} alt={v.label} className="max-h-12 max-w-[72px] object-contain" />
           ) : (
             <span className="text-xs font-black uppercase tracking-wider text-slate-400">{v.label.slice(0, 6)}</span>
           )}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { flagFor } from "@/lib/brand-assets";
 import { dicebear } from "@/lib/avatar";
 import { Quote } from "lucide-react";
 import { assetUrl, getCompany, getReviews, SITE_URL } from "@/lib/public-site";
@@ -80,7 +81,13 @@ export default async function ReviewsPage() {
                 )}
                 <div className="min-w-0 flex-1">
                   <figcaption className="font-bold text-navy-950">{r.customer_name}</figcaption>
-                  <div className="text-xs text-slate-500">{[r.country, r.vehicle].filter(Boolean).join(" · ")}</div>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                        {flagFor(r.country) && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={flagFor(r.country)!} alt="" className="h-3 w-4 rounded-[2px] object-cover ring-1 ring-black/10" />
+                        )}
+                        {[r.country, r.vehicle].filter(Boolean).join(" · ")}
+                      </div>
                 </div>
                 <time className="text-xs text-slate-400" dateTime={r.review_date}>
                   {new Date(r.review_date).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}

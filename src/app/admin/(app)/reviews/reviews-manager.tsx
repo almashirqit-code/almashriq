@@ -1,5 +1,7 @@
 "use client";
 
+import { FLAGS } from "@/lib/brand-assets";
+
 import { dicebear } from "@/lib/avatar";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -160,7 +162,8 @@ export function ReviewsManager({ reviews }: { reviews: ReviewRow[] }) {
             </div>
             <div>
               <label className="label">Country</label>
-              <input className="input" value={edit.country ?? ""} onChange={(e) => setEdit({ ...edit, country: e.target.value })} placeholder="Grenada" />
+              <input className="input" list="review-countries" value={edit.country ?? ""} onChange={(e) => setEdit({ ...edit, country: e.target.value })} placeholder="Kenya" />
+              <datalist id="review-countries">{Object.values(FLAGS).map((c) => <option key={c} value={c} />)}</datalist>
             </div>
             <div>
               <label className="label">Rating</label>
