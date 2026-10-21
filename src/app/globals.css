@@ -83,6 +83,50 @@
   }
 }
 
+/* Blog article typography (public site + editor preview) */
+.prose-blog {
+  @apply text-[17px] leading-8 text-slate-700;
+}
+.prose-blog h2 {
+  @apply mb-3 mt-10 scroll-mt-24 text-2xl font-extrabold tracking-tight text-navy-950;
+}
+.prose-blog h3 {
+  @apply mb-2 mt-8 scroll-mt-24 text-xl font-bold text-navy-900;
+}
+.prose-blog h4 {
+  @apply mb-2 mt-6 font-bold text-navy-900;
+}
+.prose-blog p {
+  @apply my-4;
+}
+.prose-blog a {
+  @apply font-semibold text-brand-700 underline decoration-brand-200 underline-offset-2 hover:decoration-brand-600;
+}
+.prose-blog ul {
+  @apply my-4 list-disc space-y-1 pl-6;
+}
+.prose-blog ol {
+  @apply my-4 list-decimal space-y-1 pl-6;
+}
+.prose-blog blockquote {
+  @apply my-6 border-l-4 border-brand-500 bg-brand-50/50 px-5 py-3 italic text-slate-700;
+}
+.prose-blog img {
+  @apply my-6 w-full rounded-2xl;
+}
+.prose-blog code {
+  @apply rounded bg-slate-100 px-1.5 py-0.5 text-[0.9em] text-navy-900;
+}
+.prose-blog pre {
+  @apply my-6 overflow-x-auto rounded-xl bg-navy-950 p-4 text-sm text-slate-100;
+}
+.prose-blog pre code {
+  @apply bg-transparent p-0 text-slate-100;
+}
+.prose-blog hr {
+  @apply my-10 border-slate-200;
+}
+
 @media print {
   .no-print {
     display: none !important;

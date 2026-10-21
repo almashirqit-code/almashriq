@@ -31,9 +31,10 @@ export type PublicCard = {
   image_count: number;
   created_at: string;
   total_count: number;
+  images: string[];
 };
 
-export type PublicCar = Omit<PublicCard, "cover" | "image_count" | "total_count"> & {
+export type PublicCar = Omit<PublicCard, "cover" | "image_count" | "total_count" | "images"> & {
   model_code: string | null;
   month: number | null;
   drive: string | null;
@@ -136,4 +137,93 @@ export function priceLabel(c: { price: number | null; price_currency: Currency }
 export function whatsapp(company: PublicCompany, message: string) {
   const num = (company.mobile || company.phone || "").replace(/[^\d]/g, "").replace(/^0+/, "");
   return num ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : null;
+}
+
+/** Public website address (used for canonical URLs, sitemap and share links). */
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site").replace(/\/$/, "");
+
+export const assetUrl = (p: string | null | undefined) =>
+  p ? (p.startsWith("http") ? p : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`) : null;
+
+export type PublicMake = { make: string; label: string; logo_path: string | null; n: number; featured: boolean; sort_order: number };
+export const getMakes = cache(async (): Promise<PublicMake[]> => {
+  const { data } = await anon().rpc("public_makes");
+  return ((data ?? []) as PublicMake[]).map((m) => ({ ...m, n: Number(m.n) }));
+});
+
+export type PublicReview = {
+  id: string;
+  customer_name: string;
+  country: string | null;
+  rating: number;
+  title: string | null;
+  body: string;
+  vehicle: string | null;
+  photo_path: string | null;
+  review_date: string;
+  avg_rating: number;
+  review_count: number;
+};
+export const getReviews = cache(async (limit = 50) => {
+  const { data } = await anon().rpc("public_reviews", { p_limit: limit });
+  const rows = (data ?? []) as PublicReview[];
+  return { reviews: rows, avg: rows[0] ? Number(rows[0].avg_rating) : 0, count: rows[0] ? Number(rows[0].review_count) : 0 };
+});
+
+export type PublicPostCard = { slug: string; title: string; excerpt: string | null; cover_path: string | null; tags: string[]; published_at: string; updated_at: string; total_count: number };
+export const getPosts = cache(async (limit = 12, offset = 0) => {
+  const { data } = await anon().rpc("public_posts", { p_limit: limit, p_offset: offset });
+  const rows = (data ?? []) as PublicPostCard[];
+  return { posts: rows, total: rows[0] ? Number(rows[0].total_count) : 0 };
+});
+
+export type PublicPost = Omit<PublicPostCard, "total_count"> & { content: string; seo_title: string | null; seo_description: string | null; author: string };
+export const getPost = cache(async (slug: string): Promise<PublicPost | null> => {
+  const { data } = await anon().rpc("public_post", { p_slug: slug });
+  return ((data ?? [])[0] as PublicPost) ?? null;
+});
+
+export async function getSitemapRows() {
+  const { data } = await anon().rpc("public_sitemap");
+  return (data ?? []) as { kind: "car" | "post" | "make"; key: string; updated: string }[];
+}
+
+/** Submits a website inquiry (anonymous, validated by the database). */
+export async function submitInquiryRpc(v: {
+  name: string;
+  email: string;
+  phone: string;
+  country: string;
+  port: string;
+  message: string;
+  stock_no: string;
+  page_url: string;
+  source: string;
+}) {
+  const { data, error } = await anon().rpc("submit_inquiry", {
+    p_name: v.name,
+    p_email: v.email,
+    p_phone: v.phone,
+    p_country: v.country,
+    p_port: v.port,
+    p_message: v.message,
+    p_stock_no: v.stock_no,
+    p_page_url: v.page_url,
+    p_source: v.source,
+  });
+  return { no: data as number | null, error: error?.message ?? null };
+}
+
+/** URL slug for a make landing page ("Land Rover" → "land-rover"). */
+export const makeSlug = (make: string) => make.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+/** Makes in stock merged with their logos (most stock first, featured/sorted ones on top). */
+export async function getMakeTiles() {
+  const [makes, facets] = await Promise.all([getMakes(), getFacets()]);
+  const byKey = new Map(makes.map((m) => [m.make.toLowerCase(), m]));
+  const tiles = facets.make.map(([label, n]) => {
+    const m = byKey.get(label.toLowerCase());
+    return { label: m?.label || label, value: label, slug: makeSlug(label), n, logo: assetUrl(m?.logo_path), featured: !!m?.featured, sort: m?.sort_order ?? 999 };
+  });
+  return tiles.sort((a, b) => Number(b.featured) - Number(a.featured) || a.sort - b.sort || b.n - a.n);
 }

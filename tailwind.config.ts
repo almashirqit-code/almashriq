@@ -6,6 +6,20 @@ const config: Config = {
     extend: {
       colors: {
         // Al Mashriq red (from the logo / invoice): 600 = #D71920
+        // Public website: deep navy with Al Mashriq red accents
+        navy: {
+          50: "#eef3fb",
+          100: "#d9e4f5",
+          200: "#b6c9ea",
+          300: "#8aa7da",
+          400: "#5c80c5",
+          500: "#3b61ad",
+          600: "#2b4b8f",
+          700: "#233c73",
+          800: "#1b2f5a",
+          900: "#142344",
+          950: "#0b1630",
+        },
         brand: {
           50: "#fef2f2",
           100: "#fee2e3",

@@ -1,34 +1,54 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MessageCircle, Mail, MapPin, Check, ChevronLeft, CalendarDays, Gauge, Cog, Fuel } from "lucide-react";
+import { MessageCircle, Mail, MapPin, Check, CalendarDays, Gauge, Cog, Fuel, Ship } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
-import { carTitle, getCar, getCompany, priceLabel, siteBase, whatsapp } from "@/lib/public-site";
-import { Gallery } from "../../gallery";
+import { carTitle, getCar, getCompany, listCars, makeSlug, priceLabel, whatsapp, SITE_URL } from "@/lib/public-site";
+import { Gallery } from "@/components/site/gallery";
+import { InquiryForm } from "@/components/site/inquiry-form";
+import { JsonLd } from "@/components/site/json-ld";
+import { CarCard } from "../../car-card";
 
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ stock: string }> }): Promise<Metadata> {
   const { stock } = await params;
   const c = await getCar(decodeURIComponent(stock));
-  if (!c) return { title: "Car not found" };
-  const title = `${carTitle(c)} — ${c.stock_no}`;
+  if (!c) return { title: "Car not found", robots: { index: false } };
+  const title = `${[c.year, c.make, c.model, c.grade].filter(Boolean).join(" ")} — ${c.stock_no}`;
+  const price = priceLabel(c);
+  const description = [
+    `Used ${c.year ?? ""} ${c.make} ${c.model} for sale from Japan`.replace(/\s+/g, " "),
+    c.mileage != null ? `${c.mileage.toLocaleString()} km` : null,
+    c.engine_cc ? `${c.engine_cc}cc` : null,
+    c.transmission,
+    c.fuel,
+    c.steering,
+    price ? `FOB ${price}` : "Ask for price",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const url = `/cars/${encodeURIComponent(c.stock_no)}`;
   return {
-    title: { absolute: `${title} | Al Mashriq` },
-    description: [c.grade, c.mileage != null ? `${c.mileage.toLocaleString()} km` : null, c.engine_cc ? `${c.engine_cc}cc` : null, c.transmission, c.fuel].filter(Boolean).join(" · "),
-    openGraph: { title, images: c.images[0] ? [publicImageUrl(c.images[0])] : [] },
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url, images: c.images.slice(0, 4).map(publicImageUrl) },
   };
 }
 
 export default async function PublicCar({ params }: { params: Promise<{ stock: string }> }) {
   const { stock } = await params;
-  const [c, company, base] = await Promise.all([getCar(decodeURIComponent(stock)), getCompany(), siteBase()]);
+  const [c, company] = await Promise.all([getCar(decodeURIComponent(stock)), getCompany()]);
   if (!c) notFound();
+  const related = (await listCars({ make: c.make, sort: "new" }, 9)).cars.filter((x) => x.id !== c.id).slice(0, 8);
 
   const title = carTitle(c);
   const price = priceLabel(c);
-  const sold = c.status === "sold";
+  const sold = c.status === "sold" || c.status === "shipped";
+  const images = c.images.map(publicImageUrl);
   const wa = whatsapp(company, `Hello, please send me a C&F quotation for ${c.stock_no} ${title}. My destination port is: `);
+  const url = `${SITE_URL}/cars/${encodeURIComponent(c.stock_no)}`;
   const specs: [string, string | number | null][] = [
     ["Stock ID", c.stock_no],
     ["Make", c.make],
@@ -51,89 +71,119 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8">
-      <Link href={`${base}/cars`} className="inline-flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-brand-700">
-        <ChevronLeft className="h-4 w-4" /> All cars
-      </Link>
+    <div className="mx-auto max-w-7xl px-4 py-5 lg:px-6">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Car",
+            name: `${c.year ?? ""} ${c.make} ${c.model} ${c.grade ?? ""}`.replace(/\s+/g, " ").trim(),
+            sku: c.stock_no,
+            url,
+            image: images.slice(0, 10),
+            brand: { "@type": "Brand", name: c.make },
+            model: c.model,
+            vehicleModelDate: c.year ? String(c.year) : undefined,
+            mileageFromOdometer: c.mileage != null ? { "@type": "QuantitativeValue", value: c.mileage, unitCode: "KMT" } : undefined,
+            vehicleEngine: c.engine_cc ? { "@type": "EngineSpecification", engineDisplacement: { "@type": "QuantitativeValue", value: c.engine_cc, unitCode: "CMQ" } } : undefined,
+            fuelType: c.fuel ?? undefined,
+            vehicleTransmission: c.transmission ?? undefined,
+            driveWheelConfiguration: c.drive ?? undefined,
+            bodyType: c.body_type ?? undefined,
+            color: c.color ?? undefined,
+            numberOfDoors: c.doors ?? undefined,
+            seatingCapacity: c.seats ?? undefined,
+            itemCondition: "https://schema.org/UsedCondition",
+            offers: {
+              "@type": "Offer",
+              url,
+              priceCurrency: c.price_currency || "USD",
+              price: price ? Number(c.price) : undefined,
+              availability: sold ? "https://schema.org/SoldOut" : c.status === "reserved" ? "https://schema.org/LimitedAvailability" : "https://schema.org/InStock",
+              seller: { "@type": "AutoDealer", name: company.company_name },
+            },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+              { "@type": "ListItem", position: 2, name: c.make, item: `${SITE_URL}/makes/${makeSlug(c.make)}` },
+              { "@type": "ListItem", position: 3, name: `${c.make} ${c.model} ${c.stock_no}`, item: url },
+            ],
+          },
+        ]}
+      />
 
-      <div className="mt-4 grid gap-8 lg:grid-cols-[1.35fr_1fr]">
-        <Gallery images={c.images.map(publicImageUrl)} alt={title} ribbon={sold ? "sold" : c.status === "reserved" ? "reserved" : null} />
+      <nav className="mb-3 text-xs text-slate-500" aria-label="Breadcrumb">
+        <Link href="/" className="hover:text-brand-700">Home</Link> / <Link href={`/makes/${makeSlug(c.make)}`} className="hover:text-brand-700">{c.make}</Link> / {c.model} {c.stock_no}
+      </nav>
 
-        <div className="space-y-5">
-          <div>
-            <span className="inline-flex rounded-lg bg-slate-900 px-2 py-0.5 text-xs font-bold text-white">{c.stock_no}</span>
-            <h1 className="mt-2 text-3xl font-black tracking-tight">{title}</h1>
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <Gallery images={images} alt={title} stockNo={c.stock_no} ribbon={sold ? "sold" : c.status === "reserved" ? "reserved" : null} />
+
+        <div className="space-y-4">
+          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <span className="inline-flex rounded bg-navy-800 px-2 py-0.5 text-xs font-bold text-white">Stock ID {c.stock_no}</span>
+            <h1 className="mt-2 text-2xl font-black tracking-tight text-navy-950 sm:text-3xl">{title}</h1>
             {c.grade && <p className="text-slate-500">{c.grade}</p>}
-            <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
-              {c.year && (
-                <span className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 ring-1 ring-slate-200">
-                  <CalendarDays className="h-3.5 w-3.5 text-rose-500" />
-                  {c.year}
-                </span>
-              )}
-              {c.mileage != null && (
-                <span className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 ring-1 ring-slate-200">
-                  <Gauge className="h-3.5 w-3.5 text-rose-500" />
-                  {c.mileage.toLocaleString()} km
-                </span>
-              )}
-              {(c.engine_cc || c.transmission) && (
-                <span className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 ring-1 ring-slate-200">
-                  <Cog className="h-3.5 w-3.5 text-violet-500" />
-                  {[c.engine_cc ? `${c.engine_cc}cc` : null, c.transmission].filter(Boolean).join(" · ")}
-                </span>
-              )}
-              {c.fuel && (
-                <span className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 ring-1 ring-slate-200">
-                  <Fuel className="h-3.5 w-3.5 text-sky-500" />
-                  {c.fuel}
-                </span>
-              )}
-              {c.location && (
-                <span className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 ring-1 ring-slate-200">
-                  <MapPin className="h-3.5 w-3.5 text-cyan-500" />
-                  {c.location}
-                </span>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
+              {c.year && <Chip icon={CalendarDays}>{c.year}</Chip>}
+              {c.mileage != null && <Chip icon={Gauge}>{c.mileage.toLocaleString()} km</Chip>}
+              {(c.engine_cc || c.transmission) && <Chip icon={Cog}>{[c.engine_cc ? `${c.engine_cc}cc` : null, c.transmission].filter(Boolean).join(" · ")}</Chip>}
+              {c.fuel && <Chip icon={Fuel}>{c.fuel}</Chip>}
+              {c.location && <Chip icon={MapPin}>{c.location}</Chip>}
+            </div>
+            <div className="mt-4 flex items-end justify-between gap-3 rounded-lg bg-navy-50 p-4">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-navy-500">FOB price</div>
+                <div className={`text-3xl font-black ${sold ? "text-slate-500" : "text-brand-600"}`}>{sold ? "Sold" : price ?? "Ask for price"}</div>
+              </div>
+              {!sold && (
+                <div className="flex items-center gap-1 text-right text-xs text-navy-700">
+                  <Ship className="h-4 w-4" /> C&F / CIF on request
+                </div>
               )}
             </div>
-          </div>
-
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0d1024] via-[#1a1240] to-[#2a0f2a] p-6 text-white shadow-xl">
-            <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-rose-500/30 blur-3xl" />
-            <div className="relative text-xs font-bold uppercase tracking-[0.2em] text-white/60">FOB price</div>
-            <div className="relative mt-1 text-4xl font-black">{sold ? "Sold" : price ?? "Ask for price"}</div>
-            {!sold && <p className="relative mt-1 text-sm text-white/70">Tell us your destination port for a full C&F / CIF quotation.</p>}
             {!sold && (
-              <div className="relative mt-5 grid gap-2 sm:grid-cols-2">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {wa && (
-                  <a href={wa} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-400 to-green-600 px-4 py-3 text-sm font-bold shadow-lg shadow-emerald-500/30">
-                    <MessageCircle className="h-4 w-4" />
-                    Get a quotation
+                  <a href={wa} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-600">
+                    <MessageCircle className="h-4 w-4" /> WhatsApp
                   </a>
                 )}
                 {company.email && (
                   <a
                     href={`mailto:${company.email}?subject=${encodeURIComponent(`Quotation: ${c.stock_no} ${title}`)}`}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-bold ring-1 ring-white/20 hover:bg-white/15"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-bold text-navy-800 ring-1 ring-navy-200 hover:bg-navy-50"
                   >
-                    <Mail className="h-4 w-4" />
-                    Email us
+                    <Mail className="h-4 w-4" /> Email us
                   </a>
                 )}
               </div>
             )}
           </div>
+
+          <div id="inquiry" className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <h2 className="mb-3 text-lg font-black text-navy-950">{sold ? "Looking for a similar car?" : "Get a quotation for this car"}</h2>
+            <InquiryForm
+              stockNo={c.stock_no}
+              source="car_page"
+              compact
+              defaultMessage={sold ? `I'm looking for a car similar to ${c.stock_no} ${title}.` : `Please send me a C&F quotation for ${c.stock_no} ${title}.`}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.35fr_1fr]">
-        <section className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/80">
-          <h2 className="border-b border-slate-100 px-6 py-4 font-extrabold">Specifications</h2>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <section className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+          <h2 className="bg-navy-800 px-5 py-3 font-extrabold text-white">Specifications</h2>
           <dl className="grid sm:grid-cols-2">
             {specs
               .filter(([, v]) => v != null && v !== "")
               .map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 border-b border-slate-100 px-6 py-3 text-sm sm:odd:border-r">
+                <div key={k} className="flex justify-between gap-4 border-b border-slate-100 px-5 py-2.5 text-sm sm:odd:border-r">
                   <dt className="text-slate-500">{k}</dt>
                   <dd className="text-right font-semibold text-slate-900">{v}</dd>
                 </div>
@@ -141,11 +191,11 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
           </dl>
         </section>
         {c.features.length > 0 && (
-          <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/80">
-            <h2 className="font-extrabold">Features</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
+          <section className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+            <h2 className="bg-navy-800 px-5 py-3 font-extrabold text-white">Features</h2>
+            <div className="flex flex-wrap gap-2 p-5">
               {c.features.map((f) => (
-                <span key={f} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200">
+                <span key={f} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200">
                   <Check className="h-3.5 w-3.5" />
                   {f}
                 </span>
@@ -154,6 +204,31 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
           </section>
         )}
       </div>
+
+      {related.length > 0 && (
+        <section className="mt-10">
+          <div className="mb-4 flex items-end justify-between">
+            <h2 className="border-l-4 border-brand-600 pl-3 text-xl font-black text-navy-950">More {c.make} in stock</h2>
+            <Link href={`/makes/${makeSlug(c.make)}`} className="text-sm font-bold text-brand-700 hover:underline">
+              View all {c.make}
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {related.map((r) => (
+              <CarCard key={r.id} c={r} wa={whatsapp(company, `Hello, I'm interested in ${r.stock_no} ${carTitle(r)}.`)} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
+  );
+}
+
+function Chip({ icon: I, children }: { icon: React.ElementType; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-lg bg-slate-50 px-2 py-1 ring-1 ring-slate-200">
+      <I className="h-3.5 w-3.5 text-brand-600" />
+      {children}
+    </span>
   );
 }
