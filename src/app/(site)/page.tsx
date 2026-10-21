@@ -10,6 +10,7 @@ import { HeroSlider } from "@/components/site/hero-slider";
 import { BodyIcon } from "@/components/site/body-icon";
 import { Stars } from "@/components/site/stars";
 import { BUY_STEPS } from "@/components/site/buy-steps";
+import { HScrollRow } from "@/components/site/hscroll-row";
 
 export const revalidate = 60;
 
@@ -160,9 +161,9 @@ export default async function PublicHome() {
       {makes.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">
           <SectionHead title="Shop by make" href="/cars" link="All stock" />
-          <div className="hscroll sm:grid sm:grid-cols-4 sm:overflow-visible md:grid-cols-6 lg:grid-cols-8">
+          <HScrollRow className="hscroll hscroll-grid">
             {makes.slice(0, 16).map((m) => (
-              <Link key={m.slug} href={`/makes/${m.slug}`} className="glass-lite glass-hover group flex w-[6.5rem] flex-col items-center justify-center gap-1.5 rounded-2xl p-3 text-center sm:w-auto">
+              <Link key={m.slug} href={`/makes/${m.slug}`} className="glass-lite glass-hover group flex w-[6.5rem] shrink-0 flex-col items-center justify-center gap-1.5 rounded-2xl p-3 text-center">
                 <span className="flex h-12 w-full items-center justify-center rounded-xl bg-white/95 px-2">
                   {m.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -175,20 +176,20 @@ export default async function PublicHome() {
                 <span className="text-[11px] text-white/50">{m.n} cars</span>
               </Link>
             ))}
-          </div>
+          </HScrollRow>
         </section>
       )}
 
       {/* Body types — real photos from stock */}
       <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">
         <SectionHead title="Search by body type" href="/cars" link="All stock" />
-        <div className="hscroll sm:grid sm:grid-cols-4 sm:overflow-visible md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
+        <div className="hscroll hscroll-grid">
           {bodies.map(([b, n]) => {
             const path = bodyPhoto[b.toLowerCase()];
             const photo = path ? publicImageUrl(path) : null;
             return (
-              <Link key={b} href={`/cars?body=${encodeURIComponent(b)}`} className="glass-lite glass-hover group w-40 overflow-hidden rounded-2xl sm:w-auto">
-                <div className="relative aspect-[4/3] bg-black/20 sm:aspect-[16/10]">
+              <Link key={b} href={`/cars?body=${encodeURIComponent(b)}`} className="glass-lite glass-hover group w-40 shrink-0 overflow-hidden rounded-2xl">
+                <div className="relative aspect-[4/3] bg-black/20">
                   {photo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} alt={`${b} cars`} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />

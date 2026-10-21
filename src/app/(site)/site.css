@@ -338,6 +338,7 @@ body:has(.site-glass) {
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
   margin-inline: -1rem;
   padding-inline: 1rem;
   scroll-padding-inline: 1rem;
@@ -354,6 +355,21 @@ body:has(.site-glass) {
   :where(.site-glass .hscroll) {
     margin-inline: 0;
     padding-inline: 0;
+  }
+  /*
+   * Opt-in desktop grid. Needed because `.site-glass .hscroll { display:flex; overflow-x:auto }`
+   * beats Tailwind `lg:grid` / `lg:overflow-visible` on specificity, so those utilities never applied.
+   */
+  .site-glass .hscroll.hscroll-grid {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .site-glass .hscroll.hscroll-grid > * {
+    width: auto;
+    max-width: none;
+    scroll-snap-align: unset;
   }
 }
 /* Filter bottom sheet (phones). Opens via the #filters hash — see components/site/filter-sheet.tsx */
