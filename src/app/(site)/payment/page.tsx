@@ -24,7 +24,7 @@ export default async function PaymentPage() {
 
       <div className="mt-6 flex gap-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
         <ShieldAlert className="h-5 w-5 shrink-0 text-amber-600" />
-        <div>
+        <div className="max-w-xl">
           <b>Protect your payment.</b> The account holder is always <b>{company.company_name}</b>. We never change our bank account by email or chat. If you receive
           different bank details, do not pay — call us first{phone ? ` on ${phone}` : ""} to confirm.
         </div>
@@ -58,7 +58,7 @@ export default async function PaymentPage() {
 
       <div className="mt-8 flex flex-wrap gap-3">
         {wa && (
-          <a href={wa} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-3 font-bold text-white hover:bg-emerald-600">
+          <a href={wa} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-5 py-3 font-bold text-jet-950 hover:brightness-110">
             <MessageCircle className="h-4 w-4" /> Confirm details on WhatsApp
           </a>
         )}

@@ -186,9 +186,9 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
                           <Wrench className="h-12 w-12" />
                         </div>
                       )}
-                      <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">{p.part_no}</span>
+                      <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{p.part_no}</span>
                       {p.image_count > 1 && (
-                        <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
+                        <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
                           <Camera className="h-3 w-3" />
                           {p.image_count}
                         </span>
@@ -196,7 +196,7 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
                       {p.status === "reserved" && <span className="absolute inset-x-0 bottom-0 bg-amber-500/95 py-1 text-center text-xs font-black uppercase tracking-widest text-white">Reserved</span>}
                     </Link>
                     <div className="flex flex-1 flex-col p-4">
-                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
                         {p.category && <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-white/80">{p.category}</span>}
                         <span className={`rounded-md px-1.5 py-0.5 ${p.condition === "new" ? "bg-emerald-400/20 text-emerald-300" : "bg-white/10 text-white/70"}`}>{CONDITION[p.condition]}</span>
                         <ShipsFrom code={p.branch} compact className="ml-auto text-white/80" />

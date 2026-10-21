@@ -98,7 +98,7 @@ export default async function PartPage({ params }: { params: Promise<{ partNo: s
             </div>
             <div className="mt-4 flex items-end justify-between gap-3 rounded-lg bg-navy-50 p-4">
               <div>
-                <div className="text-[11px] font-bold uppercase tracking-wider text-navy-500">FOB price</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-navy-500">FOB price</div>
                 <div className="text-3xl font-black text-brand-600">{price ?? "Ask for price"}</div>
               </div>
               {wa && (

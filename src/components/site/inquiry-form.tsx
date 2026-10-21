@@ -47,7 +47,7 @@ export function InquiryForm({ stockNo, defaultMessage = "", source = "website", 
       <button disabled={pending} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-sm font-bold text-white shadow-lg shadow-brand-900/40 hover:bg-brand-700 disabled:opacity-60">
         <Send className="h-4 w-4" /> {pending ? "Sending…" : stockNo ? "Get a C&F quotation" : "Send inquiry"}
       </button>
-      <p className="text-center text-[11px] text-white/50">We reply within 24 hours. Your details are only used to answer your inquiry.</p>
+      <p className="text-center text-xs text-white/60">We reply within 24 hours. Your details are only used to answer your inquiry.</p>
     </form>
   );
 }

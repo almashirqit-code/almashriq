@@ -8,7 +8,7 @@ export function StickyContact({ price, wa, sold = false }: { price: string | nul
   return (
     <div className="glass-strong fixed inset-x-2 bottom-2 z-50 flex items-center gap-2 rounded-2xl p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] lg:hidden">
       <div className="min-w-0 flex-1 pl-2">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-white/60">FOB price</div>
+        <div className="text-xs font-bold uppercase tracking-wider text-white/60">FOB price</div>
         <div className="truncate text-lg font-black leading-tight">{sold ? "Sold" : price ?? "Ask for price"}</div>
       </div>
       {wa && !sold && (

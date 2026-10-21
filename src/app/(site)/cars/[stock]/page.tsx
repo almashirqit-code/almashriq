@@ -143,7 +143,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
             </div>
             <div className="mt-4 flex items-end justify-between gap-3 rounded-lg bg-navy-50 p-4">
               <div>
-                <div className="text-[11px] font-bold uppercase tracking-wider text-navy-500">FOB price</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-navy-500">FOB price</div>
                 <div className={`text-3xl font-black ${sold ? "text-slate-500" : "text-brand-600"}`}>{sold ? "Sold" : price ?? "Ask for price"}</div>
               </div>
               {!sold && (
