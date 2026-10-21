@@ -21,6 +21,8 @@ export const en = {
   // nav
   nav_dashboard: "Dashboard",
   nav_stock: "Stock",
+  nav_third_party: "Third-party stock",
+  tp_matches: "{count} matching third-party units",
   nav_import: "Bulk import",
   nav_customers: "Customers",
   nav_invoices: "Invoices",
@@ -681,6 +683,8 @@ export const ja: Record<DictKey, string> = {
   dash_hero_sub: "本日の在庫と販売の状況です。",
   nav_dashboard: "ダッシュボード",
   nav_stock: "在庫",
+  nav_third_party: "委託車両",
+  tp_matches: "委託車両に{count}件の一致",
   nav_import: "一括インポート",
   nav_customers: "顧客",
   nav_invoices: "請求書",

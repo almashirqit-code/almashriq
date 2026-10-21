@@ -62,7 +62,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
       <PageHeader
         icon={<Car />}
         tone="brand"
-        back={{ href: "/admin/stock", label: t("stock_title") }}
+        back={v.ownership === "third_party" ? { href: "/admin/third-party", label: t("nav_third_party") } : { href: "/admin/stock", label: t("stock_title") }}
         title={
           <span className="flex flex-wrap items-center gap-3">
             {v.stock_no}

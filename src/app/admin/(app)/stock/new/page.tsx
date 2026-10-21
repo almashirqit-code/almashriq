@@ -6,7 +6,8 @@ import { VehicleForm } from "../vehicle-form";
 import { createVehicle } from "../actions";
 import { loadMasters } from "../masters-data";
 
-export default async function NewVehiclePage() {
+export default async function NewVehiclePage({ searchParams }: { searchParams: Promise<{ own?: string }> }) {
+  const third = (await searchParams).own === "third_party";
   await requireRole(["admin", "manager"]);
   const { t } = await getT();
   const supabase = await createClient();
@@ -14,8 +15,8 @@ export default async function NewVehiclePage() {
   const defaultFx = Number((settings?.exchange_rates as Record<string, number> | null)?.USD ?? 0);
   return (
     <>
-      <PageHeader title={t("stock_new")} back={{ href: "/admin/stock", label: t("stock_title") }} />
-      <VehicleForm action={createVehicle} showCost defaultFx={defaultFx} masters={await loadMasters()} />
+      <PageHeader title={t("stock_new")} back={third ? { href: "/admin/third-party", label: t("nav_third_party") } : { href: "/admin/stock", label: t("stock_title") }} />
+      <VehicleForm vehicle={third ? { ownership: "third_party" } : undefined} action={createVehicle} showCost defaultFx={defaultFx} masters={await loadMasters()} />
     </>
   );
 }
