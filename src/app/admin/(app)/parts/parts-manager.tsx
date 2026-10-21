@@ -7,6 +7,7 @@ import { CURRENCIES, type BranchCode, type Currency } from "@/lib/types";
 import { publicImageUrl } from "@/lib/format";
 import { branchFlag, branchName, DEFAULT_BRANCHES, jpyRate } from "@/lib/branches";
 import { PART_PHOTOS } from "@/lib/photo-zip";
+import { makeNames, modelNames, type CatalogMake } from "@/lib/catalog";
 import { blankPart, partCostJpy, partFits, PART_CONDITIONS, PART_STATUSES, type PartInput, type PartStatus } from "@/lib/parts";
 import { Badge, Empty, IconChip } from "@/components/ui";
 import { Modal } from "@/components/modal";
@@ -28,11 +29,14 @@ export function PartsManager({
   canEdit,
   categories,
   rates,
+  catalog = [],
 }: {
   parts: PartRow[];
   canEdit: boolean;
   categories: string[];
   rates: Partial<Record<Currency, number>>;
+  /** Makes & models list (cars), for suggestions. */
+  catalog?: CatalogMake[];
 }) {
   const router = useRouter();
   const [edit, setEdit] = useState<{ id: string | null; data: PartInput; photos: StockPhoto[] } | null>(null);
@@ -273,11 +277,24 @@ export function PartsManager({
             </div>
             <div>
               <label className="label">Make</label>
-              <input className="input" value={edit.data.make ?? ""} onChange={text("make")} placeholder="Toyota" />
+              <input className="input" list="part-makes" autoComplete="off" value={edit.data.make ?? ""} onChange={text("make")} placeholder="Toyota" />
+              <datalist id="part-makes">
+                {makeNames(catalog).map((m) => (
+                  <option key={m} value={m} />
+                ))}
+              </datalist>
             </div>
             <div>
               <label className="label">Model</label>
-              <input className="input" value={edit.data.model ?? ""} onChange={text("model")} placeholder="Prius" />
+              <input className="input" list="part-models" autoComplete="off" value={edit.data.model ?? ""} onChange={text("model")} placeholder="Prius" />
+              <datalist id="part-models">
+                {modelNames(catalog, edit.data.make).map((m) => (
+                  <option key={m} value={m} />
+                ))}
+              </datalist>
+              <a href="/admin/settings?tab=catalog" target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-semibold text-brand-600 hover:underline">
+                Not in the list? Manage makes &amp; models →
+              </a>
             </div>
             <div>
               <label className="label">Model code</label>

@@ -5,6 +5,7 @@ import { getProfile } from "@/lib/auth";
 import { rowsParam } from "@/lib/rows";
 import { PART_CATEGORIES, PART_STATUSES } from "@/lib/parts";
 import { DEFAULT_BRANCHES, parseBranch } from "@/lib/branches";
+import { loadCatalog } from "@/lib/catalog-data";
 import type { Currency } from "@/lib/types";
 import { RowsSelect } from "@/components/rows-select";
 import { PageHeader, Pagination, Stat } from "@/components/ui";
@@ -35,10 +36,11 @@ export default async function PartsAdmin({ searchParams }: { searchParams: Promi
   if (sp.category) query = query.ilike("category", sp.category);
   if (sp.status && (PART_STATUSES as string[]).includes(sp.status)) query = query.eq("status", sp.status);
 
-  const [{ data, count }, { data: all }, { data: settings }] = await Promise.all([
+  const [{ data, count }, { data: all }, { data: settings }, catalog] = await Promise.all([
     query,
     supabase.from("parts").select("status, quantity, show_on_website, category").limit(20000),
     supabase.from("settings").select("exchange_rates").single(),
+    loadCatalog("vehicle"),
   ]);
   const rates = (settings?.exchange_rates ?? {}) as Partial<Record<Currency, number>>;
   const rows = (data ?? []) as PartRow[];
@@ -105,7 +107,7 @@ export default async function PartsAdmin({ searchParams }: { searchParams: Promi
             </Link>
           )}
         </form>
-        <PartsManager parts={rows} canEdit={canEdit} categories={categories} rates={rates} />
+        <PartsManager parts={rows} canEdit={canEdit} categories={categories} rates={rates} catalog={catalog} />
         <Pagination
           page={page}
           pages={pages}
