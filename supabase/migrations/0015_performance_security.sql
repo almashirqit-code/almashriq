@@ -80,7 +80,8 @@ create index if not exists customers_created_idx          on public.customers (c
 create index if not exists inquiries_created_idx          on public.inquiries (created_at desc);
 create index if not exists reservations_created_idx       on public.reservations (created_at desc);
 create index if not exists remittances_created_idx        on public.remittances (created_at desc);
-create index if not exists vehicle_images_vehicle_sort_idx on public.vehicle_images (vehicle_id, sort_order);
+-- (vehicle_images already has an index on vehicle_id, sort_order)
+drop index if exists public.vehicle_images_vehicle_sort_idx;
 
 -- Fast "contains" search (ILIKE '%…%') on stock and customers
 create extension if not exists pg_trgm with schema extensions;
