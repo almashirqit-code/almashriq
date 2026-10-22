@@ -37,7 +37,7 @@ export async function resizeImage(blob: Blob, max = 1600, quality = 0.85): Promi
 export const LISTING_MAX = 1600;
 const LISTING_QUALITY = 0.82;
 /** Text stamped on every listing photo. */
-export const WATERMARK_TEXT = "almashriqtrading";
+export const WATERMARK_TEXT = "AlmashriqTrading";
 
 /** Faint centred text: white fill + thin dark outline, so it reads on both white and black cars. */
 function drawWatermark(ctx: CanvasRenderingContext2D, w: number, h: number) {
@@ -62,7 +62,7 @@ function drawWatermark(ctx: CanvasRenderingContext2D, w: number, h: number) {
 
 /**
  * Prepares a photo for the website: scales it to LISTING_MAX on the longest side, stamps
- * "almashriqtrading" faintly in the centre, and encodes it as WebP (JPEG where the browser can't
+ * "AlmashriqTrading" faintly in the centre, and encodes it as WebP (JPEG where the browser can't
  * encode WebP). Falls back to the original file if the browser can't decode it (e.g. HEIC on some devices).
  */
 export async function prepareListingPhoto(blob: Blob, opts: { watermark?: boolean } = {}): Promise<Blob> {
