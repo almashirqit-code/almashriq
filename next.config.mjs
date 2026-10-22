@@ -8,12 +8,13 @@ const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.en
 /** Helmet-style security headers for every page. */
 const csp = [
   "default-src 'self'",
-  // Next.js inlines small bootstrap scripts; no third-party scripts are loaded.
-  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
+  // Next.js inlines small bootstrap scripts. The only third party is the Tawk.to live chat on the public site.
+  `script-src 'self' 'unsafe-inline' https://*.tawk.to https://cdn.jsdelivr.net${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline' https://*.tawk.to https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace("https://", "wss://")}`,
+  "font-src 'self' data: https://*.tawk.to https://fonts.gstatic.com",
+  `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace("https://", "wss://")} https://*.tawk.to wss://*.tawk.to`,
+  "frame-src 'self' https://*.tawk.to",
   "media-src 'self' https:",
   "object-src 'none'",
   "base-uri 'self'",

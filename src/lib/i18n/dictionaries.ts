@@ -40,6 +40,7 @@ export const en = {
   nav_invoices: "Invoices",
   nav_users: "Users",
   nav_settings: "Configuration",
+  nav_system: "System monitor",
   sign_out: "Sign out",
   language: "Language",
 
@@ -741,6 +742,7 @@ export const ja: Record<DictKey, string> = {
   nav_invoices: "請求書",
   nav_users: "ユーザー",
   nav_settings: "設定",
+  nav_system: "システム監視",
   sign_out: "ログアウト",
   language: "言語",
 

@@ -11,6 +11,7 @@ import { BodyIcon } from "@/components/site/body-icon";
 import { Stars } from "@/components/site/stars";
 import { BUY_STEPS } from "@/components/site/buy-steps";
 import { HScrollRow } from "@/components/site/hscroll-row";
+import { HomeMoreStock } from "@/components/site/home-more-stock";
 
 export const revalidate = 60;
 
@@ -243,6 +244,9 @@ export default async function PublicHome() {
           View all {facets.available.toLocaleString()} cars <ArrowRight className="h-4 w-4" />
         </Link>
       </section>
+
+      {/* Spare parts, half cuts / complete units, heavy machinery */}
+      <HomeMoreStock />
 
       {/* Reviews */}
       {reviews.count > 0 && (

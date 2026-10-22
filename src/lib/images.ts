@@ -36,33 +36,54 @@ export async function resizeImage(blob: Blob, max = 1600, quality = 0.85): Promi
 /** Longest side of a listing photo; plenty for a full-screen gallery, ~150–300 KB as WebP. */
 export const LISTING_MAX = 1600;
 const LISTING_QUALITY = 0.82;
-/** Text stamped on every listing photo. */
-export const WATERMARK_TEXT = "AlmashriqTrading";
+/** Text stamped on every listing photo — same wording and look as the photos from the old website. */
+export const WATERMARK_TEXT = "AL MASHRIQ TRADING";
+/** Michroma (Google Fonts, SIL Open Font License), the wide geometric face of the old watermark. Bundled in public/fonts. */
+const WATERMARK_FONT = "AM Watermark";
+const WATERMARK_FONT_URL = "/fonts/michroma.woff2";
 
-/** Faint centred text: white fill + thin dark outline, so it reads on both white and black cars. */
-function drawWatermark(ctx: CanvasRenderingContext2D, w: number, h: number) {
-  const size = Math.max(14, Math.round(w * 0.07));
+let fontReady: Promise<boolean> | null = null;
+function loadWatermarkFont() {
+  fontReady ??= (async () => {
+    try {
+      const face = new FontFace(WATERMARK_FONT, `url(${WATERMARK_FONT_URL}) format("woff2")`);
+      await face.load();
+      document.fonts.add(face);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+  return fontReady;
+}
+
+/**
+ * The old site's watermark: "AL MASHRIQ TRADING" centred across ~40% of the photo width, light silver
+ * at ~60% opacity with a hairline dark edge (reads as slightly embossed on white and dark cars alike).
+ */
+async function drawWatermark(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  const family = (await loadWatermarkFont()) ? `"${WATERMARK_FONT}", "Segoe UI", Arial, sans-serif` : `"Segoe UI", Arial, sans-serif`;
   ctx.save();
-  ctx.font = `700 ${size}px "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  // Keep the text within ~70% of the width on narrow (portrait) photos.
-  const max = w * 0.7;
-  const measured = ctx.measureText(WATERMARK_TEXT).width;
-  if (measured > max) ctx.font = `700 ${Math.floor((size * max) / measured)}px "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif`;
+  // Size the text so it spans 40% of the width (60% on tall portrait photos).
+  const target = w * (h > w ? 0.6 : 0.4);
+  ctx.font = `400 100px ${family}`;
+  const size = Math.max(10, Math.floor((100 * target) / ctx.measureText(WATERMARK_TEXT).width));
+  ctx.font = `400 ${size}px ${family}`;
   ctx.lineJoin = "round";
-  ctx.lineWidth = Math.max(1, size / 18);
-  ctx.globalAlpha = 0.38;
-  ctx.strokeStyle = "rgba(0,0,0,0.55)";
+  ctx.lineWidth = Math.max(1, size / 22);
+  ctx.globalAlpha = 0.6;
+  ctx.strokeStyle = "rgba(20,24,30,0.55)";
   ctx.strokeText(WATERMARK_TEXT, w / 2, h / 2);
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#e6eaf0";
   ctx.fillText(WATERMARK_TEXT, w / 2, h / 2);
   ctx.restore();
 }
 
 /**
  * Prepares a photo for the website: scales it to LISTING_MAX on the longest side, stamps
- * "AlmashriqTrading" faintly in the centre, and encodes it as WebP (JPEG where the browser can't
+ * "AL MASHRIQ TRADING" faintly in the centre, and encodes it as WebP (JPEG where the browser can't
  * encode WebP). Falls back to the original file if the browser can't decode it (e.g. HEIC on some devices).
  */
 export async function prepareListingPhoto(blob: Blob, opts: { watermark?: boolean } = {}): Promise<Blob> {
@@ -80,7 +101,7 @@ export async function prepareListingPhoto(blob: Blob, opts: { watermark?: boolea
     ctx.drawImage(bitmap, 0, 0, w, h);
     bitmap.close();
 
-    if (opts.watermark !== false) drawWatermark(ctx, w, h);
+    if (opts.watermark !== false) await drawWatermark(ctx, w, h);
 
     const encode = (type: string) => new Promise<Blob | null>((res) => canvas.toBlob(res, type, LISTING_QUALITY));
     let out = await encode("image/webp");

@@ -24,6 +24,7 @@ import {
   Handshake,
   Wrench,
   Tractor,
+  Activity,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -91,6 +92,7 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
     items: [
       { href: "/admin/users", label: "nav_users", icon: UserCog, roles: ["admin"] },
       { href: "/admin/settings", label: "nav_settings", icon: Settings, roles: ["admin", "manager"] },
+      { href: "/admin/system", label: "nav_system", icon: Activity, roles: ["admin"] },
     ],
   },
 ];
