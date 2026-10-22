@@ -28,8 +28,20 @@ function limited(ip: string, kind: keyof typeof LIMITS) {
  *   /admin/...   the ERP — staff must be signed in (except /admin/login and /admin/setup)
  * Every request passes the rate limiter; only /admin and the staff image proxy need a session.
  */
+/** The one address search engines should see (the custom domain). */
+const CANONICAL_HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site").host;
+
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+
+  // Production on *.vercel.app → same page on the custom domain (one site for Google, not two).
+  // Printed QR codes use the vercel.app address and still land on /verify there. Preview deployments are untouched.
+  const host = request.headers.get("host") ?? "";
+  if (process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app") && host !== CANONICAL_HOST) {
+    const url = new URL(request.nextUrl.pathname + request.nextUrl.search, `https://${CANONICAL_HOST}`);
+    return NextResponse.redirect(url, 308);
+  }
+
   const ip = (request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || "unknown").trim();
   const kind = request.method === "POST" ? "post" : path.startsWith("/api/") ? "api" : "page";
   // Link prefetches are cheap and automatic — don't count them.

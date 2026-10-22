@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { parseVehicle } from "@/lib/vehicle";
 import { VEHICLE_FIELDS } from "@/lib/types";
+import { pingIndexNow } from "@/lib/indexnow";
 
 export type FormState = { error?: string; ok?: boolean };
 
@@ -33,6 +34,7 @@ export async function createVehicle(_prev: FormState, formData: FormData): Promi
   const { data: row, error } = await supabase.from("vehicles").insert(data).select("id").single();
   if (error) return { error: error.code === "23505" ? "Stock no. or chassis no. already exists" : error.message };
 
+  if (data.show_on_website !== false) pingIndexNow([`/cars/${encodeURIComponent(String(data.stock_no))}`]);
   revalidatePath("/admin/stock");
   redirect(`/admin/stock/${row.id}`);
 }
@@ -46,6 +48,7 @@ export async function updateVehicle(id: string, _prev: FormState, formData: Form
   const { error } = await supabase.from("vehicles").update(data).eq("id", id);
   if (error) return { error: error.code === "23505" ? "Stock no. or chassis no. already exists" : error.message };
 
+  if (data.show_on_website !== false) pingIndexNow([`/cars/${encodeURIComponent(String(data.stock_no))}`]);
   revalidatePath("/admin/stock");
   revalidatePath(`/admin/stock/${id}`);
   return { ok: true };

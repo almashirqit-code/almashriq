@@ -6,6 +6,7 @@ import { assertRole } from "@/lib/auth";
 import { jpyRate } from "@/lib/branches";
 import { parsePart, type PartInput, type PartStatus } from "@/lib/parts";
 import type { Currency } from "@/lib/types";
+import { pingIndexNow } from "@/lib/indexnow";
 
 function refresh() {
   revalidatePath("/admin/parts");
@@ -28,6 +29,7 @@ export async function savePart(id: string | null, input: PartInput): Promise<{ e
   }
   const res = id ? await supabase.from("parts").update(data).eq("id", id).select("id").single() : await supabase.from("parts").insert(data).select("id").single();
   if (res.error) return { error: res.error.code === "23505" ? `Part no. "${data.part_no}" is already used.` : res.error.message };
+  if (data.show_on_website) pingIndexNow([`/parts/${encodeURIComponent(data.part_no)}`]);
   refresh();
   return { ok: true, id: res.data.id as string };
 }

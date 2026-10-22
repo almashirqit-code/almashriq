@@ -12,13 +12,16 @@ import { JsonLd } from "@/components/site/json-ld";
 import { Logo, LOGO_SRC } from "@/components/brand/logo";
 import "./site.css";
 
+const OG_IMAGE = { url: "/brand/og.jpg?v=1", width: 1200, height: 630, alt: "Al Mashriq Trading — Japanese used cars, parts & machinery exported worldwide" };
+
 export const metadata: Metadata = {
   title: { default: "Japanese used cars for export — Al Mashriq Trading", template: "%s | Al Mashriq Trading" },
   description:
     "Al Mashriq Trading Co., Ltd. exports quality Japanese used cars and spare parts worldwide. Browse our stock, get a C&F quotation by RoRo or container.",
-  openGraph: { type: "website", siteName: "Al Mashriq Trading", locale: "en_US" },
-  twitter: { card: "summary_large_image" },
-  alternates: { canonical: "/" },
+  // Default share image (WhatsApp, Facebook, X, Google Discover); detail pages use their own photos.
+  openGraph: { type: "website", siteName: "Al Mashriq Trading", locale: "en_US", images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", images: [OG_IMAGE.url] },
+  // No site-wide canonical here: a page that forgot its own would point Google at the home page.
 };
 
 export const viewport: Viewport = { themeColor: "#0a0a0c", width: "device-width", initialScale: 1 };

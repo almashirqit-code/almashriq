@@ -16,7 +16,7 @@ const FLABEL = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-w
 
 export const metadata: Metadata = {
   title: "Japanese used auto parts for export",
-  description: "Genuine used and new spare parts from Japan, Singapore, Taiwan and Thailand — engines, gearboxes, body parts, lights and more. Shipped worldwide by Al Mashriq Trading.",
+  description: "Used and new spare parts from Japan, Singapore, Taiwan and Thailand: engines, gearboxes, body parts and lights, shipped worldwide by Al Mashriq Trading.",
   alternates: { canonical: "/parts" },
 };
 

@@ -15,8 +15,8 @@ import { HScrollRow } from "@/components/site/hscroll-row";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: { absolute: "Al Mashriq Trading — Japanese used cars for export" },
-  description: "Quality Japanese used cars and spare parts, exported worldwide by RoRo and container. Browse our stock with full photos and get a C&F quotation to your port.",
+  title: { absolute: "Japanese Used Cars for Sale & Export | Al Mashriq Trading" },
+  description: "Buy quality Japanese used cars, spare parts and heavy machinery direct from Japan. Full photos, FOB prices and RoRo or container shipping worldwide.",
   alternates: { canonical: "/" },
 };
 

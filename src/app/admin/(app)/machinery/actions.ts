@@ -6,6 +6,7 @@ import { assertRole } from "@/lib/auth";
 import { jpyRate } from "@/lib/branches";
 import { parseMachine, type MachineInput } from "@/lib/machinery";
 import type { Currency, VehicleStatus } from "@/lib/types";
+import { pingIndexNow } from "@/lib/indexnow";
 
 function refresh() {
   revalidatePath("/admin/machinery");
@@ -27,6 +28,7 @@ export async function saveMachine(id: string | null, input: MachineInput): Promi
   }
   const res = id ? await supabase.from("machinery").update(data).eq("id", id).select("id").single() : await supabase.from("machinery").insert(data).select("id").single();
   if (res.error) return { error: res.error.code === "23505" ? `Stock no. "${data.stock_no}" is already used.` : res.error.message };
+  if (data.show_on_website) pingIndexNow([`/machinery/${encodeURIComponent(data.stock_no)}`]);
   refresh();
   return { ok: true, id: res.data.id as string };
 }

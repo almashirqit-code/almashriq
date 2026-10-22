@@ -17,8 +17,8 @@ const FLABEL = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-w
 const LABEL: Record<string, string> = { q: "Search", category: "Type", make: "Make", branch: "Ships from", min_price: "Min price", max_price: "Max price", min_year: "From year", max_year: "To year" };
 
 export const metadata: Metadata = {
-  title: "Used heavy machinery for export — excavators, loaders, cranes, forklifts",
-  description: "Used construction and heavy machinery from Japan, Singapore, Taiwan and Thailand — excavators, wheel loaders, bulldozers, cranes, forklifts. Export worldwide with Al Mashriq Trading.",
+  title: "Used heavy machinery from Japan for export",
+  description: "Used excavators, wheel loaders, bulldozers, cranes and forklifts from Japan, Singapore, Taiwan and Thailand. Worldwide export by Al Mashriq Trading.",
   alternates: { canonical: "/machinery" },
 };
 
