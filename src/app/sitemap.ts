@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${SITE_URL}/cars`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
     { url: `${SITE_URL}/parts`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/parts/units`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/machinery`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/how-to-buy`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/payment`, changeFrequency: "yearly", priority: 0.5 },
@@ -23,6 +24,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const path =
       r.kind === "car"
         ? `/cars/${encodeURIComponent(r.key)}`
+        : r.kind === "unit"
+          ? `/parts/units/${encodeURIComponent(r.key)}`
         : r.kind === "post"
           ? `/blog/${r.key}`
           : r.kind === "part"
@@ -38,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       {
         url: `${SITE_URL}${path}`,
         lastModified: r.updated ? new Date(r.updated) : undefined,
-        changeFrequency: r.kind === "car" || r.kind === "part" || r.kind === "machine" ? "weekly" : r.kind === "make" ? "daily" : "monthly",
+        changeFrequency: r.kind === "car" || r.kind === "unit" || r.kind === "part" || r.kind === "machine" ? "weekly" : r.kind === "make" ? "daily" : "monthly",
         priority: r.kind === "make" ? 0.8 : r.kind === "car" || r.kind === "machine" ? 0.7 : 0.6,
         ...(images?.length ? { images } : {}),
       },

@@ -247,6 +247,76 @@ export const getPart = cache(async (partNo: string): Promise<PublicPartDetail | 
 });
 export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; branch?: string; page?: string };
 
+// ---------------------------------------------------------------------------
+// Complete units: cars bought for parts (vehicles.for_parts), shown under Parts
+// ---------------------------------------------------------------------------
+export type PublicUnit = {
+  id: string;
+  stock_no: string;
+  make: string;
+  model: string;
+  grade: string | null;
+  model_code: string | null;
+  year: number | null;
+  mileage: number | null;
+  engine_cc: number | null;
+  fuel: string | null;
+  transmission: string | null;
+  body_type: string | null;
+  color: string | null;
+  branch: string | null;
+  status: "in_stock" | "reserved" | "sold" | "shipped";
+  unit_condition: string | null;
+  unit_parts: string[];
+  price: number | null;
+  price_currency: Currency;
+  cover: string | null;
+  image_count: number;
+  images: string[];
+  created_at: string;
+  total_count: number;
+};
+export type PublicUnitDetail = Omit<PublicUnit, "cover" | "image_count" | "total_count"> & {
+  month: number | null;
+  drive: string | null;
+  steering: string | null;
+  chassis_no: string | null;
+  location: string | null;
+  features: string[];
+};
+export type UnitFilters = { q?: string; make?: string; part?: string; page?: string };
+
+export async function listPartUnits(f: UnitFilters, size = PAGE_SIZE) {
+  const page = Math.max(1, Number(f.page) || 1);
+  const { data, error } = await anon().rpc("public_part_units", {
+    p_q: f.q?.trim() || null,
+    p_make: f.make || null,
+    p_part: f.part || null,
+    p_limit: size,
+    p_offset: (page - 1) * size,
+  });
+  const units = (data ?? []) as PublicUnit[];
+  return { units, total: units[0] ? Number(units[0].total_count) : 0, page, error: error?.message ?? null };
+}
+
+export const getPartUnit = cache(async (stockNo: string): Promise<PublicUnitDetail | null> => {
+  const { data } = await anon().rpc("public_part_unit", { p_key: stockNo });
+  return ((data ?? [])[0] as PublicUnitDetail) ?? null;
+});
+
+/** Makes and parts (with counts) for the Complete units filters; total = number of units. */
+export const getPartUnitFacets = cache(async () => {
+  const { data } = await anon().rpc("public_part_unit_facets");
+  const out = { make: [] as [string, number][], part: new Map<string, number>(), total: 0 };
+  for (const r of (data ?? []) as { kind: string; value: string | null; n: number }[]) {
+    if (r.kind === "total") out.total = Number(r.n);
+    else if (r.kind === "make" && r.value) out.make.push([r.value, Number(r.n)]);
+    else if (r.kind === "part" && r.value) out.part.set(r.value, Number(r.n));
+  }
+  out.make.sort((a, b) => b[1] - a[1]);
+  return out;
+});
+
 /** What a scanned invoice/quotation QR code shows (public_verify_document). Customer name is masked. */
 export type VerifiedDocument = {
   doc_type: "invoice" | "quotation" | "auction_deposit";
@@ -385,7 +455,7 @@ async function rpcAll<T>(fn: string, orderBy: string[]): Promise<T[]> {
 }
 
 export async function getSitemapRows() {
-  return rpcAll<{ kind: "car" | "post" | "make" | "part" | "machine"; key: string; updated: string }>("public_sitemap", ["kind", "key"]);
+  return rpcAll<{ kind: "car" | "unit" | "post" | "make" | "part" | "machine"; key: string; updated: string }>("public_sitemap", ["kind", "key"]);
 }
 
 /** First photos of every listing in the sitemap, keyed "car:AM-36162" (for Google Images). Empty if not migrated yet. */

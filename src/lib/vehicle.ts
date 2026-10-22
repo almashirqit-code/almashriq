@@ -1,3 +1,4 @@
+import { parseUnitCondition, parseUnitParts } from "./part-units";
 import {
   CURRENCIES,
   EXPENSE_TYPES,
@@ -142,6 +143,11 @@ const ALIASES: Record<string, VehicleField> = {
   parts: "for_parts",
   partscar: "for_parts",
   partsonly: "for_parts",
+  unitcondition: "unit_condition",
+  condition: "unit_condition",
+  unitparts: "unit_parts",
+  partsavailable: "unit_parts",
+  cuts: "unit_parts",
   部品取り: "for_parts",
   branch: "branch",
   source: "branch",
@@ -239,7 +245,7 @@ function toDate(v: unknown): string | null {
   return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
 }
 
-export type VehicleInput = Partial<Record<VehicleField, string | number | boolean | null | ExpenseItem[]>>;
+export type VehicleInput = Partial<Record<VehicleField, string | number | boolean | null | ExpenseItem[] | string[]>>;
 
 /**
  * Normalizes raw values (from a form or spreadsheet row) into a DB-ready vehicle record.
@@ -279,6 +285,10 @@ export function parseVehicle(raw: Record<string, unknown>): { data: VehicleInput
       data.show_on_website = toBool(v, true);
     } else if (field === "for_parts") {
       data.for_parts = toBool(v, false);
+    } else if (field === "unit_parts") {
+      data.unit_parts = parseUnitParts(v);
+    } else if (field === "unit_condition") {
+      data.unit_condition = parseUnitCondition(v);
     } else if (field === "expense_items") {
       data.expense_items = parseExpenseItems(v);
     } else if (field === "supplier_currency") {

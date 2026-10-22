@@ -121,6 +121,9 @@ export interface Vehicle {
   supplier_currency: Currency;
   show_on_website: boolean;
   for_parts: boolean;
+  /** Complete units (for_parts): condition and what it can be dismantled into (lib/part-units). */
+  unit_condition?: string | null;
+  unit_parts?: string[];
   purchase_tax_rate: number;
   purchase_tax: number;
   expense_items: ExpenseItem[];
@@ -269,6 +272,8 @@ export const VEHICLE_FIELDS = [
   "supplier_currency",
   "show_on_website",
   "for_parts",
+  "unit_condition",
+  "unit_parts",
   "purchase_tax_rate",
   "fob_fx_rate",
   "expense_items",

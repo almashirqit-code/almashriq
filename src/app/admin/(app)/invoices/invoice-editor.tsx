@@ -99,7 +99,8 @@ export function InvoiceEditor({
     return c ? consigneeFrom(c) : { name: "", address: "", phone: "", notify: "" };
   });
   const [discount, setDiscount] = useState<number>(initial?.discount ?? 0);
-  const [taxRate, setTaxRate] = useState<number>(initial?.tax_rate ?? defaults.tax_rate);
+  // Export invoices carry no tax.
+  const taxRate = 0;
   const [lines, setLines] = useState<Line[]>(() => {
     const ls = (initial?.items ?? []).map((it) => ({ key: newKey(), ...it }));
     // New auction deposit: start with the deposit line ready to fill in.
@@ -647,21 +648,6 @@ export function InvoiceEditor({
                 />
               }
             />
-            <Row
-              label={t("inv_tax_rate")}
-              value={
-                <input
-                  type="number"
-                  min="0"
-                  step="any"
-                  className="input w-36 text-right"
-                  value={taxRate}
-                  onChange={(e) => setTaxRate(Number(e.target.value))}
-                />
-              }
-            />
-            {tax > 0 && <Row label={t("inv_tax")} value={money(tax, currency, locale)} />}
-            <Row label={`${t("inv_total_fob")}`} value={money(fobTotal, currency, locale)} />
             {hasFreight(incoterm) && roro ? (
               <p className="text-right text-xs text-slate-500">RoRo: include the freight in each car&apos;s unit price. The customer sees one {INCOTERM_LABEL[incoterm]} total.</p>
             ) : hasFreight(incoterm) ? (

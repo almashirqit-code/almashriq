@@ -70,7 +70,8 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
   // RoRo: freight is included in each car's price (no separate freight line on the invoice).
   const freight = hasFreight(incoterm) && shipmentType !== "roro" ? round(Math.max(0, Number(p.freight) || 0), p.currency) : 0;
   const insurance = hasInsurance(incoterm) ? round(Math.max(0, Number(p.insurance) || 0), p.currency) : 0;
-  const taxRate = Math.max(0, Number(p.tax_rate) || 0);
+  // Export sales: no tax on invoices, quotations or deposits.
+  const taxRate = 0;
   const tax = round(((subtotal - discount) * taxRate) / 100, p.currency);
   const total = round(subtotal - discount + freight + insurance + tax, p.currency);
 

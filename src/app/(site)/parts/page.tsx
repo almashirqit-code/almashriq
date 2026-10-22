@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Camera, MessageCircle, Wrench } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
-import { getBranches, getCompany, getPartFacets, listParts, priceLabel, whatsapp, type PartFilters } from "@/lib/public-site";
+import { getBranches, getCompany, getPartFacets, getPartUnitFacets, listParts, priceLabel, whatsapp, type PartFilters } from "@/lib/public-site";
+import { PartsTabs } from "@/components/site/parts-tabs";
 import { partFits } from "@/lib/parts";
 import { InquiryForm } from "@/components/site/inquiry-form";
 import { CardPhotos } from "@/components/site/card-photos";
@@ -24,7 +25,7 @@ const CONDITION: Record<string, string> = { new: "New", used: "Used", rebuilt: "
 
 export default async function PartsPage({ searchParams }: { searchParams: Promise<PartFilters> }) {
   const f = await searchParams;
-  const [{ parts, total, page }, facets, company, branches] = await Promise.all([listParts(f, SIZE), getPartFacets(), getCompany(), getBranches()]);
+  const [{ parts, total, page }, facets, company, branches, units] = await Promise.all([listParts(f, SIZE), getPartFacets(), getCompany(), getBranches(), getPartUnitFacets()]);
   const pages = Math.max(1, Math.ceil(total / SIZE));
   const href = (patch: Partial<PartFilters>) => {
     const p = new URLSearchParams();
@@ -43,6 +44,7 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
         Spare parts
       </h1>
       <p className="mt-1.5 text-sm text-white/65 sm:text-base">Quality used and new auto parts, checked and shipped worldwide. Can&apos;t find a part? Send us an inquiry — we source from dismantlers every day.</p>
+      <PartsTabs active="parts" parts={facets.total} units={units.total} />
 
       {/* category chips (phones) */}
       {facets.category.length > 0 && (
