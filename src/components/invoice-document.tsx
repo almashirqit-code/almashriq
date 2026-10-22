@@ -49,8 +49,6 @@ export function InvoiceDocument({
   const freight = Number(invoice.freight ?? 0);
   const insurance = Number(invoice.insurance ?? 0);
   const discount = Number(invoice.discount ?? 0);
-  const tax = Number(invoice.tax ?? 0);
-  const fobTotal = Number(invoice.subtotal) - discount;
   const paid = Number(invoice.amount_paid);
   const balance = Number(invoice.total) - paid;
   const units = items.reduce((s, it) => s + (it.vehicle_id ? Number(it.quantity) : 0), 0);
@@ -294,12 +292,6 @@ export function InvoiceDocument({
                   </tr>
                 </>
               )}
-              {splitTotals && (
-                <tr>
-                  <td className="py-0.5 text-slate-500">{t("inv_total_fob")}</td>
-                  <td className="py-0.5 text-right tabular-nums">{money(fobTotal, cur, lang)}</td>
-                </tr>
-              )}
               {splitTotals && hasFreight(invoice.incoterm) && (
                 <tr>
                   <td className="py-0.5 text-slate-500">
@@ -313,14 +305,6 @@ export function InvoiceDocument({
                 <tr>
                   <td className="py-0.5 text-slate-500">{t("inv_insurance")}</td>
                   <td className="py-0.5 text-right tabular-nums">{money(insurance, cur, lang)}</td>
-                </tr>
-              )}
-              {tax > 0 && (
-                <tr>
-                  <td className="py-0.5 text-slate-500">
-                    {t("inv_tax")} ({Number(invoice.tax_rate)}%)
-                  </td>
-                  <td className="py-0.5 text-right tabular-nums">{money(tax, cur, lang)}</td>
                 </tr>
               )}
               <tr>

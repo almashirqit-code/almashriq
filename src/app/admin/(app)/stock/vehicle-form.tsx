@@ -10,6 +10,7 @@ import { SubmitButton } from "@/components/buttons";
 import { CostCalculator } from "./cost-calculator";
 import { OriginPicker, type Masters } from "./origin-picker";
 import type { FormState } from "./actions";
+import { UNIT_CONDITIONS, UNIT_CONDITION_LABEL, UNIT_PARTS, UNIT_PART_LABEL } from "@/lib/part-units";
 
 type FieldDef = {
   name: VehicleField;
@@ -74,6 +75,10 @@ export function VehicleForm({
   const { t } = useT();
   const [state, formAction] = useActionState(action, {});
   const [ownership, setOwnership] = useState(vehicle?.ownership ?? "own");
+  // Bought for parts → listed under Parts → Complete units, with condition and parts available.
+  const [forParts, setForParts] = useState(vehicle?.for_parts ?? false);
+  const [unitParts, setUnitParts] = useState<string[]>(vehicle?.unit_parts ?? []);
+  const togglePart = (p: string) => setUnitParts((ps) => (ps.includes(p) ? ps.filter((x) => x !== p) : [...ps, p]));
   const branches = masters?.branches ?? DEFAULT_BRANCHES;
   const [branch, setBranch] = useState<BranchCode>(vehicle?.branch ?? "JP");
   // Make/model suggestions come from Configuration → Makes & models (built-in makes until that list exists).
@@ -181,7 +186,8 @@ export function VehicleForm({
                 type="checkbox"
                 name="for_parts"
                 value="true"
-                defaultChecked={vehicle?.for_parts ?? false}
+                checked={forParts}
+                onChange={(e) => setForParts(e.target.checked)}
                 disabled={readOnly}
                 className="mt-0.5 h-4 w-4 rounded border-slate-300 text-rose-600"
               />
@@ -206,6 +212,53 @@ export function VehicleForm({
           </div>
         </div>
       </section>
+
+      {forParts && (
+        <section className="card border-brand-200">
+          <div className="border-b border-brand-100 bg-brand-50/60 px-5 py-3.5">
+            <h2 className="text-sm font-semibold text-brand-900">Complete unit (for parts)</h2>
+            <p className="mt-0.5 text-xs text-brand-800/80">
+              Shown on the website under Parts → Complete units, not in the car stock list. Tick what you can supply from this unit.
+            </p>
+          </div>
+          <div className="grid gap-4 p-5 sm:grid-cols-[16rem_1fr]">
+            <div>
+              <label className="label" htmlFor="unit_condition">
+                Condition
+              </label>
+              <select id="unit_condition" name="unit_condition" className="input" defaultValue={vehicle?.unit_condition ?? ""} disabled={readOnly}>
+                <option value="">—</option>
+                {UNIT_CONDITIONS.map((c) => (
+                  <option key={c} value={c}>
+                    {UNIT_CONDITION_LABEL[c]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <span className="label">Cuts & parts available</span>
+              <input type="hidden" name="unit_parts" value={unitParts.join(",")} />
+              <div className="flex flex-wrap gap-2">
+                {UNIT_PARTS.map((p) => {
+                  const on = unitParts.includes(p);
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      disabled={readOnly}
+                      aria-pressed={on}
+                      onClick={() => togglePart(p)}
+                      className={`rounded-full px-3 py-1.5 text-sm font-semibold ring-1 transition ${on ? "bg-brand-600 text-white ring-brand-600" : "bg-white text-slate-600 ring-slate-200 hover:ring-slate-300"}`}
+                    >
+                      {UNIT_PART_LABEL[p]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {ownership === "third_party" && (
         <section className="card border-amber-200">

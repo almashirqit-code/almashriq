@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { MessageCircle, Mail, MapPin, Check, CalendarDays, Gauge, Cog, Fuel, Ship } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
 import { carTitle, getCar, getCompany, listCars, makeSlug, priceLabel, whatsapp, SITE_URL } from "@/lib/public-site";
@@ -44,6 +44,8 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
   const { stock } = await params;
   const [c, company] = await Promise.all([getCar(decodeURIComponent(stock)), getCompany()]);
   if (!c) notFound();
+  // Cars bought for parts live under Parts → Complete units.
+  if (c.for_parts) permanentRedirect(`/parts/units/${encodeURIComponent(c.stock_no)}`);
   const related = (await listCars({ make: c.make, sort: "new" }, 9)).cars.filter((x) => x.id !== c.id).slice(0, 8);
 
   const title = carTitle(c);
