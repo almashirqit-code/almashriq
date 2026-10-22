@@ -36,22 +36,34 @@ export async function resizeImage(blob: Blob, max = 1600, quality = 0.85): Promi
 /** Longest side of a listing photo; plenty for a full-screen gallery, ~150–300 KB as WebP. */
 export const LISTING_MAX = 1600;
 const LISTING_QUALITY = 0.82;
-const WATERMARK_SRC = "/brand/logo-light.png?v=2";
+/** Text stamped on every listing photo. */
+export const WATERMARK_TEXT = "AlmashriqTrading";
 
-let watermark: Promise<ImageBitmap | null> | null = null;
-function loadWatermark() {
-  watermark ??= fetch(WATERMARK_SRC)
-    .then((r) => (r.ok ? r.blob() : null))
-    .then((b) => (b ? createImageBitmap(b) : null))
-    .catch(() => null);
-  return watermark;
+/** Faint centred text: white fill + thin dark outline, so it reads on both white and black cars. */
+function drawWatermark(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  const size = Math.max(14, Math.round(w * 0.07));
+  ctx.save();
+  ctx.font = `700 ${size}px "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  // Keep the text within ~70% of the width on narrow (portrait) photos.
+  const max = w * 0.7;
+  const measured = ctx.measureText(WATERMARK_TEXT).width;
+  if (measured > max) ctx.font = `700 ${Math.floor((size * max) / measured)}px "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif`;
+  ctx.lineJoin = "round";
+  ctx.lineWidth = Math.max(1, size / 18);
+  ctx.globalAlpha = 0.38;
+  ctx.strokeStyle = "rgba(0,0,0,0.55)";
+  ctx.strokeText(WATERMARK_TEXT, w / 2, h / 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(WATERMARK_TEXT, w / 2, h / 2);
+  ctx.restore();
 }
 
 /**
- * Prepares a photo for the website: scales it to LISTING_MAX on the longest side, stamps the
- * Al Mashriq logo faintly in the centre (with a soft shadow so it shows on white and black cars),
- * and encodes it as WebP (JPEG where the browser can't encode WebP). Falls back to the original
- * file if the browser can't decode it (e.g. HEIC on some devices).
+ * Prepares a photo for the website: scales it to LISTING_MAX on the longest side, stamps
+ * "AlmashriqTrading" faintly in the centre, and encodes it as WebP (JPEG where the browser can't
+ * encode WebP). Falls back to the original file if the browser can't decode it (e.g. HEIC on some devices).
  */
 export async function prepareListingPhoto(blob: Blob, opts: { watermark?: boolean } = {}): Promise<Blob> {
   try {
@@ -68,17 +80,7 @@ export async function prepareListingPhoto(blob: Blob, opts: { watermark?: boolea
     ctx.drawImage(bitmap, 0, 0, w, h);
     bitmap.close();
 
-    const mark = opts.watermark === false ? null : await loadWatermark();
-    if (mark) {
-      const mw = Math.round(w * 0.42);
-      const mh = Math.round((mark.height / mark.width) * mw);
-      ctx.save();
-      ctx.globalAlpha = 0.32;
-      ctx.shadowColor = "rgba(0,0,0,0.45)";
-      ctx.shadowBlur = Math.max(2, Math.round(w / 400));
-      ctx.drawImage(mark, Math.round((w - mw) / 2), Math.round((h - mh) / 2), mw, mh);
-      ctx.restore();
-    }
+    if (opts.watermark !== false) drawWatermark(ctx, w, h);
 
     const encode = (type: string) => new Promise<Blob | null>((res) => canvas.toBlob(res, type, LISTING_QUALITY));
     let out = await encode("image/webp");
