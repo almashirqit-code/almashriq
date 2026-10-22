@@ -7,6 +7,7 @@ import { FxBadge } from "@/components/fx-badge";
 import { getUsdJpy } from "@/lib/fx";
 import { MobileMenu } from "@/components/site/mobile-menu";
 import { BottomNav } from "@/components/site/bottom-nav";
+import { TawkChat } from "@/components/site/tawk-chat";
 import { BodyIcon } from "@/components/site/body-icon";
 import { JsonLd } from "@/components/site/json-ld";
 import { Logo, LOGO_SRC } from "@/components/brand/logo";
@@ -268,6 +269,7 @@ export default async function PublicLayout({ children }: { children: React.React
       </footer>
 
       <BottomNav wa={wa} />
+      <TawkChat />
 
       {/* Desktop-only WhatsApp bubble (phones have it in the bottom bar and the menu) */}
       {wa && (
