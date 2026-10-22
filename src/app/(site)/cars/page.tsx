@@ -27,5 +27,5 @@ export default async function PublicCars({ searchParams }: { searchParams: Promi
   delete (f as SP).brand;
   delete (f as SP).body_type;
   delete (f as SP).transmission;
-  return <CarListing f={f} path="/cars" heading={f.make ? `${f.make} for sale` : f.body ? `${f.body} for sale` : "Stock list"} />;
+  return <CarListing f={f} path="/cars" heading={f.make ? `${f.make} for sale` : f.body ? `${f.body} for sale` : "Japanese used cars for sale"} />;
 }

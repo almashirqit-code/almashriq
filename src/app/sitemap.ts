@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
-import { getSitemapRows, makeSlug, SITE_URL } from "@/lib/public-site";
+import { getSitemapImages, getSitemapRows, makeSlug, SITE_URL } from "@/lib/public-site";
+import { publicImageUrl } from "@/lib/format";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const rows = await getSitemapRows();
+  const [rows, photos] = await Promise.all([getSitemapRows(), getSitemapImages()]);
   const now = new Date();
   const fixed: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
@@ -31,12 +32,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
               : `/makes/${makeSlug(r.key)}`;
     if (seen.has(path)) return [];
     seen.add(path);
+    // Listing photos as <image:image> entries so Google Images finds them without crawling every page.
+    const images = photos.get(`${r.kind}:${r.key}`)?.map(publicImageUrl);
     return [
       {
         url: `${SITE_URL}${path}`,
         lastModified: r.updated ? new Date(r.updated) : undefined,
         changeFrequency: r.kind === "car" || r.kind === "part" || r.kind === "machine" ? "weekly" : r.kind === "make" ? "daily" : "monthly",
         priority: r.kind === "make" ? 0.8 : r.kind === "car" || r.kind === "machine" ? 0.7 : 0.6,
+        ...(images?.length ? { images } : {}),
       },
     ];
   });

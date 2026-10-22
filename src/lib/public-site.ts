@@ -365,9 +365,38 @@ export const getMachineryFacets = cache(async () => {
   return out;
 });
 
+/**
+ * All rows of a set-returning RPC. The API caps every response at 1,000 rows, so a plain call
+ * silently drops the rest (the sitemap was missing ~500 cars); this reads it in pages.
+ */
+async function rpcAll<T>(fn: string, orderBy: string[]): Promise<T[]> {
+  const out: T[] = [];
+  const PAGE = 1000;
+  for (let from = 0; from < 100_000; from += PAGE) {
+    // A stable order so pages don't overlap or skip rows.
+    let q = anon().rpc(fn);
+    for (const col of orderBy) q = q.order(col);
+    const { data, error } = await q.range(from, from + PAGE - 1);
+    if (error || !data) break;
+    out.push(...(data as T[]));
+    if (data.length < PAGE) break;
+  }
+  return out;
+}
+
 export async function getSitemapRows() {
-  const { data } = await anon().rpc("public_sitemap");
-  return (data ?? []) as { kind: "car" | "post" | "make" | "part" | "machine"; key: string; updated: string }[];
+  return rpcAll<{ kind: "car" | "post" | "make" | "part" | "machine"; key: string; updated: string }>("public_sitemap", ["kind", "key"]);
+}
+
+/** First photos of every listing in the sitemap, keyed "car:AM-36162" (for Google Images). Empty if not migrated yet. */
+export async function getSitemapImages(): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>();
+  for (const r of await rpcAll<{ kind: string; key: string; path: string }>("public_sitemap_images", ["kind", "key", "path"])) {
+    const k = `${r.kind}:${r.key}`;
+    if (!map.has(k)) map.set(k, []);
+    map.get(k)!.push(r.path);
+  }
+  return map;
 }
 
 /** Submits a website inquiry (anonymous, validated by the database). */
