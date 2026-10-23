@@ -9,6 +9,7 @@ import { CardPhotos } from "@/components/site/card-photos";
 import { ShipsFrom } from "@/components/site/ships-from";
 import { FilterPanel, FilterSubmit, FilterToolbar } from "@/components/site/filter-sheet";
 import { SortSelect } from "../sort-select";
+import { StatusTag, statusTag } from "@/components/site/status-tag";
 
 export const revalidate = 300;
 const SIZE = 24;
@@ -168,17 +169,13 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                         </div>
                       )}
                       <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{m.stock_no}</span>
-                      {m.image_count > 1 && (
+                      {m.image_count > 1 && !statusTag(m.status) && (
                         <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
                           <Camera className="h-3 w-3" />
                           {m.image_count}
                         </span>
                       )}
-                      {(sold || reserved) && (
-                        <span className={`absolute inset-x-0 bottom-0 py-1 text-center text-xs font-black uppercase tracking-widest text-white ${sold ? "bg-[var(--accent)]/95" : "bg-amber-500/95"}`}>
-                          {sold ? "Sold" : "Reserved"}
-                        </span>
-                      )}
+                      <StatusTag status={m.status} />
                     </Link>
                     <div className="flex flex-1 flex-col p-3.5">
                       <Link href={detail} className="line-clamp-1 py-1 text-[15px] font-extrabold group-hover:text-[var(--accent-text)]">

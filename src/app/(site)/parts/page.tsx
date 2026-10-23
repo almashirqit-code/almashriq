@@ -9,6 +9,7 @@ import { InquiryForm } from "@/components/site/inquiry-form";
 import { CardPhotos } from "@/components/site/card-photos";
 import { ShipsFrom } from "@/components/site/ships-from";
 import { FilterPanel, FilterSubmit, FilterToolbar } from "@/components/site/filter-sheet";
+import { StatusTag, statusTag } from "@/components/site/status-tag";
 
 export const revalidate = 300;
 const SIZE = 24;
@@ -189,13 +190,13 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
                         </div>
                       )}
                       <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{p.part_no}</span>
-                      {p.image_count > 1 && (
+                      {p.image_count > 1 && !statusTag(p.status) && (
                         <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
                           <Camera className="h-3 w-3" />
                           {p.image_count}
                         </span>
                       )}
-                      {p.status === "reserved" && <span className="absolute inset-x-0 bottom-0 bg-amber-500/95 py-1 text-center text-xs font-black uppercase tracking-widest text-white">Reserved</span>}
+                      <StatusTag status={p.status} />
                     </Link>
                     <div className="flex flex-1 flex-col p-4">
                       <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
