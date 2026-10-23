@@ -11,10 +11,14 @@ export async function clientIp() {
 
 /**
  * Database-backed rate limit (shared by every server instance).
- * Returns true when the request is allowed. Fails open if the database is unreachable,
- * so a hiccup never locks real users out.
+ * Returns true when the request is allowed.
+ *
+ * By default it fails *open* if the database is unreachable, so a hiccup never
+ * locks real users out — right for public inquiries. Pass `failClosed` for the
+ * sign-in path, where a database outage must not open the door to brute force.
  */
-export async function rateLimit(action: string, max: number, windowSeconds: number, extra = "") {
+export async function rateLimit(action: string, max: number, windowSeconds: number, extra = "", failClosed = false) {
+  const onError = !failClosed; // allow on error unless the caller wants it blocked
   try {
     const ip = await clientIp();
     const secret = process.env.RATE_LIMIT_SECRET || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -23,9 +27,9 @@ export async function rateLimit(action: string, max: number, windowSeconds: numb
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const { data, error } = await db.rpc("rate_limit_hit", { p_key: key, p_max: max, p_window_seconds: windowSeconds });
-    if (error) return true;
+    if (error) return onError;
     return data !== false;
   } catch {
-    return true;
+    return onError;
   }
 }
