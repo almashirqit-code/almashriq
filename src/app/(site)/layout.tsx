@@ -73,6 +73,7 @@ export default async function PublicLayout({ children }: { children: React.React
             "https://www.facebook.com/AlmashriqtradingJP/",
             "https://www.tiktok.com/@almashriqtrading",
             "https://www.almashriqtradingjapan.com/",
+            "https://www.trustpilot.com/review/almashriqtrading.site",
           ],
         }}
       />
