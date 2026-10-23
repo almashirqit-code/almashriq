@@ -12,6 +12,7 @@ import { Stars } from "@/components/site/stars";
 import { BUY_STEPS } from "@/components/site/buy-steps";
 import { HScrollRow } from "@/components/site/hscroll-row";
 import { HomeMoreStock } from "@/components/site/home-more-stock";
+import { TrustpilotWidget } from "@/components/site/trustpilot";
 
 export const revalidate = 60;
 
@@ -155,6 +156,13 @@ export default async function PublicHome() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Trustpilot review collector */}
+      <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">
+        <div className="glass rounded-2xl px-4 py-3">
+          <TrustpilotWidget />
         </div>
       </section>
 
