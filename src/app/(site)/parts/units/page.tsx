@@ -51,11 +51,11 @@ export default async function PartUnitsPage({ searchParams }: { searchParams: Pr
       {partsOnOffer.length > 0 && (
         <div className="hscroll mt-4 lg:flex-wrap lg:overflow-visible">
           <Link href={href({ part: undefined })} className={`inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold ${!f.part ? "bg-[var(--accent)] text-white" : "glass-lite"}`}>
-            All <span className="ml-1.5 opacity-70">{facets.total}</span>
+            All <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{facets.total}</span>
           </Link>
           {partsOnOffer.map((p) => (
             <Link key={p} href={href({ part: p })} className={`inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold ${f.part === p ? "bg-[var(--accent)] text-white" : "glass-lite"}`}>
-              {UNIT_PART_LABEL[p]} <span className="ml-1.5 opacity-70">{facets.part.get(p)}</span>
+              {UNIT_PART_LABEL[p]} <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{facets.part.get(p)}</span>
             </Link>
           ))}
         </div>

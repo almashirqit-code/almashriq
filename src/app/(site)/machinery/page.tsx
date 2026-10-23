@@ -53,11 +53,11 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
       {facets.category.length > 0 && (
         <div className="hscroll mb-4 lg:flex-wrap lg:overflow-visible">
           <Link href={href({ category: undefined, page: undefined })} className={chip(!f.category)}>
-            All <span className="ml-1.5 opacity-70">{facets.total}</span>
+            All <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{facets.total}</span>
           </Link>
           {facets.category.map(([c, n]) => (
             <Link key={c} href={href({ category: c, page: undefined })} className={chip(f.category?.toLowerCase() === c.toLowerCase())}>
-              {c} <span className="ml-1.5 opacity-70">{n}</span>
+              {c} <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{n}</span>
             </Link>
           ))}
         </div>

@@ -8,12 +8,12 @@ export function PartsTabs({ active, parts, units }: { active: "parts" | "units";
       href={href}
       aria-current={active === key ? "page" : undefined}
       className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition sm:flex-none ${
-        active === key ? "bg-[var(--accent)] text-white shadow-lg shadow-brand-900/40" : "text-white/75 hover:bg-white/10 hover:text-white"
+        active === key ? "bg-[var(--accent)] text-white shadow-lg shadow-brand-900/40" : "text-white/85 hover:bg-white/10 hover:text-white"
       }`}
     >
       {icon}
       {label}
-      <span className="opacity-70">{n.toLocaleString()}</span>
+      <span className="rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{n.toLocaleString()}</span>
     </Link>
   );
   return (
