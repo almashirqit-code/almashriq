@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Plus, X, ArrowDownToLine } from "lucide-react";
+import { Plus, X, ArrowDownToLine, ListPlus } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { money, num } from "@/lib/format";
@@ -49,13 +49,11 @@ export function CostCalculator({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [branch.code]);
 
-  const initialLines: Line[] = (() => {
-    const items = Array.isArray(vehicle?.expense_items) ? vehicle!.expense_items : [];
-    if (items.length) return items.map((e) => ({ ...e, key: ++seq }));
-    // Older vehicles stored only an expenses total — keep it as one "Other" line.
-    if (Number(vehicle?.expenses) > 0) return [{ key: ++seq, type: "other", amount: Number(vehicle!.expenses), note: "" }];
-    return [];
-  })();
+  // Expenses are one total by default; a breakdown (itemised lines) is optional.
+  const savedItems = Array.isArray(vehicle?.expense_items) ? vehicle!.expense_items : [];
+  const initialLines: Line[] = savedItems.map((e) => ({ ...e, key: ++seq }));
+  const [mode, setMode] = useState<"total" | "breakdown">(savedItems.length ? "breakdown" : "total");
+  const [lumpSum, setLumpSum] = useState<string>(Number(vehicle?.expenses) > 0 ? String(vehicle!.expenses) : "");
 
   const [price, setPrice] = useState<string>(vehicle?.purchase_price != null ? String(vehicle.purchase_price) : "");
   const [taxRate, setTaxRate] = useState<string>(String(vehicle?.purchase_tax_rate ?? branch.default_tax_rate));
@@ -66,7 +64,7 @@ export function CostCalculator({
   const buying = Number(price) || 0;
   const buyingTax = Math.round((buying * rate) / 100);
   const lineTotal = (l: Line) => (Number(l.amount) || 0) * (TAXED_EXPENSES.includes(l.type) ? 1 + rate / 100 : 1);
-  const expenses = Math.round(lines.reduce((s, l) => s + lineTotal(l), 0));
+  const expenses = mode === "total" ? Math.round(Number(lumpSum) || 0) : Math.round(lines.reduce((s, l) => s + lineTotal(l), 0));
   const total = buying + buyingTax + expenses;
   const isJpy = costCurrency === "JPY";
   const costRate = isJpy ? 1 : Number(costFx) || 0;
@@ -87,9 +85,23 @@ export function CostCalculator({
     priceInput?.focus();
   }
 
-  const items: ExpenseItem[] = lines
-    .filter((l) => Number(l.amount) > 0)
-    .map(({ type, amount, note }) => ({ type, amount: Number(amount), ...(note?.trim() ? { note: note.trim() } : {}) }));
+  // One total → no lines saved (the database keeps the submitted total when the breakdown is empty).
+  const items: ExpenseItem[] =
+    mode === "total"
+      ? []
+      : lines
+          .filter((l) => Number(l.amount) > 0)
+          .map(({ type, amount, note }) => ({ type, amount: Number(amount), ...(note?.trim() ? { note: note.trim() } : {}) }));
+
+  function addBreakdown() {
+    // Start the breakdown from the total so far, as one "Other" line to split up.
+    if (lines.length === 0 && Number(lumpSum) > 0) setLines([{ key: ++seq, type: "other", amount: Number(lumpSum), note: "" }]);
+    setMode("breakdown");
+  }
+  function useOneTotal() {
+    setLumpSum(expenses > 0 ? String(expenses) : "");
+    setMode("total");
+  }
 
   return (
     <section className="card">
@@ -182,18 +194,48 @@ export function CostCalculator({
       <div className="border-t border-slate-100 px-5 py-4">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("stock_expenses_title")}</h3>
-          {!readOnly && (
-            <button
-              type="button"
-              className="btn-secondary py-1 text-xs"
-              onClick={() => setLines((ls) => [...ls, { key: ++seq, type: nextType(ls), amount: 0, note: "" }])}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              {t("stock_add_expense")}
-            </button>
-          )}
+          {!readOnly &&
+            (mode === "total" ? (
+              <button type="button" className="btn-secondary py-1 text-xs" onClick={addBreakdown}>
+                <ListPlus className="h-3.5 w-3.5" />
+                {t("stock_add_breakdown")}
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button type="button" className="btn-ghost py-1 text-xs" onClick={useOneTotal}>
+                  {t("stock_use_one_total")}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary py-1 text-xs"
+                  onClick={() => setLines((ls) => [...ls, { key: ++seq, type: nextType(ls), amount: 0, note: "" }])}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  {t("stock_add_expense")}
+                </button>
+              </div>
+            ))}
         </div>
-        {lines.length === 0 ? (
+        {mode === "total" ? (
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
+            <div>
+              <label className="label" htmlFor="expenses_total">
+                {t("stock_expenses_total_in", { cur: costCurrency })}
+              </label>
+              <input
+                id="expenses_total"
+                type="number"
+                min={0}
+                step="any"
+                value={lumpSum}
+                onChange={(e) => setLumpSum(e.target.value)}
+                disabled={readOnly}
+                className="input"
+              />
+            </div>
+            <p className="self-end text-xs text-slate-500 sm:col-span-3">{t("stock_expenses_total_help")}</p>
+          </div>
+        ) : lines.length === 0 ? (
           <p className="text-sm text-slate-400">{t("stock_no_expenses")}</p>
         ) : (
           <div className="space-y-2">
