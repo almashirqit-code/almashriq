@@ -25,6 +25,9 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
     password,
     email_confirm: true,
     user_metadata: { full_name },
+    // Marks this as a staff account so the signup trigger creates a profile (migration 0025).
+    // app_metadata can only be set with the service-role key, never by a public sign-up.
+    app_metadata: { staff: true },
   });
   if (error) return { error: error.message };
 
