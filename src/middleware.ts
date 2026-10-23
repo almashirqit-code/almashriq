@@ -55,7 +55,8 @@ export async function middleware(request: NextRequest) {
   }
 
   let response = NextResponse.next({ request });
-  if (!path.startsWith("/admin") && path !== "/api/site-image") return response;
+  const isAccount = path === "/account" || path.startsWith("/account/");
+  if (!path.startsWith("/admin") && !isAccount && path !== "/api/site-image") return response;
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     if (path !== "/admin/setup") return NextResponse.redirect(new URL("/admin/setup", request.url));
@@ -78,6 +79,24 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Customer portal: sign-in pages are open; everything else needs a session.
+  if (isAccount) {
+    const publicPage = ["/account/login", "/account/signup", "/account/forgot"].some((p) => path.startsWith(p));
+    if (!user && !publicPage) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/account/login";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+    if (user && (path.startsWith("/account/login") || path.startsWith("/account/signup"))) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/account";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+    return response;
+  }
 
   const open = path.startsWith("/admin/login") || path.startsWith("/admin/setup");
   if (!user && !open && path.startsWith("/admin")) {

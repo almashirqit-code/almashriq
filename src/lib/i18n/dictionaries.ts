@@ -91,6 +91,8 @@ export const en = {
   signing_in: "Signing in…",
   login_failed: "Invalid email or password.",
   login_too_many: "Too many sign-in attempts. Please wait 15 minutes and try again.",
+  login_customer_account: "This is a customer account. Please sign in at almashriqtrading.site/account/login.",
+  nav_portal_signups: "Portal sign-ups",
   account_disabled: "Your account is disabled. Contact an administrator.",
 
   // roles
@@ -795,6 +797,8 @@ export const ja: Record<DictKey, string> = {
   signing_in: "ログイン中…",
   login_failed: "メールアドレスまたはパスワードが正しくありません。",
   login_too_many: "ログイン試行回数が多すぎます。15分後に再度お試しください。",
+  login_customer_account: "これはお客様用アカウントです。almashriqtrading.site/account/login からログインしてください。",
+  nav_portal_signups: "ポータル登録",
   account_disabled: "アカウントが無効です。管理者に連絡してください。",
 
   role: "権限",

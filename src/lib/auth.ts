@@ -13,6 +13,11 @@ export const getProfile = cache(async (): Promise<Profile> => {
   if (!user) redirect("/admin/login");
 
   const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (!data) {
+    // A customer portal login has no staff profile: send it to its own account, still signed in.
+    const { data: portal } = await supabase.from("portal_accounts").select("user_id").eq("user_id", user.id).maybeSingle();
+    if (portal) redirect("/account");
+  }
   if (!data || !data.active) {
     await supabase.auth.signOut();
     redirect("/admin/login?disabled=1");

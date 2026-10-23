@@ -20,10 +20,12 @@ export async function signIn(_prev: { error: string }, formData: FormData) {
   });
   if (error || !data.user) return { error: "invalid" };
 
-  const { data: profile } = await supabase.from("profiles").select("active").eq("id", data.user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("active").eq("id", data.user.id).maybeSingle();
   if (!profile?.active) {
+    // Customer logins belong on the customer sign-in page, not the ERP.
+    const { data: portal } = profile ? { data: null } : await supabase.from("portal_accounts").select("user_id").eq("user_id", data.user.id).maybeSingle();
     await supabase.auth.signOut();
-    return { error: "disabled" };
+    return { error: portal ? "customer" : "disabled" };
   }
   redirect("/admin");
 }

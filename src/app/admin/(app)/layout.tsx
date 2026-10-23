@@ -12,8 +12,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const profile = await getProfile();
   const locale = await getLocale();
   const supabase = await createClient();
-  const fx = await getUsdJpy();
-  const { data: settings } = await supabase.from("settings").select("company_name, company_name_ja, logo_url").single();
+  const canApprove = profile.role === "admin" || profile.role === "manager";
+  const [fx, { data: settings }, { count: pendingSignups }] = await Promise.all([
+    getUsdJpy(),
+    supabase.from("settings").select("company_name, company_name_ja, logo_url").single(),
+    // New website sign-ups waiting for an admin/manager to link them and assign an agent.
+    canApprove
+      ? supabase.from("portal_accounts").select("user_id", { count: "exact", head: true }).eq("status", "pending")
+      : Promise.resolve({ count: 0 }),
+  ]);
   const companyName =
     (locale === "ja" && settings?.company_name_ja) || settings?.company_name || "Al Mashriq";
 
@@ -28,6 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         logoUrl={settings?.logo_url}
         userId={profile.id}
         avatarUrl={profile.avatar_url ?? null}
+        badges={{ "/admin/portal-signups": pendingSignups ?? 0 }}
       />
       <div className="lg:pl-64">
         <header className="no-print sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200/60 bg-white/70 pl-16 pr-4 backdrop-blur-xl lg:px-8">

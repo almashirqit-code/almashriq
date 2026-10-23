@@ -25,6 +25,7 @@ import {
   Wrench,
   Tractor,
   Activity,
+  UserPlus,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -65,6 +66,7 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
     items: [
       { href: "/admin/inquiries", label: "nav_inquiries", icon: Inbox },
       { href: "/admin/customers", label: "nav_customers", icon: Users },
+      { href: "/admin/portal-signups", label: "nav_portal_signups", icon: UserPlus, roles: ["admin", "manager"] },
       { href: "/admin/reservations", label: "nav_reservations", icon: BookmarkCheck },
       {
         href: "/admin/invoices",
@@ -106,7 +108,10 @@ export function Sidebar({
   office = null,
   userId,
   avatarUrl = null,
+  badges = {},
 }: {
+  /** Counts shown next to menu items, keyed by href (e.g. pending portal sign-ups). */
+  badges?: Record<string, number>;
   role: Role;
   name: string;
   email: string;
@@ -182,6 +187,9 @@ export function Sidebar({
                           <Icon className="h-4 w-4" />
                         </span>
                         <span className="flex-1 truncate">{t(i.label)}</span>
+                        {badges[i.href] ? (
+                          <span className="min-w-5 rounded-full bg-brand-600 px-1.5 text-center text-[11px] font-bold leading-5 text-white">{badges[i.href]}</span>
+                        ) : null}
                         {i.newTab && <ExternalLink className="h-3.5 w-3.5 text-slate-500" />}
                         {active && <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_#ec3a40]" />}
                       </Link>
