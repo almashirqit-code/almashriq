@@ -180,7 +180,7 @@ export default async function PartUnitPage({ params }: { params: Promise<{ stock
                             {link ? (
                               <a href={link} target="_blank" rel="noreferrer" className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-white/5 px-3.5 text-sm font-bold ring-1 ring-white/10 hover:bg-white/10">
                                 {label(p)}
-                                <span className="inline-flex items-center gap-1 text-xs font-bold text-[#4ADE80]">
+                                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700">
                                   <MessageCircle className="h-3.5 w-3.5" /> Ask
                                 </span>
                               </a>

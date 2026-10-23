@@ -41,7 +41,8 @@ export function MobileMenu({ links, makes, contact, fx }: { links: { href: strin
       {open && mounted ? createPortal((
         <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="absolute inset-0 bg-black/55" onClick={() => setOpen(false)} />
-          <div className="glass-strong absolute inset-y-0 right-0 flex w-[min(22rem,88vw)] flex-col overflow-y-auto rounded-l-3xl pb-[env(safe-area-inset-bottom)]">
+          {/* Portalled to <body>, outside the .site-glass theme scope, so it carries its own dark styling. */}
+          <div className="absolute inset-y-0 right-0 flex w-[min(22rem,88vw)] flex-col overflow-y-auto rounded-l-3xl border-l border-white/10 bg-[#0a0a0c]/95 pb-[env(safe-area-inset-bottom)] text-white shadow-2xl backdrop-blur-xl [color-scheme:dark]">
             <div className="flex items-center justify-between px-5 pb-2 pt-4">
               <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">Menu</span>
               <button type="button" onClick={() => setOpen(false)} aria-label="Close menu" className="flex h-11 w-11 items-center justify-center rounded-xl text-white/80 hover:bg-white/10">

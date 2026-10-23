@@ -14,8 +14,8 @@ export function InquiryForm({ stockNo, defaultMessage = "", source = "website", 
 
   if (state?.ok)
     return (
-      <div className="rounded-2xl bg-emerald-400/15 p-5 text-emerald-100 ring-1 ring-emerald-300/40" role="status">
-        <CheckCircle2 className="mb-2 h-7 w-7 text-emerald-300" />
+      <div className="rounded-2xl bg-emerald-50 p-5 text-emerald-900 ring-1 ring-emerald-300/40" role="status">
+        <CheckCircle2 className="mb-2 h-7 w-7 text-emerald-600" />
         <p className="font-bold">{state.message}</p>
         {state.no ? <p className="mt-1 text-sm">Your reference: <b>INQ-{state.no}</b></p> : null}
       </div>

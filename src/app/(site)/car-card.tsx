@@ -40,19 +40,19 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
         </div>
         <dl className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs text-white/75">
           <div className="flex items-center gap-1.5 truncate">
-            <CalendarDays className="h-3.5 w-3.5 shrink-0 text-rose-300" />
+            <CalendarDays className="h-3.5 w-3.5 shrink-0 text-brand-600" />
             {c.year ?? "—"}
           </div>
           <div className="flex items-center gap-1.5 truncate">
-            <Gauge className="h-3.5 w-3.5 shrink-0 text-rose-300" />
+            <Gauge className="h-3.5 w-3.5 shrink-0 text-brand-600" />
             {c.mileage != null ? `${c.mileage.toLocaleString()} km` : "—"}
           </div>
           <div className="flex items-center gap-1.5 truncate">
-            <Cog className="h-3.5 w-3.5 shrink-0 text-rose-300" />
+            <Cog className="h-3.5 w-3.5 shrink-0 text-brand-600" />
             {[c.engine_cc ? `${c.engine_cc.toLocaleString()}cc` : null, c.transmission].filter(Boolean).join(" ") || "—"}
           </div>
           <div className="flex items-center gap-1.5 truncate">
-            <Fuel className="h-3.5 w-3.5 shrink-0 text-rose-300" />
+            <Fuel className="h-3.5 w-3.5 shrink-0 text-brand-600" />
             {c.fuel ?? "—"}
           </div>
         </dl>
@@ -63,7 +63,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
           </div>
           <div className="flex gap-2">
             {wa && !sold && (
-              <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-[#4ADE80] ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${c.stock_no}`}>
+              <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${c.stock_no}`}>
                 <MessageCircle className="h-5 w-5" />
               </a>
             )}

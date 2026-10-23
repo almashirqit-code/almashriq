@@ -53,11 +53,11 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
       {facets.category.length > 0 && (
         <div className="hscroll mb-4 lg:flex-wrap lg:overflow-visible">
           <Link href={href({ category: undefined, page: undefined })} className={chip(!f.category)}>
-            All <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{facets.total}</span>
+            All <span className="ml-1.5 rounded-md bg-white/15 px-1.5 py-0.5 text-xs tabular-nums">{facets.total}</span>
           </Link>
           {facets.category.map(([c, n]) => (
             <Link key={c} href={href({ category: c, page: undefined })} className={chip(f.category?.toLowerCase() === c.toLowerCase())}>
-              {c} <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{n}</span>
+              {c} <span className="ml-1.5 rounded-md bg-white/15 px-1.5 py-0.5 text-xs tabular-nums">{n}</span>
             </Link>
           ))}
         </div>
@@ -190,15 +190,15 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                       </div>
                       <dl className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs text-white/75">
                         <div className="flex items-center gap-1.5 truncate">
-                          <Clock className="h-3.5 w-3.5 shrink-0 text-rose-300" />
+                          <Clock className="h-3.5 w-3.5 shrink-0 text-brand-600" />
                           {m.hours != null ? `${m.hours.toLocaleString()} h` : "—"}
                         </div>
                         <div className="flex items-center gap-1.5 truncate">
-                          <Gauge className="h-3.5 w-3.5 shrink-0 text-rose-300" />
+                          <Gauge className="h-3.5 w-3.5 shrink-0 text-brand-600" />
                           {m.engine_power_hp != null ? `${Number(m.engine_power_hp).toLocaleString()} hp` : "—"}
                         </div>
                         <div className="flex items-center gap-1.5 truncate">
-                          <Weight className="h-3.5 w-3.5 shrink-0 text-rose-300" />
+                          <Weight className="h-3.5 w-3.5 shrink-0 text-brand-600" />
                           {m.operating_weight_kg != null ? `${(Number(m.operating_weight_kg) / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })} t` : "—"}
                         </div>
                         <div className="truncate capitalize">{m.condition}</div>
@@ -210,7 +210,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                         </div>
                         <div className="flex gap-2">
                           {wa && !sold && (
-                            <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-[#4ADE80] ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${m.stock_no}`}>
+                            <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${m.stock_no}`}>
                               <MessageCircle className="h-5 w-5" />
                             </a>
                           )}
