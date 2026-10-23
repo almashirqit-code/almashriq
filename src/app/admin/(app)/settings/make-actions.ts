@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 
@@ -26,5 +26,6 @@ export async function saveMakeLogo(v: MakeLogoInput): Promise<{ error?: string; 
   revalidatePath("/admin/settings");
   revalidatePath("/");
   revalidatePath("/cars");
+  revalidateTag("public-site");
   return { ok: true };
 }

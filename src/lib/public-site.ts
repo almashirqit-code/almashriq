@@ -93,27 +93,41 @@ const n = (v?: string) => (v && Number.isFinite(Number(v)) && Number(v) > 0 ? Nu
 
 export const PAGE_SIZE = 24;
 
-export async function listCars(f: Filters, size = PAGE_SIZE) {
-  const page = Math.max(1, Number(f.page) || 1);
-  const { data, error } = await anon().rpc("public_vehicles", {
-    p_q: f.q?.trim() || null,
-    p_make: f.make || null,
-    p_body: f.body || null,
-    p_fuel: f.fuel || null,
-    p_trans: f.trans || null,
-    p_steering: f.steering || null,
-    p_min_price: n(f.min_price),
-    p_max_price: n(f.max_price),
-    p_min_year: n(f.min_year),
-    p_max_year: n(f.max_year),
-    p_sort: f.sort || "new",
-    p_limit: size,
-    p_offset: (page - 1) * size,
-    p_branch: f.branch || null,
-  });
-  const cars = (data ?? []) as PublicCard[];
-  return { cars, total: cars[0] ? Number(cars[0].total_count) : 0, page, error: error?.message ?? null };
-}
+/**
+ * Shared cache tag for every public read below. The pages are rendered on demand
+ * (they take search-params filters), so without a *data* cache each visit would hit
+ * Supabase. unstable_cache keeps each distinct query in Next's cross-request data cache,
+ * so a thousand visitors share one database read per revalidate window instead of one each.
+ * Admin writes call revalidateTag(PUBLIC_TAG) to flush it immediately; the revalidate
+ * window bounds staleness even if a write path forgets to.
+ */
+export const PUBLIC_TAG = "public-site";
+
+export const listCars = unstable_cache(
+  async (f: Filters, size = PAGE_SIZE) => {
+    const page = Math.max(1, Number(f.page) || 1);
+    const { data, error } = await anon().rpc("public_vehicles", {
+      p_q: f.q?.trim() || null,
+      p_make: f.make || null,
+      p_body: f.body || null,
+      p_fuel: f.fuel || null,
+      p_trans: f.trans || null,
+      p_steering: f.steering || null,
+      p_min_price: n(f.min_price),
+      p_max_price: n(f.max_price),
+      p_min_year: n(f.min_year),
+      p_max_year: n(f.max_year),
+      p_sort: f.sort || "new",
+      p_limit: size,
+      p_offset: (page - 1) * size,
+      p_branch: f.branch || null,
+    });
+    const cars = (data ?? []) as PublicCard[];
+    return { cars, total: cars[0] ? Number(cars[0].total_count) : 0, page, error: error?.message ?? null };
+  },
+  ["list-cars"],
+  { revalidate: 60, tags: ["public-site"] }
+);
 
 /**
  * A real photo (storage path) for each body type: the cover of the newest in-stock car of that type.
@@ -136,7 +150,7 @@ export const getBodyPhotos = unstable_cache(
 
 export type Facets = { make: [string, number][]; body: [string, number][]; fuel: [string, number][]; transmission: [string, number][]; steering: [string, number][]; total: number; available: number };
 
-export const getFacets = cache(async (): Promise<Facets> => {
+export const getFacets = unstable_cache(async (): Promise<Facets> => {
   const { data } = await anon().rpc("public_facets");
   const out: Facets = { make: [], body: [], fuel: [], transmission: [], steering: [], total: 0, available: 0 };
   for (const r of (data ?? []) as { kind: string; value: string | null; n: number }[]) {
@@ -146,17 +160,17 @@ export const getFacets = cache(async (): Promise<Facets> => {
   }
   for (const k of ["make", "body", "fuel", "transmission", "steering"] as const) out[k].sort((a, b) => b[1] - a[1]);
   return out;
-});
+}, ["facets"], { revalidate: 120, tags: ["public-site"] });
 
-export const getCompany = cache(async (): Promise<PublicCompany> => {
+export const getCompany = unstable_cache(async (): Promise<PublicCompany> => {
   const { data } = await anon().rpc("public_company");
   return ((data ?? [])[0] as PublicCompany) ?? { company_name: "Al Mashriq Trading Co., Ltd.", phone: null, mobile: null, fax: null, email: null, website: null, logo_url: null, address: null };
-});
+}, ["company"], { revalidate: 600, tags: ["public-site"] });
 
-export const getCar = cache(async (key: string): Promise<PublicCar | null> => {
+export const getCar = unstable_cache(async (key: string): Promise<PublicCar | null> => {
   const { data } = await anon().rpc("public_vehicle", { p_key: key });
   return ((data ?? [])[0] as PublicCar) ?? null;
-});
+}, ["car"], { revalidate: 60, tags: ["public-site"] });
 
 export const carTitle = (c: { year: number | null; make: string; model: string }) => [c.make, c.model, c.year].filter(Boolean).join(" ").toUpperCase();
 
@@ -178,10 +192,10 @@ export const assetUrl = (p: string | null | undefined) =>
   p ? (p.startsWith("http") || p.startsWith("/") ? p : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`) : null;
 
 export type PublicMake = { make: string; label: string; logo_path: string | null; n: number; featured: boolean; sort_order: number };
-export const getMakes = cache(async (): Promise<PublicMake[]> => {
+export const getMakes = unstable_cache(async (): Promise<PublicMake[]> => {
   const { data } = await anon().rpc("public_makes");
   return ((data ?? []) as PublicMake[]).map((m) => ({ ...m, n: Number(m.n) }));
-});
+}, ["makes"], { revalidate: 600, tags: ["public-site"] });
 
 export type PublicReview = {
   id: string;

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { siteFetch } from "@/lib/site-import/fetch";
@@ -139,4 +139,5 @@ export async function finishSiteImport() {
   revalidatePath("/");
   revalidatePath("/cars");
   revalidatePath("/admin");
+  revalidateTag("public-site");
 }

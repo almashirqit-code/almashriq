@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole, getProfile } from "@/lib/auth";
@@ -176,6 +176,7 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
 
   revalidatePath(DOC_LIST_PATH[docType]);
   revalidatePath("/admin/stock");
+  revalidateTag("public-site"); // invoice status flips the public SOLD/RESERVED tag
   revalidatePath("/admin");
   return { id };
 }
@@ -258,6 +259,7 @@ export async function issueInvoice(id: string) {
   revalidatePath(`/admin/invoices/${id}`);
   revalidatePath("/admin/invoices");
   revalidatePath("/admin/stock");
+  revalidateTag("public-site"); // invoice status flips the public SOLD/RESERVED tag
 }
 
 export async function cancelInvoice(id: string) {
@@ -268,6 +270,7 @@ export async function cancelInvoice(id: string) {
   revalidatePath(`/admin/invoices/${id}`);
   revalidatePath("/admin/invoices");
   revalidatePath("/admin/stock");
+  revalidateTag("public-site"); // invoice status flips the public SOLD/RESERVED tag
 }
 
 export async function deleteInvoice(id: string) {
@@ -284,6 +287,7 @@ export async function deleteInvoice(id: string) {
   const list = DOC_LIST_PATH[(inv?.doc_type as DocType) ?? "invoice"] ?? "/admin/invoices";
   revalidatePath(list);
   revalidatePath("/admin/stock");
+  revalidateTag("public-site"); // invoice status flips the public SOLD/RESERVED tag
   redirect(list);
 }
 

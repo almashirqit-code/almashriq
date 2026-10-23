@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
@@ -36,6 +36,7 @@ export async function createVehicle(_prev: FormState, formData: FormData): Promi
 
   if (data.show_on_website !== false) pingIndexNow([`/cars/${encodeURIComponent(String(data.stock_no))}`]);
   revalidatePath("/admin/stock");
+  revalidateTag("public-site"); // flush the public car/home data cache
   redirect(`/admin/stock/${row.id}`);
 }
 
@@ -51,6 +52,7 @@ export async function updateVehicle(id: string, _prev: FormState, formData: Form
   if (data.show_on_website !== false) pingIndexNow([`/cars/${encodeURIComponent(String(data.stock_no))}`]);
   revalidatePath("/admin/stock");
   revalidatePath(`/admin/stock/${id}`);
+  revalidateTag("public-site"); // flush the public car/home data cache
   return { ok: true };
 }
 
@@ -64,6 +66,7 @@ export async function setVehicleStatusManual(id: string, status: VehicleStatus, 
   if (error) return { error: error.message };
   revalidatePath("/admin/stock");
   revalidatePath(`/admin/stock/${id}`);
+  revalidateTag("public-site"); // status drives the public SOLD/RESERVED tag
   return { ok: true };
 }
 
@@ -75,6 +78,7 @@ export async function releaseVehicleStatus(id: string): Promise<{ error?: string
   if (error) return { error: error.message };
   revalidatePath("/admin/stock");
   revalidatePath(`/admin/stock/${id}`);
+  revalidateTag("public-site");
   return { ok: true };
 }
 
@@ -91,6 +95,7 @@ export async function deleteVehicle(id: string) {
   const paths = [...(imgs ?? []), ...(yard ?? [])].map((i) => i.path).filter((p) => !p.startsWith("site-assets:"));
   if (paths.length) await supabase.storage.from("vehicle-images").remove(paths);
   revalidatePath("/admin/stock");
+  revalidateTag("public-site");
   redirect("/admin/stock");
 }
 
@@ -130,6 +135,7 @@ export async function setVehicleFlag(id: string, field: "show_on_website" | "for
   revalidatePath(`/admin/stock/${id}`);
   revalidatePath("/");
   revalidatePath("/cars");
+  revalidateTag("public-site");
 }
 
 export type MakeAvailableResult = {
@@ -201,6 +207,7 @@ export async function makeAvailable(id: string): Promise<MakeAvailableResult> {
   revalidatePath("/admin/invoices");
   revalidatePath("/admin/reservations");
   revalidatePath("/admin");
+  revalidateTag("public-site");
   return { ok: true };
 }
 
