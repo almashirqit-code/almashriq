@@ -68,6 +68,12 @@ export default async function PublicLayout({ children }: { children: React.React
           faxNumber: company.fax ?? undefined,
           address: company.address ? { "@type": "PostalAddress", streetAddress: company.address, addressCountry: "JP" } : undefined,
           areaServed: "Worldwide",
+          // Verified brand profiles — tells Google these all refer to one business (entity confirmation).
+          sameAs: [
+            "https://www.facebook.com/AlmashriqtradingJP/",
+            "https://www.tiktok.com/@almashriqtrading",
+            "https://www.almashriqtradingjapan.com/",
+          ],
         }}
       />
 

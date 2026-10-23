@@ -12,8 +12,10 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: { default: "Al Mashriq Trading Co., Ltd. — Japanese used cars", template: "%s · Al Mashriq" },
-  description: "Al Mashriq Trading Co., Ltd. — Japanese used cars and spare parts exporter.",
+  description:
+    "Buy quality Japanese used cars, spare parts and machinery for export from Al Mashriq Trading Co., Ltd. in Japan. Browse live stock with photos and FOB prices, and get a C&F quotation by RoRo or container to your port worldwide.",
   applicationName: "Al Mashriq Trading",
+  keywords: ["Japanese used cars", "used cars for export", "Japan car exporter", "used car parts Japan", "RoRo shipping", "container shipping cars", "Al Mashriq Trading"],
 };
 
 export const viewport = { themeColor: "#0a0a0c" };
