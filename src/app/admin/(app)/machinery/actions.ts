@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { jpyRate } from "@/lib/branches";
@@ -11,6 +11,7 @@ import { pingIndexNow } from "@/lib/indexnow";
 function refresh() {
   revalidatePath("/admin/machinery");
   revalidatePath("/machinery", "layout");
+  revalidateTag("public-site"); // flush the public machinery data cache
 }
 
 /** Saves a machine; returns its id so the editor can attach photos to a new one. */

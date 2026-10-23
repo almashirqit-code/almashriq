@@ -255,15 +255,15 @@ export type PublicPart = {
 };
 
 export type PublicPartDetail = Omit<PublicPart, "total_count" | "cover" | "image_count"> & { updated_at: string };
-export const getPart = cache(async (partNo: string): Promise<PublicPartDetail | null> => {
+export const getPart = unstable_cache(async (partNo: string): Promise<PublicPartDetail | null> => {
   const { data } = await anon().rpc("public_part", { p_part_no: partNo });
   return ((data ?? [])[0] as PublicPartDetail) ?? null;
-});
+}, ["part"], { revalidate: 60, tags: ["public-site"] });
 /** Photos taken at the yard for a car (storage paths), shown under "In-yard photos" on its page. */
-export const getYardPhotos = cache(async (stockNo: string): Promise<string[]> => {
+export const getYardPhotos = unstable_cache(async (stockNo: string): Promise<string[]> => {
   const { data } = await anon().rpc("public_vehicle_yard_photos", { p_key: stockNo });
   return Array.isArray(data) ? (data as string[]) : [];
-});
+}, ["yard-photos"], { revalidate: 60, tags: ["public-site"] });
 
 export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; branch?: string; page?: string };
 
@@ -306,7 +306,7 @@ export type PublicUnitDetail = Omit<PublicUnit, "cover" | "image_count" | "total
 };
 export type UnitFilters = { q?: string; make?: string; part?: string; page?: string };
 
-export async function listPartUnits(f: UnitFilters, size = PAGE_SIZE) {
+export const listPartUnits = unstable_cache(async (f: UnitFilters, size = PAGE_SIZE) => {
   const page = Math.max(1, Number(f.page) || 1);
   const { data, error } = await anon().rpc("public_part_units", {
     p_q: f.q?.trim() || null,
@@ -317,12 +317,12 @@ export async function listPartUnits(f: UnitFilters, size = PAGE_SIZE) {
   });
   const units = (data ?? []) as PublicUnit[];
   return { units, total: units[0] ? Number(units[0].total_count) : 0, page, error: error?.message ?? null };
-}
+}, ["part-units"], { revalidate: 60, tags: ["public-site"] });
 
-export const getPartUnit = cache(async (stockNo: string): Promise<PublicUnitDetail | null> => {
+export const getPartUnit = unstable_cache(async (stockNo: string): Promise<PublicUnitDetail | null> => {
   const { data } = await anon().rpc("public_part_unit", { p_key: stockNo });
   return ((data ?? [])[0] as PublicUnitDetail) ?? null;
-});
+}, ["part-unit"], { revalidate: 60, tags: ["public-site"] });
 
 /** Makes and parts (with counts) for the Complete units filters; total = number of units. */
 export const getPartUnitFacets = cache(async () => {
@@ -358,7 +358,7 @@ export async function verifyDocument(token: string): Promise<VerifiedDocument | 
   return ((data ?? [])[0] as VerifiedDocument) ?? null;
 }
 
-export async function listParts(f: PartFilters, size = PAGE_SIZE) {
+export const listParts = unstable_cache(async (f: PartFilters, size = PAGE_SIZE) => {
   const page = Math.max(1, Number(f.page) || 1);
   const { data, error } = await anon().rpc("public_parts", {
     p_q: f.q?.trim() || null,
@@ -371,9 +371,9 @@ export async function listParts(f: PartFilters, size = PAGE_SIZE) {
   });
   const parts = (data ?? []) as PublicPart[];
   return { parts, total: parts[0] ? Number(parts[0].total_count) : 0, page, error: error?.message ?? null };
-}
+}, ["parts"], { revalidate: 60, tags: ["public-site"] });
 
-export const getPartFacets = cache(async () => {
+export const getPartFacets = unstable_cache(async () => {
   const { data } = await anon().rpc("public_part_facets");
   const out = { category: [] as [string, number][], make: [] as [string, number][], total: 0 };
   for (const r of (data ?? []) as { kind: string; value: string | null; n: number }[]) {
@@ -383,7 +383,7 @@ export const getPartFacets = cache(async () => {
   out.category.sort((a, b) => b[1] - a[1]);
   out.make.sort((a, b) => b[1] - a[1]);
   return out;
-});
+}, ["part-facets"], { revalidate: 300, tags: ["public-site"] });
 
 export type PublicMachineCard = {
   id: string;
@@ -409,7 +409,7 @@ export type PublicMachineCard = {
 };
 export type MachineFilters = { q?: string; category?: string; make?: string; branch?: string; min_price?: string; max_price?: string; min_year?: string; max_year?: string; sort?: string; page?: string };
 
-export async function listMachinery(f: MachineFilters, size = PAGE_SIZE) {
+export const listMachinery = unstable_cache(async (f: MachineFilters, size = PAGE_SIZE) => {
   const page = Math.max(1, Number(f.page) || 1);
   const { data, error } = await anon().rpc("public_machinery", {
     p_q: f.q?.trim() || null,
@@ -426,7 +426,7 @@ export async function listMachinery(f: MachineFilters, size = PAGE_SIZE) {
   });
   const machines = (data ?? []) as PublicMachineCard[];
   return { machines, total: machines[0] ? Number(machines[0].total_count) : 0, page, error: error?.message ?? null };
-}
+}, ["machinery"], { revalidate: 60, tags: ["public-site"] });
 
 export type PublicMachine = Omit<PublicMachineCard, "total_count" | "cover" | "image_count" | "operating_weight_kg" | "engine_power_hp"> & {
   serial_no: string | null;
@@ -437,12 +437,12 @@ export type PublicMachine = Omit<PublicMachineCard, "total_count" | "cover" | "i
   description: string | null;
   updated_at: string;
 };
-export const getMachine = cache(async (key: string): Promise<PublicMachine | null> => {
+export const getMachine = unstable_cache(async (key: string): Promise<PublicMachine | null> => {
   const { data } = await anon().rpc("public_machine", { p_key: key });
   return ((data ?? [])[0] as PublicMachine) ?? null;
-});
+}, ["machine"], { revalidate: 60, tags: ["public-site"] });
 
-export const getMachineryFacets = cache(async () => {
+export const getMachineryFacets = unstable_cache(async () => {
   const { data } = await anon().rpc("public_machinery_facets");
   const out = { category: [] as [string, number][], make: [] as [string, number][], total: 0, available: 0 };
   for (const r of (data ?? []) as { kind: string; value: string | null; n: number }[]) {
@@ -453,7 +453,7 @@ export const getMachineryFacets = cache(async () => {
   out.category.sort((a, b) => b[1] - a[1]);
   out.make.sort((a, b) => b[1] - a[1]);
   return out;
-});
+}, ["machinery-facets"], { revalidate: 300, tags: ["public-site"] });
 
 /**
  * All rows of a set-returning RPC. The API caps every response at 1,000 rows, so a plain call
