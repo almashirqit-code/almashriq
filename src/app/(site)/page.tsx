@@ -289,7 +289,7 @@ export default async function PublicHome() {
                 </div>
                 <Stars value={r.rating} size="mt-3 h-3.5 w-3.5" />
                 <blockquote className="mt-2 line-clamp-5 text-sm leading-6 text-white/80">
-                  <Quote className="mr-1 inline h-3.5 w-3.5 text-rose-300" />
+                  <Quote className="mr-1 inline h-3.5 w-3.5 text-brand-600" />
                   {r.body}
                 </blockquote>
               </figure>
@@ -364,7 +364,7 @@ export default async function PublicHome() {
         <div className="glass relative flex flex-col items-start justify-between gap-5 overflow-hidden rounded-3xl p-6 sm:p-8 md:flex-row md:items-center">
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[var(--accent)]/25 blur-3xl" />
           <div className="relative flex gap-4">
-            <Globe className="hidden h-12 w-12 shrink-0 text-rose-300 sm:block" />
+            <Globe className="hidden h-12 w-12 shrink-0 text-brand-600 sm:block" />
             <div>
               <h2 className="text-xl font-black sm:text-2xl">Can&apos;t find the car you want?</h2>
               <p className="mt-1 text-white/75">Tell us the model, year and budget — we buy daily at Japanese auctions and ship to your port.</p>

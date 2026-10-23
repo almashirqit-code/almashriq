@@ -72,7 +72,7 @@ export default async function PublicLayout({ children }: { children: React.React
       />
 
       {/* Desktop info strip (on phones this lives in the menu) */}
-      <div className="hidden border-b border-white/10 bg-black/25 text-[12px] text-white/70 lg:block">
+      <div className="on-dark on-dark-bar hidden border-b border-white/10 text-[12px] text-white/70 lg:block">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-5 gap-y-1 px-6 py-1.5">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
             <WorldClock labelClass="text-white/50" timeClass="font-semibold text-white" />
@@ -99,7 +99,7 @@ export default async function PublicLayout({ children }: { children: React.React
       </div>
 
       {/* Desktop header: logo, search, contact buttons */}
-      <header className="hidden lg:block">
+      <header className="on-dark on-dark-bar hidden lg:block">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3">
           <Link href="/" className="shrink-0 rounded-xl" aria-label={`${company.company_name} home`}>
             {custom ? logoImg("h-11") : <Logo size="md" />}
@@ -126,7 +126,7 @@ export default async function PublicLayout({ children }: { children: React.React
       </header>
 
       {/* Sticky bar: compact logo + search + menu on phones, the full navigation on desktop */}
-      <nav className="glass-strong sticky top-0 z-40 rounded-none border-x-0 border-t-0">
+      <nav className="on-dark glass-strong sticky top-0 z-40 rounded-none border-x-0 border-t-0">
         <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center gap-2 px-3 lg:h-auto lg:px-4">
           <Link href="/" className="shrink-0 rounded-xl lg:hidden" aria-label="Al Mashriq Trading home">
             {custom ? (
@@ -203,7 +203,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <main>{children}</main>
 
       {/* Footer */}
-      <footer className="glass-lite mt-14 rounded-none border-x-0 border-b-0">
+      <footer className="on-dark on-dark-bar mt-14 border-t border-white/10">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 lg:grid-cols-4 lg:px-6">
           <div className="col-span-2 lg:col-span-1">
             {custom ? logoImg("h-11") : <Logo size="lg" />}

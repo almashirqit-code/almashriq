@@ -1,44 +1,51 @@
 /*
- * Public website — glass theme in the Al Mashriq palette: jet black ground, cerulean blue, logo red.
- * Buttons use the logo red #D71920 (white text 5.2:1); red text on the dark ground uses #FF6B70 (≥ 5.5:1).
+ * Public website — light theme in the Al Mashriq palette: white / light-grey page, jet-black text,
+ * logo-red buttons (#D71920, white text 5.2:1), black header, footer and phone bottom bar.
  * Everything is scoped under .site-glass (the public layout wrapper), so the admin is untouched.
  *
+ * How colours work here
+ *   Tailwind "white" is rgb(var(--fg) / alpha) (tailwind.config.ts). The light page sets --fg to jet black,
+ *   so text-white/60, bg-white/10, border-white/10 become dark text, light tints and hairlines.
+ *   .on-dark areas (header, footer, bottom bar, menu, text on photos) and solid coloured buttons set
+ *   --fg back to white, so the same classes give white text on black/red there.
+ *
  *  1. tokens + page background
- *  2. glass surfaces (.glass / .glass-strong / .glass-lite)
- *  3. form controls (16px on phones: iOS zooms smaller text on focus)
- *  4. remap of the older light-theme utilities used across the public pages
+ *  2. dark areas (.on-dark, solid buttons)
+ *  3. surfaces (.glass / .glass-strong / .glass-lite)
+ *  4. form controls (16px on phones: iOS zooms smaller text on focus)
  *  5. helpers (horizontal scroll rows, safe areas) and accessibility fallbacks
  */
 
 html:has(.site-glass),
 body:has(.site-glass) {
-  background: #0a0a0c;
+  background: #f5f6f8;
 }
 
 .site-glass {
-  --ink: #f4f6f8;
-  --ink-2: #c9cfd7;
-  --ink-3: #a5adb8;
-  --ink-4: #949ca8;
-  --glass: rgb(255 255 255 / 0.07);
-  --glass-hi: rgb(255 255 255 / 0.12);
-  --glass-lo: rgb(255 255 255 / 0.04);
-  --line: rgb(255 255 255 / 0.14);
+  --fg: 10 10 12;
+  --ink: #0a0a0c;
+  --ink-2: #33363d;
+  --ink-3: #555a63;
+  --ink-4: #6b7079;
+  --surface: #ffffff;
+  --surface-hi: #fbfbfc;
+  --line: rgb(10 10 12 / 0.1);
+  --line-hi: rgb(10 10 12 / 0.2);
   --accent: #d71920;
-  --accent-hi: #ec3a40;
-  --accent-text: #ff6b70;
+  --accent-hi: #b5141a;
+  --accent-text: #b5141a;
   --cerulean: #007ba7;
-  --cerulean-text: #5cc3ee;
-  --focus: #2ea8df;
-  color-scheme: dark;
+  --cerulean-text: #00658a;
+  --focus: #007ba7;
+  color-scheme: light;
   color: var(--ink);
-  background: linear-gradient(160deg, #0a0a0c 0%, #0c1114 55%, #110a0e 100%);
+  background: #f5f6f8;
   min-height: 100vh;
   position: relative;
   isolation: isolate;
   -webkit-tap-highlight-color: transparent;
 }
-/* Soft colour glows (static: no animation, cheap to paint) */
+/* Very soft colour glows behind the content (static: cheap to paint) */
 .site-glass::before {
   content: "";
   position: fixed;
@@ -46,13 +53,12 @@ body:has(.site-glass) {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(40rem 28rem at 105% -5%, rgb(215 25 32 / 0.18), transparent 60%),
-    radial-gradient(38rem 30rem at -10% 28%, rgb(0 123 167 / 0.2), transparent 60%),
-    radial-gradient(34rem 26rem at 60% 115%, rgb(0 123 167 / 0.1), transparent 60%);
+    radial-gradient(40rem 28rem at 105% -5%, rgb(215 25 32 / 0.06), transparent 60%),
+    radial-gradient(38rem 30rem at -10% 28%, rgb(0 123 167 / 0.06), transparent 60%);
 }
 .site-glass ::selection {
-  background: rgb(215 25 32 / 0.45);
-  color: #fff;
+  background: rgb(215 25 32 / 0.2);
+  color: var(--ink);
 }
 .site-glass :focus-visible {
   outline: 2px solid var(--focus);
@@ -69,59 +75,140 @@ body:has(.site-glass) {
 .site-glass h3 {
   text-wrap: pretty;
 }
-/* Faint white text sits on glass, not on pure black: lift it to ≥ 4.5:1 on the lightest panels */
+/* Faint text: lift to ≥ 4.5:1 on the light page, tinted panels and the dark areas alike */
 .site-glass .text-white\/40,
 .site-glass .text-white\/45,
-.site-glass .text-white\/50 {
-  color: rgb(255 255 255 / 0.6);
+.site-glass .text-white\/50,
+.site-glass .text-white\/55,
+.site-glass .text-white\/60,
+.site-glass .text-white\/65 {
+  color: rgb(var(--fg) / 0.72);
+}
+/* The older light pages' greys (breadcrumbs, intros, dates) are a touch too light on #f5f6f8 */
+.site-glass .text-slate-400 {
+  color: #5f6673;
+}
+.site-glass .text-slate-500 {
+  color: #535a66;
+}
+.site-glass .text-navy-500 {
+  color: #00658a;
+}
+/* Solid / near-solid white surfaces stay white (Tailwind "white" follows --fg otherwise) */
+.site-glass .bg-white {
+  background-color: #fff;
+}
+.site-glass .bg-white\/95 {
+  background-color: rgb(255 255 255 / 0.95);
+}
+.site-glass .bg-white\/90 {
+  background-color: rgb(255 255 255 / 0.9);
+}
+.site-glass .bg-white\/60 {
+  background-color: rgb(255 255 255 / 0.6);
+}
+.site-glass .bg-white\/55 {
+  background-color: rgb(255 255 255 / 0.55);
+}
+.site-glass .text-gradient {
+  color: var(--accent-text);
 }
 
-/* ---------- 2. glass surfaces ---------- */
-.site-glass .glass {
-  background: var(--glass);
+/* ---------- 2. dark areas ---------- */
+/* Header, footer, bottom bar, menu drawer, text over photos: white text on black */
+.site-glass .on-dark,
+/* Solid coloured buttons, chips and badges: their text-white must stay white */
+.site-glass :is(
+    [class^="bg-[var(--accent)]"], [class*=" bg-[var(--accent)]"],
+    [class^="bg-black"], [class*=" bg-black"],
+    [class^="bg-brand-600"], [class*=" bg-brand-600"], [class^="bg-brand-700"], [class*=" bg-brand-700"],
+    [class^="bg-navy-8"], [class*=" bg-navy-8"], [class^="bg-navy-9"], [class*=" bg-navy-9"],
+    [class^="bg-jet"], [class*=" bg-jet"],
+    [class^="bg-amber-500"], [class*=" bg-amber-500"],
+    [class^="bg-emerald-500"], [class*=" bg-emerald-500"], [class^="bg-emerald-600"], [class*=" bg-emerald-600"],
+    [class^="bg-red-600"], [class*=" bg-red-600"]
+  ) {
+  --fg: 255 255 255;
+  color: #fff;
+}
+.site-glass .on-dark {
+  --ink: #f4f6f8;
+  --ink-2: #c9cfd7;
+  --ink-3: #a5adb8;
+  --ink-4: #949ca8;
+  --surface: rgb(255 255 255 / 0.07);
+  --surface-hi: rgb(255 255 255 / 0.12);
+  --line: rgb(255 255 255 / 0.14);
+  --line-hi: rgb(255 255 255 / 0.28);
+  --accent-text: #ff6b70;
+  --cerulean-text: #5cc3ee;
+  --focus: #5cc3ee;
+  color-scheme: dark;
+  color: var(--ink);
+}
+/* The black bars themselves */
+.site-glass .on-dark-bar {
+  background: #0a0a0c;
+}
+
+/* ---------- 3. surfaces ---------- */
+/* Light: white cards with a hairline border and a soft shadow */
+.site-glass .glass,
+.site-glass .glass-lite {
+  background: var(--surface);
   border: 1px solid var(--line);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.12);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.14);
 }
 .site-glass .glass-strong {
-  background: rgb(10 10 12 / 0.74);
+  background: rgb(255 255 255 / 0.94);
   border: 1px solid var(--line);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  backdrop-filter: blur(22px) saturate(160%);
-  box-shadow: 0 10px 40px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.1);
-}
-/* Same look without blur: long lists of cards stay smooth on low-end phones */
-.site-glass .glass-lite {
-  background: var(--glass);
-  border: 1px solid var(--line);
-  box-shadow: 0 6px 20px rgb(0 0 0 / 0.22), inset 0 1px 0 rgb(255 255 255 / 0.1);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 10px 40px rgb(15 23 42 / 0.16);
 }
 .site-glass .glass-hover {
-  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .site-glass .glass-hover:hover {
-  background: var(--glass-hi);
-  border-color: rgb(255 255 255 / 0.28);
+  border-color: var(--line-hi);
+  box-shadow: 0 2px 4px rgb(15 23 42 / 0.05), 0 14px 32px -12px rgb(15 23 42 / 0.22);
   transform: translateY(-2px);
 }
 .site-glass .glass-hover:active {
   transform: scale(0.99);
 }
-/* Highlighted words in headings: solid logo red (gradient text reads as decoration, not emphasis) */
-.site-glass .text-gradient {
-  color: var(--accent-text);
+/* Dark versions inside the black areas */
+.site-glass .on-dark .glass,
+.site-glass .on-dark .glass-lite,
+.site-glass .on-dark.glass,
+.site-glass .on-dark.glass-lite {
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.22), inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+.site-glass .on-dark.glass-strong,
+.site-glass .on-dark .glass-strong {
+  background: rgb(10 10 12 / 0.9);
+  border-color: var(--line);
+  box-shadow: 0 10px 40px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
 
-/* ---------- 3. form controls ---------- */
+/* ---------- 4. form controls ---------- */
 .site-glass input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
 .site-glass select,
 .site-glass textarea,
 .site-glass .input {
-  background-color: rgb(255 255 255 / 0.08);
-  border: 1px solid var(--line);
+  background-color: #fff;
+  border: 1px solid rgb(10 10 12 / 0.16);
   color: var(--ink);
   border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+.site-glass .on-dark input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.site-glass .on-dark select,
+.site-glass .on-dark textarea {
+  background-color: rgb(255 255 255 / 0.1);
+  border-color: var(--line);
   box-shadow: none;
 }
 .site-glass input::placeholder,
@@ -133,17 +220,21 @@ body:has(.site-glass) {
 .site-glass select:focus,
 .site-glass textarea:focus {
   border-color: var(--focus);
-  box-shadow: 0 0 0 3px rgb(46 168 223 / 0.3);
+  box-shadow: 0 0 0 3px rgb(0 123 167 / 0.2);
   outline: none;
 }
 .site-glass select option,
 .site-glass select optgroup {
+  background: #fff;
+  color: #0a0a0c;
+}
+.site-glass .on-dark select option {
   background: #17181c;
-  color: var(--ink);
+  color: #f4f6f8;
 }
 .site-glass input:-webkit-autofill {
   -webkit-text-fill-color: var(--ink);
-  box-shadow: 0 0 0 1000px #17181c inset;
+  box-shadow: 0 0 0 1000px #fff inset;
   caret-color: var(--ink);
 }
 @media (max-width: 1023px) {
@@ -158,164 +249,6 @@ body:has(.site-glass) {
   .site-glass select {
     min-height: 46px;
   }
-}
-
-/* ---------- 4. remap of the older light-theme utilities ---------- */
-/* surfaces */
-.site-glass .bg-white {
-  background-color: var(--glass);
-}
-.site-glass .bg-slate-50,
-.site-glass .bg-slate-100,
-.site-glass .bg-slate-200 {
-  background-color: var(--glass-lo);
-}
-.site-glass .bg-navy-50,
-.site-glass .bg-navy-100 {
-  background-color: rgb(0 123 167 / 0.2);
-}
-.site-glass .bg-brand-50,
-.site-glass .bg-brand-100 {
-  background-color: rgb(215 25 32 / 0.18);
-}
-.site-glass .bg-emerald-50 {
-  background-color: rgb(16 185 129 / 0.16);
-}
-.site-glass .bg-amber-50 {
-  background-color: rgb(245 158 11 / 0.16);
-}
-.site-glass .hover\:bg-navy-50:hover,
-.site-glass .hover\:bg-slate-50:hover,
-.site-glass .hover\:bg-slate-100:hover {
-  background-color: var(--glass-hi);
-}
-.site-glass .hover\:bg-brand-600:hover {
-  background-color: var(--accent);
-}
-.site-glass .hover\:text-white:hover {
-  color: #fff;
-}
-/* text */
-.site-glass .text-navy-950,
-.site-glass .text-navy-900,
-.site-glass .text-navy-800,
-.site-glass .text-slate-900,
-.site-glass .text-slate-800 {
-  color: var(--ink);
-}
-.site-glass .text-navy-700,
-.site-glass .text-navy-600,
-.site-glass .text-slate-700 {
-  color: var(--ink-2);
-}
-.site-glass .text-navy-500,
-.site-glass .text-navy-400,
-.site-glass .text-slate-600,
-.site-glass .text-slate-500 {
-  color: var(--ink-3);
-}
-.site-glass .text-slate-400,
-.site-glass .text-slate-300 {
-  color: var(--ink-4);
-}
-.site-glass .text-brand-600,
-.site-glass .text-brand-700,
-.site-glass .text-brand-800 {
-  color: var(--accent-text);
-}
-.site-glass .hover\:text-brand-700:hover,
-.site-glass .hover\:text-brand-600:hover {
-  color: #ffa3a6;
-}
-.site-glass .text-navy-500,
-.site-glass .text-sky-600,
-.site-glass .text-sky-700,
-.site-glass .text-blue-700 {
-  color: var(--cerulean-text);
-}
-.site-glass .text-emerald-900,
-.site-glass .text-emerald-700 {
-  color: #6ee7b7;
-}
-.site-glass .text-amber-700,
-.site-glass .text-amber-800,
-.site-glass .text-amber-900 {
-  color: #fde68a;
-}
-.site-glass .text-amber-600,
-.site-glass .text-amber-500 {
-  color: #fbbf24;
-}
-.site-glass .text-emerald-800 {
-  color: #6ee7b7;
-}
-.site-glass .ring-amber-200 {
-  --tw-ring-color: rgb(251 191 36 / 0.4);
-}
-/* solid navy chips/buttons from the old theme become translucent glass */
-.site-glass .bg-navy-700,
-.site-glass .bg-navy-800,
-.site-glass .bg-navy-900 {
-  background-color: rgb(255 255 255 / 0.13);
-}
-.site-glass .hover\:bg-navy-900:hover,
-.site-glass .hover\:bg-navy-800:hover {
-  background-color: rgb(255 255 255 / 0.2);
-}
-.site-glass .text-red-700,
-.site-glass .text-red-600 {
-  color: var(--accent-text);
-}
-/* lines */
-.site-glass .border-slate-100,
-.site-glass .border-slate-200,
-.site-glass .border-slate-300 {
-  border-color: var(--line);
-}
-.site-glass .ring-slate-100,
-.site-glass .ring-slate-200,
-.site-glass .ring-slate-300,
-.site-glass .ring-navy-200,
-.site-glass .ring-navy-300,
-.site-glass .ring-emerald-200 {
-  --tw-ring-color: var(--line);
-}
-.site-glass .hover\:ring-navy-300:hover,
-.site-glass .hover\:ring-brand-300:hover {
-  --tw-ring-color: rgb(255 255 255 / 0.32);
-}
-.site-glass .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
-  border-color: var(--line);
-}
-.site-glass .shadow-sm,
-.site-glass .shadow-md,
-.site-glass .shadow-lg {
-  --tw-shadow-color: rgb(0 0 0 / 0.35);
-}
-/* blog article typography (defined globally for the light theme) */
-.site-glass .prose-blog {
-  color: var(--ink-2);
-}
-.site-glass .prose-blog h2,
-.site-glass .prose-blog h3,
-.site-glass .prose-blog h4 {
-  color: var(--ink);
-}
-.site-glass .prose-blog a {
-  color: var(--accent-text);
-  color: var(--cerulean-text);
-  text-decoration-color: rgb(92 195 238 / 0.4);
-}
-.site-glass .prose-blog blockquote {
-  background: rgb(0 123 167 / 0.14);
-  color: var(--ink-2);
-}
-.site-glass .prose-blog code {
-  background: var(--glass);
-  color: var(--ink);
-}
-.site-glass .prose-blog hr {
-  border-color: var(--line);
 }
 
 /* ---------- 5. helpers ---------- */
@@ -386,10 +319,10 @@ body:has(.site-glass) {
 }
 @media (min-width: 1024px) {
   .site-glass .filter-sheet {
-    background: var(--glass);
+    background: var(--surface);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    box-shadow: 0 6px 20px rgb(0 0 0 / 0.22), inset 0 1px 0 rgb(255 255 255 / 0.1);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.14);
   }
 }
 .site-glass #results {
@@ -407,19 +340,23 @@ body:has(.site-glass) {
 
 /* ---------- accessibility / performance fallbacks ---------- */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .site-glass .glass {
-    background: rgb(23 24 28 / 0.96);
-  }
   .site-glass .glass-strong {
+    background: #fff;
+  }
+  .site-glass .on-dark .glass-strong,
+  .site-glass .on-dark.glass-strong {
     background: rgb(10 10 12 / 0.98);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .site-glass .glass,
   .site-glass .glass-strong {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    background: rgb(17 17 20 / 0.98);
+    background: #fff;
+  }
+  .site-glass .on-dark .glass-strong,
+  .site-glass .on-dark.glass-strong {
+    background: #111114;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -41,6 +41,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // "white" follows --fg (an RGB triplet): real white everywhere by default (admin), but the public
+        // site's light theme sets --fg to jet black, so text-white/60, bg-white/10, border-white/10… become
+        // dark text, light tints and hairlines there. Black areas (header, footer, buttons) set it back to white.
+        white: "rgb(var(--fg, 255 255 255) / <alpha-value>)",
         jet: {
           DEFAULT: "#0a0a0c",
           800: "#17181c",

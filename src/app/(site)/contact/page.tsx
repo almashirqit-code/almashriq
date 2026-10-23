@@ -29,27 +29,27 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             <div className="text-lg font-black text-white">{company.company_name}</div>
             {company.address && (
               <div className="flex gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
                 <span className="whitespace-pre-line">{company.address}</span>
               </div>
             )}
             {company.phone && (
               <a href={`tel:${company.phone}`} className="flex items-center gap-2 hover:text-white">
-                <Phone className="h-4 w-4 text-brand-400" /> {company.phone}
+                <Phone className="h-4 w-4 text-brand-600" /> {company.phone}
               </a>
             )}
             {company.fax && (
               <div className="flex items-center gap-2">
-                <Printer className="h-4 w-4 text-brand-400" /> Fax {company.fax}
+                <Printer className="h-4 w-4 text-brand-600" /> Fax {company.fax}
               </div>
             )}
             {company.email && (
               <a href={`mailto:${company.email}`} className="flex items-center gap-2 hover:text-white">
-                <Mail className="h-4 w-4 text-brand-400" /> {company.email}
+                <Mail className="h-4 w-4 text-brand-600" /> {company.email}
               </a>
             )}
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-brand-400" /> <WorldClock zones={["japan"]} />
+              <Clock className="h-4 w-4 text-brand-600" /> <WorldClock zones={["japan"]} />
             </div>
             {wa && (
               <a href={wa} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-bold text-jet-950 hover:brightness-110">

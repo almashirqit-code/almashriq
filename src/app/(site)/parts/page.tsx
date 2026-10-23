@@ -50,11 +50,11 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
       {facets.category.length > 0 && (
         <div className="hscroll mt-4 lg:hidden">
           <Link href={href({ category: undefined })} className={`inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold ${!f.category ? "bg-[var(--accent)] text-white" : "glass-lite"}`}>
-            All <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{facets.total}</span>
+            All <span className="ml-1.5 rounded-md bg-white/15 px-1.5 py-0.5 text-xs tabular-nums">{facets.total}</span>
           </Link>
           {facets.category.map(([c, n]) => (
             <Link key={c} href={href({ category: c })} className={`inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold ${f.category?.toLowerCase() === c.toLowerCase() ? "bg-[var(--accent)] text-white" : "glass-lite"}`}>
-              {c} <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{n}</span>
+              {c} <span className="ml-1.5 rounded-md bg-white/15 px-1.5 py-0.5 text-xs tabular-nums">{n}</span>
             </Link>
           ))}
         </div>
@@ -200,7 +200,7 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
                     <div className="flex flex-1 flex-col p-4">
                       <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
                         {p.category && <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-white/80">{p.category}</span>}
-                        <span className={`rounded-md px-1.5 py-0.5 ${p.condition === "new" ? "bg-emerald-400/20 text-emerald-300" : "bg-white/10 text-white/70"}`}>{CONDITION[p.condition]}</span>
+                        <span className={`rounded-md px-1.5 py-0.5 ${p.condition === "new" ? "bg-emerald-50 text-emerald-800" : "bg-white/10 text-white/70"}`}>{CONDITION[p.condition]}</span>
                         <ShipsFrom code={p.branch} compact className="ml-auto text-white/80" />
                       </div>
                       <Link href={detail} className="mt-2 font-bold hover:text-[var(--accent-text)]">

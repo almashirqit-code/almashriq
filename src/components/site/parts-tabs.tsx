@@ -13,7 +13,7 @@ export function PartsTabs({ active, parts, units }: { active: "parts" | "units";
     >
       {icon}
       {label}
-      <span className="rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{n.toLocaleString()}</span>
+      <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-xs tabular-nums">{n.toLocaleString()}</span>
     </Link>
   );
   return (
