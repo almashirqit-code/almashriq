@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { parseVehicle } from "@/lib/vehicle";
-import { VEHICLE_FIELDS } from "@/lib/types";
+import { VEHICLE_FIELDS, VEHICLE_STATUSES, type VehicleStatus } from "@/lib/types";
 import { pingIndexNow } from "@/lib/indexnow";
 
 export type FormState = { error?: string; ok?: boolean };
@@ -54,13 +54,42 @@ export async function updateVehicle(id: string, _prev: FormState, formData: Form
   return { ok: true };
 }
 
+/** Admin: set the status by hand (settling old data). A reason is required; the change is logged. */
+export async function setVehicleStatusManual(id: string, status: VehicleStatus, note: string): Promise<{ error?: string; ok?: boolean }> {
+  await assertRole(["admin"]);
+  if (!VEHICLE_STATUSES.includes(status)) return { error: "Choose a status." };
+  if (!note.trim()) return { error: "Give a reason for the change." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_vehicle_status", { p_vehicle: id, p_status: status, p_note: note.trim() });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/stock");
+  revalidatePath(`/admin/stock/${id}`);
+  return { ok: true };
+}
+
+/** Admin: hand the status back to the automatic rules (invoices / reservations decide it again). */
+export async function releaseVehicleStatus(id: string): Promise<{ error?: string; ok?: boolean }> {
+  await assertRole(["admin"]);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("release_vehicle_status", { p_vehicle: id, p_note: null });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/stock");
+  revalidatePath(`/admin/stock/${id}`);
+  return { ok: true };
+}
+
 export async function deleteVehicle(id: string) {
   await assertRole(["admin"]);
   const supabase = await createClient();
-  const { data: imgs } = await supabase.from("vehicle_images").select("path").eq("vehicle_id", id);
+  const [{ data: imgs }, { data: yard }] = await Promise.all([
+    supabase.from("vehicle_images").select("path").eq("vehicle_id", id),
+    supabase.from("vehicle_yard_images").select("path").eq("vehicle_id", id),
+  ]);
   const { error } = await supabase.from("vehicles").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  if (imgs?.length) await supabase.storage.from("vehicle-images").remove(imgs.map((i) => i.path));
+  // Photo rows cascade with the car; remove the files too (listing + in-yard photos).
+  const paths = [...(imgs ?? []), ...(yard ?? [])].map((i) => i.path).filter((p) => !p.startsWith("site-assets:"));
+  if (paths.length) await supabase.storage.from("vehicle-images").remove(paths);
   revalidatePath("/admin/stock");
   redirect("/admin/stock");
 }

@@ -13,6 +13,9 @@ import { ConfirmButton } from "@/components/buttons";
 import { VehicleForm } from "../vehicle-form";
 import { updateVehicle, deleteVehicle } from "../actions";
 import { ImageManager } from "./image-manager";
+import { StatusPanel, type StatusChange } from "./status-panel";
+import { YardPhotos } from "./yard-photos";
+import type { StockPhoto } from "@/components/stock-photos";
 import { loadMasters } from "../masters-data";
 import { MakeAvailableButton } from "../make-available";
 
@@ -22,7 +25,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
   const { t, locale } = await getT();
   const supabase = await createClient();
 
-  const [{ data: vehicle }, { data: images }, { data: items }, { data: settings }, { data: activeRes }] = await Promise.all([
+  const [{ data: vehicle }, { data: images }, { data: items }, { data: settings }, { data: activeRes }, { data: yard }, { data: changes }] = await Promise.all([
     supabase.from("vehicles").select("*").eq("id", id).maybeSingle(),
     supabase.from("vehicle_images").select("*").eq("vehicle_id", id).order("sort_order").order("created_at"),
     supabase
@@ -37,6 +40,13 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
       .eq("vehicle_id", id)
       .eq("status", "active")
       .maybeSingle(),
+    supabase.from("vehicle_yard_images").select("id, path, sort_order").eq("vehicle_id", id).order("sort_order").order("created_at"),
+    supabase
+      .from("vehicle_status_changes")
+      .select("id, old_status, new_status, manual, note, created_at, profiles(full_name, email)")
+      .eq("vehicle_id", id)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
   if (!vehicle) notFound();
   const masters = await loadMasters();
@@ -144,7 +154,11 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
           <VehicleForm vehicle={v} action={update} showCost={seeCost} readOnly={!canEdit} defaultFx={Number(rates.USD ?? 0)} rates={rates} masters={masters} />
         </div>
         <div className="space-y-5 xl:col-span-2">
+          {profile.role === "admin" && (
+            <StatusPanel vehicleId={id} status={v.status} manual={!!v.status_manual} history={(changes ?? []) as unknown as StatusChange[]} />
+          )}
           <ImageManager vehicleId={id} images={(images ?? []) as VehicleImage[]} canEdit={canEdit} />
+          <YardPhotos vehicleId={id} photos={(yard ?? []) as StockPhoto[]} canEdit={canEdit} />
           {invoices.length > 0 && (
             <section className="card overflow-hidden">
               <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("stock_in_invoices")}</h2>

@@ -121,6 +121,8 @@ export interface Vehicle {
   supplier_currency: Currency;
   show_on_website: boolean;
   for_parts: boolean;
+  /** An admin set the status by hand; automatic status updates leave the car alone. */
+  status_manual?: boolean;
   /** Complete units (for_parts): condition and what it can be dismantled into (lib/part-units). */
   unit_condition?: string | null;
   unit_parts?: string[];

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { MessageCircle, Mail, MapPin, Check, CalendarDays, Gauge, Cog, Fuel, Ship } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
-import { carTitle, getCar, getCompany, listCars, makeSlug, priceLabel, whatsapp, SITE_URL } from "@/lib/public-site";
+import { carTitle, getCar, getCompany, getYardPhotos, listCars, makeSlug, priceLabel, whatsapp, SITE_URL } from "@/lib/public-site";
 import { Gallery } from "@/components/site/gallery";
 import { InquiryForm } from "@/components/site/inquiry-form";
 import { JsonLd } from "@/components/site/json-ld";
@@ -46,7 +46,9 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
   if (!c) notFound();
   // Cars bought for parts live under Parts → Complete units.
   if (c.for_parts) permanentRedirect(`/parts/units/${encodeURIComponent(c.stock_no)}`);
-  const related = (await listCars({ make: c.make, sort: "new" }, 9)).cars.filter((x) => x.id !== c.id).slice(0, 8);
+  const [relatedRes, yardPaths] = await Promise.all([listCars({ make: c.make, sort: "new" }, 9), getYardPhotos(c.stock_no)]);
+  const related = relatedRes.cars.filter((x) => x.id !== c.id).slice(0, 8);
+  const yard = yardPaths.map(publicImageUrl);
 
   const title = carTitle(c);
   const price = priceLabel(c);
@@ -184,6 +186,17 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
           </div>
         </div>
       </div>
+
+      {yard.length > 0 && (
+        <section className="mt-6 lg:w-[58%]" aria-labelledby="yard-photos">
+          <h2 id="yard-photos" className="mb-1 flex items-center gap-2 text-lg font-extrabold">
+            <span className="h-5 w-1 rounded-full bg-[var(--accent)]" />
+            In-yard photos
+          </h2>
+          <p className="mb-3 text-sm text-white/65">Taken at our yard in Japan — the car as it is now, before shipping.</p>
+          <Gallery images={yard} alt={`${title} at our yard`} stockNo={`${c.stock_no}-yard`} />
+        </section>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <section className="glass-lite overflow-hidden rounded-3xl">
