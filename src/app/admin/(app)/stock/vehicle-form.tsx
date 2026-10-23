@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
-import { CURRENCIES, VEHICLE_STATUSES, type BranchCode, type Currency, type Vehicle, type VehicleField } from "@/lib/types";
+import { CURRENCIES, type BranchCode, type Currency, type Vehicle, type VehicleField } from "@/lib/types";
 import { DEFAULT_BRANCHES } from "@/lib/branches";
 import { makeNames, modelNames } from "@/lib/catalog";
 import { SubmitButton } from "@/components/buttons";
@@ -49,7 +49,6 @@ const PRICING: FieldDef[] = [
   { name: "expenses", type: "number" },
   { name: "price", type: "number" },
   { name: "price_currency", type: "select", options: CURRENCIES },
-  { name: "status", type: "select", options: VEHICLE_STATUSES },
 ];
 
 const MAKES = ["Toyota", "Nissan", "Honda", "Mazda", "Mitsubishi", "Subaru", "Suzuki", "Daihatsu", "Lexus", "Isuzu", "Hino", "Mercedes-Benz", "BMW", "Volkswagen", "Audi"];

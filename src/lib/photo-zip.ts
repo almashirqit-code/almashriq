@@ -68,9 +68,15 @@ export function groupZipImages(files: ZipFile[], keys: Iterable<string>) {
   return { groups, unmatched: [...unmatched] };
 }
 
-export type PhotoTable = { table: "vehicle_images" | "part_images" | "machinery_images"; fk: "vehicle_id" | "part_id" | "machinery_id"; folder: "vehicles" | "parts" | "machinery" };
+export type PhotoTable = {
+  table: "vehicle_images" | "part_images" | "machinery_images" | "vehicle_yard_images";
+  fk: "vehicle_id" | "part_id" | "machinery_id";
+  folder: "vehicles" | "parts" | "machinery" | "yard";
+};
 export const PART_PHOTOS: PhotoTable = { table: "part_images", fk: "part_id", folder: "parts" };
 export const MACHINE_PHOTOS: PhotoTable = { table: "machinery_images", fk: "machinery_id", folder: "machinery" };
+/** In-yard photos of a car (shown on the public car page under "In-yard photos"). */
+export const YARD_PHOTOS: PhotoTable = { table: "vehicle_yard_images", fk: "vehicle_id", folder: "yard" };
 
 /** Uploads one photo to the vehicle-images bucket and records it in the given images table. */
 export async function uploadStockPhoto(supabase: SupabaseClient, t: PhotoTable, ownerId: string, file: Blob, name: string, sortOrder: number, resize = true) {

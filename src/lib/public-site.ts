@@ -245,6 +245,12 @@ export const getPart = cache(async (partNo: string): Promise<PublicPartDetail | 
   const { data } = await anon().rpc("public_part", { p_part_no: partNo });
   return ((data ?? [])[0] as PublicPartDetail) ?? null;
 });
+/** Photos taken at the yard for a car (storage paths), shown under "In-yard photos" on its page. */
+export const getYardPhotos = cache(async (stockNo: string): Promise<string[]> => {
+  const { data } = await anon().rpc("public_vehicle_yard_photos", { p_key: stockNo });
+  return Array.isArray(data) ? (data as string[]) : [];
+});
+
 export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; branch?: string; page?: string };
 
 // ---------------------------------------------------------------------------
