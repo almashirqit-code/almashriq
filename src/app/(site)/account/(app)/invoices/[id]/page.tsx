@@ -26,7 +26,7 @@ export default async function AccountInvoice({ params }: { params: Promise<{ id:
           <ArrowLeft className="h-4 w-4" /> All invoices
         </Link>
         <a
-          href={`/print/account/invoices/${inv.id}`}
+          href={`/account/print/invoices/${inv.id}`}
           target="_blank"
           rel="noopener"
           className="inline-flex h-11 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white hover:bg-brand-700"

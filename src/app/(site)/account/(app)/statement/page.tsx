@@ -16,7 +16,7 @@ export default async function AccountStatement() {
         <p className="text-sm text-white/70">All invoices and payments on your account, with the running balance. Quotations aren&apos;t included.</p>
         {byCurrency.size > 0 && (
           <a
-            href="/print/account/statement"
+            href="/account/print/statement"
             target="_blank"
             rel="noopener"
             className="inline-flex h-11 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white hover:bg-brand-700"

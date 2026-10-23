@@ -55,8 +55,8 @@ export async function middleware(request: NextRequest) {
   }
 
   let response = NextResponse.next({ request });
-  // Customer portal pages, plus their print views (invoice, statement) outside the site layout.
-  const isAccount = path === "/account" || path.startsWith("/account/") || path.startsWith("/print/account/");
+  // Customer portal (its print views live at /account/print/…, outside the site layout).
+  const isAccount = path === "/account" || path.startsWith("/account/");
   if (!path.startsWith("/admin") && !isAccount && path !== "/api/site-image") return response;
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
