@@ -4,6 +4,7 @@ import { publicImageUrl } from "@/lib/format";
 import { carTitle, priceLabel, type PublicCard } from "@/lib/public-site";
 import { CardPhotos } from "@/components/site/card-photos";
 import { ShipsFrom } from "@/components/site/ships-from";
+import { StatusTag, statusTag } from "@/components/site/status-tag";
 
 export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
   const href = `/cars/${encodeURIComponent(c.stock_no)}`;
@@ -17,17 +18,13 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
         <CardPhotos images={imgs} alt={`${carTitle(c)} ${c.stock_no}`} dim={sold} />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a0a0c]/70 to-transparent" />
         <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{c.stock_no}</span>
-        {c.image_count > 1 && (
+        {c.image_count > 1 && !statusTag(c.status) && (
           <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
             <Camera className="h-3 w-3" />
             {c.image_count}
           </span>
         )}
-        {(sold || reserved) && (
-          <span className={`absolute inset-x-0 bottom-0 py-1 text-center text-xs font-black uppercase tracking-widest text-white ${sold ? "bg-[var(--accent)]/95" : "bg-amber-500/95"}`}>
-            {sold ? "Sold" : "Reserved"}
-          </span>
-        )}
+        <StatusTag status={c.status} />
         {c.for_parts && !sold && !reserved && <span className="absolute bottom-2 left-2.5 rounded-lg bg-[var(--accent)] px-2 py-0.5 text-xs font-bold text-white">Parts car</span>}
       </Link>
       <div className="flex flex-1 flex-col p-3.5">
