@@ -50,11 +50,11 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
       {facets.category.length > 0 && (
         <div className="hscroll mt-4 lg:hidden">
           <Link href={href({ category: undefined })} className={`inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold ${!f.category ? "bg-[var(--accent)] text-white" : "glass-lite"}`}>
-            All <span className="ml-1.5 opacity-70">{facets.total}</span>
+            All <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{facets.total}</span>
           </Link>
           {facets.category.map(([c, n]) => (
             <Link key={c} href={href({ category: c })} className={`inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-4 text-sm font-bold ${f.category?.toLowerCase() === c.toLowerCase() ? "bg-[var(--accent)] text-white" : "glass-lite"}`}>
-              {c} <span className="ml-1.5 opacity-70">{n}</span>
+              {c} <span className="ml-1.5 rounded-md bg-black/25 px-1.5 py-0.5 text-xs tabular-nums">{n}</span>
             </Link>
           ))}
         </div>

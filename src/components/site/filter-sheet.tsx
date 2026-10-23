@@ -20,9 +20,14 @@ export function FilterToolbar({ count, children }: { count: number; children?: R
   );
 }
 
-export function FilterPanel({ children }: { children: React.ReactNode }) {
+/**
+ * `sticky`: keep the panel pinned while scrolling on desktop. Only for sidebars where the panel is the
+ * only box (car list) — with more boxes below it (categories, inquiry form) they would slide under the
+ * translucent panel and show through.
+ */
+export function FilterPanel({ children, sticky = false }: { children: React.ReactNode; sticky?: boolean }) {
   return (
-    <div id="filters" className="filter-panel lg:sticky lg:top-20 lg:block">
+    <div id="filters" className={`filter-panel lg:block ${sticky ? "lg:sticky lg:top-20" : ""}`}>
       <a href="#results" aria-label="Close filters" tabIndex={-1} className="absolute inset-0 bg-black/60 lg:hidden" />
       <div className="filter-sheet glass-strong absolute inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto overscroll-contain rounded-t-3xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:static lg:max-h-none lg:overflow-visible lg:rounded-2xl">
         <div className="mb-3 flex items-center justify-between lg:hidden">

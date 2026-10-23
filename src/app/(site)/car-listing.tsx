@@ -66,7 +66,7 @@ export async function CarListing({ f, path, heading, intro, lockMake = false }: 
 
       <div className="grid gap-5 lg:grid-cols-[16rem_1fr]">
         <aside>
-          <FilterPanel>
+          <FilterPanel sticky>
             <form action={path} className="space-y-3">
               <input name="q" defaultValue={f.q ?? ""} placeholder="Model, stock ID…" className={FIELD} aria-label="Keyword" enterKeyHint="search" />
               {stocked.length > 1 && (
