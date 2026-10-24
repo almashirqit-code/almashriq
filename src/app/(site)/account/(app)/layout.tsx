@@ -20,6 +20,8 @@ export default async function AccountLayout({ children }: { children: React.Reac
     if (staff) redirect("/admin");
   }
   const name = me?.customer?.name || me?.full_name || user.email;
+  // Unread replies from support (own open thread only; RLS).
+  const { data: thread } = me ? await supabase.from("support_threads").select("customer_unread").eq("portal_user_id", user.id).eq("status", "open").maybeSingle() : { data: null };
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8 lg:py-10">
@@ -42,7 +44,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
           </button>
         </form>
       </div>
-      {me && me.status !== "rejected" && <AccountNav active={me.status === "active"} />}
+      {me && me.status !== "rejected" && <AccountNav active={me.status === "active"} unread={thread?.customer_unread ?? 0} />}
       {children}
     </section>
   );

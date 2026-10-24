@@ -11,10 +11,11 @@ const TABS = [
   { href: "/account/cars", label: "My cars" },
   { href: "/account/statement", label: "Statement" },
   { href: "/account/inquiries", label: "Inquiries", always: true },
+  { href: "/account/support", label: "Support chat", always: true },
 ];
 
-/** Account tabs; scrolls sideways on phones. Pending accounts only get Overview and Inquiries. */
-export function AccountNav({ active }: { active: boolean }) {
+/** Account tabs; scrolls sideways on phones. Pending accounts get Overview, Inquiries and Support chat. */
+export function AccountNav({ active, unread = 0 }: { active: boolean; unread?: number }) {
   const path = usePathname();
   const on = (href: string) => (href === "/account" ? path === "/account" : path.startsWith(href));
   return (
@@ -30,6 +31,11 @@ export function AccountNav({ active }: { active: boolean }) {
               }`}
             >
               {t.label}
+              {t.href === "/account/support" && unread > 0 && (
+                <span className="ml-2 min-w-5 rounded-full bg-brand-600 px-1.5 text-center text-[11px] font-bold leading-5 text-white" aria-label={`${unread} unread`}>
+                  {unread}
+                </span>
+              )}
             </Link>
           </li>
         ))}

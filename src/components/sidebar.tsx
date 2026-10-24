@@ -26,6 +26,7 @@ import {
   Tractor,
   Activity,
   UserPlus,
+  MessagesSquare,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -65,6 +66,7 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
     label: "grp_sales",
     items: [
       { href: "/admin/inquiries", label: "nav_inquiries", icon: Inbox },
+      { href: "/admin/support", label: "nav_support", icon: MessagesSquare },
       { href: "/admin/customers", label: "nav_customers", icon: Users },
       { href: "/admin/portal-signups", label: "nav_portal_signups", icon: UserPlus, roles: ["admin", "manager"] },
       { href: "/admin/reservations", label: "nav_reservations", icon: BookmarkCheck },

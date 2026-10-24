@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Plus, Trash2, Pencil, Mail, Phone, MessageCircle, MapPin } from "lucide-react";
+import { Plus, Trash2, Pencil, Mail, Phone, MessageCircle, MapPin, MessagesSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -46,6 +46,10 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
             <Link href={`/admin/customers/${c.id}/edit`} className="btn-secondary">
               <Pencil className="h-4 w-4" />
               {t("edit")}
+            </Link>
+            <Link href={`/admin/support?filter=open&customer=${c.id}`} className="btn-secondary">
+              <MessagesSquare className="h-4 w-4" />
+              {t("nav_support")}
             </Link>
             <Link href={`/admin/invoices/new?customer=${c.id}`} className="btn-primary">
               <Plus className="h-4 w-4" />
