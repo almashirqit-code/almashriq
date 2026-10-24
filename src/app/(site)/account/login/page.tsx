@@ -5,8 +5,8 @@ import { SignInForm } from "../forms";
 
 export const metadata: Metadata = { title: "Customer sign in", robots: { index: false, follow: false } };
 
-export default async function CustomerLogin({ searchParams }: { searchParams: Promise<{ link?: string }> }) {
-  const { link } = await searchParams;
+export default async function CustomerLogin({ searchParams }: { searchParams: Promise<{ link?: string; next?: string }> }) {
+  const { link, next } = await searchParams;
   return (
     <AuthShell
       title="Customer sign in"
@@ -25,7 +25,7 @@ export default async function CustomerLogin({ searchParams }: { searchParams: Pr
           That link has expired or was already used. Sign in, or request a new password link.
         </p>
       )}
-      <SignInForm />
+      <SignInForm next={next?.slice(0, 200)} />
     </AuthShell>
   );
 }

@@ -42,7 +42,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
           </button>
         </form>
       </div>
-      {me?.status === "active" && <AccountNav />}
+      {me && me.status !== "rejected" && <AccountNav active={me.status === "active"} />}
       {children}
     </section>
   );

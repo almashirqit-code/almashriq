@@ -39,10 +39,11 @@ function Submit({ pending, children }: { pending: boolean; children: React.React
   );
 }
 
-export function SignInForm() {
+export function SignInForm({ next }: { next?: string }) {
   const [state, action, pending] = useActionState(customerSignIn, {});
   return (
     <form action={action} className="space-y-3">
+      {next && <input type="hidden" name="next" value={next} />}
       <div>
         <label htmlFor="email" className={LABEL}>Email</label>
         <input id="email" name="email" type="email" inputMode="email" required autoComplete="email" className={F} />

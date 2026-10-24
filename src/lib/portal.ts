@@ -152,6 +152,19 @@ export const getPortalVehicles = cache(() => rows<PortalVehicle>("portal_vehicle
 export const getPortalDocuments = cache(() => rows<PortalDocument>("portal_documents"));
 export const getPortalStatement = cache(() => rows<StatementRow>("portal_statement"));
 
+export type PortalInquiry = { inquiry_no: number; created_at: string; stock_no: string | null; message: string | null; status: string; agent: string | null };
+/** The signed-in login's own inquiries (pending accounts too). */
+export const getPortalInquiries = cache(() => rows<PortalInquiry>("portal_inquiries"));
+
+export const INQUIRY_STATUS: Record<string, { label: string; cls: string }> = {
+  new: { label: "Sent", cls: "bg-amber-100 text-amber-900" },
+  contacted: { label: "Agent replied", cls: "bg-sky-100 text-sky-900" },
+  quoted: { label: "Quoted", cls: "bg-violet-100 text-violet-900" },
+  won: { label: "Done", cls: "bg-emerald-100 text-emerald-900" },
+  lost: { label: "Closed", cls: "bg-slate-200 text-slate-700" },
+  spam: { label: "Closed", cls: "bg-slate-200 text-slate-700" },
+};
+
 /** One of the customer's invoices, shaped for InvoiceDocument (null if it isn't theirs, or is a draft). */
 export const getPortalInvoiceDoc = cache(async (id: string) => {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;

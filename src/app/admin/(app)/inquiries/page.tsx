@@ -27,6 +27,7 @@ type Row = {
   status: string;
   assigned_to: string | null;
   customer_id: string | null;
+  source: string | null;
   created_at: string;
 };
 
@@ -120,6 +121,11 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
                       <Link href={`/admin/inquiries/${r.id}`} className="font-semibold text-slate-800 hover:text-brand-700">
                         {r.name}
                       </Link>
+                      {r.source === "portal" && (
+                        <span className="ml-1.5 rounded-full bg-cerulean-50 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase text-cerulean-700 ring-1 ring-cerulean-200" title="Sent from the customer's account">
+                          Portal
+                        </span>
+                      )}
                       <div className="truncate text-xs text-slate-500">{[r.country, r.port].filter(Boolean).join(" · ")}</div>
                       <div className="flex flex-wrap gap-x-3 text-xs text-slate-500">
                         {r.email && (

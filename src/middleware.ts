@@ -87,7 +87,8 @@ export async function middleware(request: NextRequest) {
     if (!user && !publicPage) {
       const url = request.nextUrl.clone();
       url.pathname = "/account/login";
-      url.search = "";
+      // Come back here after signing in (e.g. /account/inquiries?stock=AM-1).
+      url.search = path === "/account" ? "" : `?next=${encodeURIComponent(path + request.nextUrl.search)}`;
       return NextResponse.redirect(url);
     }
     if (user && (path.startsWith("/account/login") || path.startsWith("/account/signup"))) {

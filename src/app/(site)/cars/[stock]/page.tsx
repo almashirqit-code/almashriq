@@ -183,6 +183,12 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
               compact
               defaultMessage={sold ? `I'm looking for a car similar to ${c.stock_no} ${title}.` : `Please send me a C&F quotation for ${c.stock_no} ${title}.`}
             />
+            <p className="mt-3 text-center text-sm">
+              Already a customer?{" "}
+              <Link href={`/account/inquiries?stock=${encodeURIComponent(c.stock_no)}`} className="font-bold text-brand-700 hover:underline">
+                Ask your agent from your account →
+              </Link>
+            </p>
           </div>
         </div>
       </div>

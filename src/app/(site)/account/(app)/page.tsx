@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Clock3, ShieldAlert, MessageCircle, Car, Mail, Ship } from "lucide-react";
+import { Clock3, ShieldAlert, MessageCircle, Car, Mail, Ship, Send } from "lucide-react";
 import { getCompany, whatsapp } from "@/lib/public-site";
 import { money } from "@/lib/format";
 import {
@@ -24,7 +24,12 @@ export default async function AccountHome() {
   const [me, company] = await Promise.all([getPortalMe(), getCompany()]);
   const wa = whatsapp(company, "Hello Al Mashriq, I'm writing from my customer account.");
   const contact = (
-    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+    <div className="mt-5 grid gap-3 sm:grid-cols-3">
+      {me && me.status !== "rejected" && (
+        <Link href="/account/inquiries" className="glass flex items-center gap-3 rounded-2xl p-4 font-bold hover:brightness-105">
+          <Send className="h-5 w-5 text-brand-600" /> Send an inquiry
+        </Link>
+      )}
       {wa && (
         <a href={wa} target="_blank" rel="noreferrer" className="glass flex items-center gap-3 rounded-2xl p-4 font-bold hover:brightness-105">
           <MessageCircle className="h-5 w-5 text-[#25D366]" /> Message us on WhatsApp

@@ -35,7 +35,10 @@ export async function customerSignIn(_prev: AuthState, formData: FormData): Prom
     return { error: "Invalid email or password." };
   }
   const { data: staff } = await supabase.from("profiles").select("id").eq("id", data.user.id).maybeSingle();
-  redirect(staff ? "/admin" : "/account");
+  if (staff) redirect("/admin");
+  // Back to the account page they were heading to — account paths only (no open redirect).
+  const next = String(formData.get("next") ?? "");
+  redirect(/^\/account(\/[\w\-/]*)?(\?[\w\-=&%.]*)?$/.test(next) ? next : "/account");
 }
 
 /** Self sign-up. The database trigger turns it into a pending portal account (never a staff profile). */
