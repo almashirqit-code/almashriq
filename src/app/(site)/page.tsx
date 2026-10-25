@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { flagFor, FLAGS } from "@/lib/brand-assets";
+import { flagFor } from "@/lib/brand-assets";
+import { MARKETS } from "@/lib/markets";
+import { POPULAR_MODELS } from "@/lib/models";
 import { dicebear } from "@/lib/avatar";
 import Link from "next/link";
 import { Search, ShieldCheck, Ship, Banknote, ArrowRight, Send, Quote, FileCheck2, Globe, ChevronDown } from "lucide-react";
@@ -329,15 +331,25 @@ export default async function PublicHome() {
             <span className="h-5 w-1 rounded-full bg-gradient-to-b from-[var(--accent)] to-rose-300" />
             We export worldwide — including
           </h2>
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-3 sm:flex sm:flex-wrap sm:gap-x-6">
-            {Object.entries(FLAGS).map(([code, name]) => (
-              <li key={code} className="flex items-center gap-2 text-sm font-semibold">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/flags/${code}.svg`} alt="" className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" loading="lazy" />
-                {name}
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-1 sm:flex sm:flex-wrap sm:gap-x-6">
+            {MARKETS.map((m) => (
+              <li key={m.slug}>
+                <Link href={`/export/${m.slug}`} className="flex min-h-11 items-center gap-2 text-sm font-semibold hover:underline">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/flags/${m.code}.svg`} alt="" className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" loading="lazy" />
+                  {m.name}
+                </Link>
               </li>
             ))}
           </ul>
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-white/10 pt-3 text-sm">
+            <span className="font-bold">Popular models:</span>
+            {POPULAR_MODELS.map((m) => (
+              <Link key={m.slug} href={`/models/${m.slug}`} className="hover:underline">
+                {m.make} {m.model}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

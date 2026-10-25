@@ -75,7 +75,7 @@ export default async function CookiesPage() {
         </tbody>
       </table>
 
-      <h2>Chat &amp; reviews (only with your consent)</h2>
+      <h2>Chat, reviews &amp; map (only with your consent)</h2>
       <table>
         <thead>
           <tr>
@@ -95,10 +95,15 @@ export default async function CookiesPage() {
             <td>Shows our Trustpilot review widget.</td>
             <td>Set by Trustpilot</td>
           </tr>
+          <tr>
+            <td>Google Maps cookies (e.g. NID)</td>
+            <td>Shows the map of our yard on the contact page.</td>
+            <td>Set by Google</td>
+          </tr>
         </tbody>
       </table>
       <p>
-        Without these, you can still reach us by WhatsApp, email or the inquiry form, and see our reviews on Trustpilot&apos;s own website.
+        Without these, you can still reach us by WhatsApp, email or the inquiry form, see our reviews on Trustpilot&apos;s own website, and open our location in Google Maps.
       </p>
 
       <h2>More information</h2>

@@ -10,17 +10,38 @@ const FIELD = "h-12 w-full rounded-xl px-3 text-sm font-semibold";
 const FLABEL = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/60";
 const LABEL: Record<string, string> = { q: "Search", make: "Make", body: "Body", fuel: "Fuel", trans: "Transmission", steering: "Steering", min_price: "Min price", max_price: "Max price", min_year: "From year", max_year: "To year", branch: "Ships from" };
 
-/** Filter sidebar (bottom sheet on phones) + results grid + pagination, shared by /cars and /makes/[make]. */
-export async function CarListing({ f, path, heading, intro, lockMake = false }: { f: Filters; path: string; heading: string; intro?: React.ReactNode; lockMake?: boolean }) {
+/**
+ * Filter sidebar (bottom sheet on phones) + results grid + pagination, shared by /cars, /makes/[make]
+ * and /models/[model]. A locked make / keyword is part of the page itself, not a removable filter.
+ */
+export async function CarListing({
+  f,
+  path,
+  heading,
+  intro,
+  lockMake = false,
+  lockQ = false,
+  crumb,
+}: {
+  f: Filters;
+  path: string;
+  heading: string;
+  intro?: React.ReactNode;
+  lockMake?: boolean;
+  lockQ?: boolean;
+  /** Last breadcrumb label (defaults to the locked make). */
+  crumb?: string;
+}) {
   const [company, facets, res, branches] = await Promise.all([getCompany(), getFacets(), listCars(f), getBranches()]);
   const pages = Math.max(1, Math.ceil(res.total / PAGE_SIZE));
-  const active = (["q", "make", "body", "fuel", "trans", "steering", "min_price", "max_price", "min_year", "max_year", "branch"] as const).filter((k) => f[k] && !(lockMake && k === "make"));
+  const locked = (k: string) => (lockMake && k === "make") || (lockQ && k === "q");
+  const active = (["q", "make", "body", "fuel", "trans", "steering", "min_price", "max_price", "min_year", "max_year", "branch"] as const).filter((k) => f[k] && !locked(k));
   // Only offer a "Ships from" filter once stock comes from more than one country.
   const stocked = branches.filter((b) => b.n_cars > 0 || b.code === f.branch?.toUpperCase());
 
   const href = (over: Partial<Filters>) => {
     const p = new URLSearchParams();
-    for (const [k, v] of Object.entries({ ...f, ...over })) if (v && !(lockMake && k === "make")) p.set(k, String(v));
+    for (const [k, v] of Object.entries({ ...f, ...over })) if (v && !locked(k)) p.set(k, String(v));
     return `${path}${p.size ? `?${p}` : ""}`;
   };
   const sel = (name: keyof Filters, label: string, opts: [string, number][]) => (
@@ -47,7 +68,7 @@ export async function CarListing({ f, path, heading, intro, lockMake = false }: 
     <div className="mx-auto max-w-7xl px-4 py-5 lg:px-6 lg:py-6">
       <nav className="mb-3 text-xs text-white/60" aria-label="Breadcrumb">
         <Link href="/" className="inline-block py-2 hover:text-white">Home</Link> / <Link href="/cars" className="inline-block py-2 hover:text-white">Stock list</Link>
-        {lockMake && f.make ? ` / ${f.make}` : ""}
+        {crumb ? ` / ${crumb}` : lockMake && f.make ? ` / ${f.make}` : ""}
       </nav>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -68,7 +89,7 @@ export async function CarListing({ f, path, heading, intro, lockMake = false }: 
         <aside>
           <FilterPanel sticky>
             <form action={path} className="space-y-3">
-              <input name="q" defaultValue={f.q ?? ""} placeholder="Model, stock ID…" className={FIELD} aria-label="Keyword" enterKeyHint="search" />
+              {!lockQ && <input name="q" defaultValue={f.q ?? ""} placeholder="Model, stock ID…" className={FIELD} aria-label="Keyword" enterKeyHint="search" />}
               {stocked.length > 1 && (
                 <div>
                   <label className={FLABEL}>Ships from</label>

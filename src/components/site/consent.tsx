@@ -99,10 +99,10 @@ function ConsentBanner({ initial, detailed, onSave, onClose }: { initial: Consen
             <p className="text-sm font-bold">We use cookies</p>
             <p className="mt-1 text-xs leading-5 text-white/75">
               {/* Shorter on phones so the banner doesn't cover half the screen */}
-              <span className="sm:hidden">Necessary cookies keep the site working. Analytics, chat and reviews only if you allow.</span>
+              <span className="sm:hidden">Necessary cookies keep the site working. Analytics, chat, reviews and the map only if you allow.</span>
               <span className="hidden sm:inline">
-                Necessary cookies keep the site and your account working. With your permission we also use analytics (Google Analytics) to improve the site, and live chat
-                and reviews (Tawk.to, Trustpilot).
+                Necessary cookies keep the site and your account working. With your permission we also use analytics (Google Analytics) to improve the site, and live chat,
+                reviews and our map (Tawk.to, Trustpilot, Google Maps).
               </span>{" "}
               See our{" "}
               <Link href="/cookies" className="font-semibold text-white underline">
@@ -126,7 +126,7 @@ function ConsentBanner({ initial, detailed, onSave, onClose }: { initial: Consen
           <div className="mt-3 space-y-2 rounded-xl bg-white/5 p-3 text-sm">
             <Toggle label="Necessary" hint="Sign-in, language and this choice. Always on." checked disabled />
             <Toggle label="Analytics" hint="Google Analytics: anonymous visit statistics." checked={analytics} onChange={setAnalytics} />
-            <Toggle label="Chat & reviews" hint="Tawk.to live chat and the Trustpilot widget." checked={functional} onChange={setFunctional} />
+            <Toggle label="Chat, reviews & map" hint="Tawk.to live chat, the Trustpilot widget and the Google map of our yard." checked={functional} onChange={setFunctional} />
           </div>
         )}
 

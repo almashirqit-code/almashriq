@@ -15,6 +15,9 @@ import { FavoritesLink, FavoritesSync } from "@/components/site/favorite-button"
 import { BodyIcon } from "@/components/site/body-icon";
 import { JsonLd } from "@/components/site/json-ld";
 import { Logo, LOGO_SRC } from "@/components/brand/logo";
+import { SocialLinks } from "@/components/site/social-links";
+import { SAME_AS, SOCIAL } from "@/lib/social";
+import { MARKETS } from "@/lib/markets";
 import "./site.css";
 
 const OG_IMAGE = { url: "/brand/og.jpg?v=1", width: 1200, height: 630, alt: "Al Mashriq Trading — Japanese used cars, parts & machinery exported worldwide" };
@@ -72,15 +75,19 @@ export default async function PublicLayout({ children }: { children: React.React
           email: company.email ?? undefined,
           telephone: company.phone ?? company.mobile ?? undefined,
           faxNumber: company.fax ?? undefined,
-          address: company.address ? { "@type": "PostalAddress", streetAddress: company.address, addressCountry: "JP" } : undefined,
-          areaServed: "Worldwide",
-          // Verified brand profiles — tells Google these all refer to one business (entity confirmation).
-          sameAs: [
-            "https://www.facebook.com/AlmashriqtradingJP/",
-            "https://www.tiktok.com/@almashriqtrading",
-            "https://www.almashriqtradingjapan.com/",
-            "https://www.trustpilot.com/review/almashriqtrading.site",
-          ],
+          "@id": `${SITE_URL}/#business`,
+          address: company.address
+            ? {
+                "@type": "PostalAddress",
+                streetAddress: company.address.replace(/\s*\r?\n\s*/g, ", "),
+                postalCode: company.address.match(/\b\d{3}-\d{4}\b/)?.[0],
+                addressCountry: "JP",
+              }
+            : undefined,
+          hasMap: SOCIAL.googleMaps,
+          areaServed: ["Worldwide", ...MARKETS.map((m) => m.name)],
+          // Verified brand profiles and the Google Maps listing — tells Google these are one business.
+          sameAs: SAME_AS,
         }}
       />
 
@@ -213,10 +220,11 @@ export default async function PublicLayout({ children }: { children: React.React
 
       {/* Footer */}
       <footer className="on-dark on-dark-bar mt-14 border-t border-white/10">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 lg:grid-cols-4 lg:px-6">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 lg:grid-cols-5 lg:px-6">
           <div className="col-span-2 lg:col-span-1">
             {custom ? logoImg("h-11") : <Logo size="lg" />}
             <p className="mt-4 text-sm leading-6 text-white/70">{company.company_name} exports quality Japanese used vehicles and spare parts worldwide by RoRo and container.</p>
+            <SocialLinks className="mt-4 text-white/85" />
           </div>
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">Popular makes</div>
@@ -225,6 +233,22 @@ export default async function PublicLayout({ children }: { children: React.React
                 <li key={m.slug}>
                   <Link href={`/makes/${m.slug}`} className="inline-flex min-h-11 items-center text-white/70 hover:text-white">
                     {m.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">
+              <Link href="/export" className="hover:underline">
+                We export to
+              </Link>
+            </div>
+            <ul className="mt-3 space-y-1 text-sm">
+              {MARKETS.map((m) => (
+                <li key={m.slug}>
+                  <Link href={`/export/${m.slug}`} className="inline-flex min-h-11 items-center text-white/70 hover:text-white">
+                    {m.name}
                   </Link>
                 </li>
               ))}

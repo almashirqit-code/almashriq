@@ -19,7 +19,7 @@ declare global {
 
 /**
  * Trustpilot TrustBox. The bootstrap script finds this div and renders the widget in an iframe.
- * It only loads once the visitor allows "Chat & reviews" cookies; until then a plain link is shown.
+ * It only loads once the visitor allows "Chat, reviews & map" cookies; until then a plain link is shown.
  */
 export function TrustpilotWidget() {
   const ref = useRef<HTMLDivElement>(null);

@@ -52,7 +52,7 @@ export default async function PrivacyPage() {
 
       <h2>4. Who we share it with</h2>
       <ul>
-        <li><b>Service providers</b> that host and run our systems for us: Supabase (database, sign-in and file storage), Vercel (website hosting), and, only with your consent, Google Analytics (statistics), Tawk.to (live chat) and Trustpilot (reviews).</li>
+        <li><b>Service providers</b> that host and run our systems for us: Supabase (database, sign-in and file storage), Vercel (website hosting), and, only with your consent, Google Analytics (statistics), Tawk.to (live chat), Trustpilot (reviews) and Google Maps (the map on our contact page).</li>
         <li><b>Partners needed to deliver your order</b>: shipping lines, freight forwarders, inspection agencies, couriers and banks.</li>
         <li><b>Authorities</b> when the law requires it, for example customs or tax authorities.</li>
       </ul>

@@ -3,6 +3,9 @@ import { Mail, Phone, MapPin, MessageCircle, Printer, Clock } from "lucide-react
 import { getCompany, whatsapp } from "@/lib/public-site";
 import { InquiryForm } from "@/components/site/inquiry-form";
 import { WorldClock } from "@/components/world-clock";
+import { SocialLinks } from "@/components/site/social-links";
+import { YardMap } from "@/components/site/yard-map";
+import { mapsQuery } from "@/lib/social";
 
 export const revalidate = 300;
 
@@ -56,7 +59,12 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                 <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
               </a>
             )}
+            <div className="border-t border-white/10 pt-3">
+              <div className="mb-2 text-xs font-bold uppercase tracking-wider text-white/60">Follow us</div>
+              <SocialLinks className="text-white" />
+            </div>
           </div>
+          <YardMap query={mapsQuery(company.company_name, company.address)} />
         </aside>
       </div>
     </div>

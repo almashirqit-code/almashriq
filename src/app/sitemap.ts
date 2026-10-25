@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { getSitemapImages, getSitemapRows, makeSlug, SITE_URL } from "@/lib/public-site";
 import { publicImageUrl } from "@/lib/format";
+import { MARKETS } from "@/lib/markets";
+import { POPULAR_MODELS } from "@/lib/models";
 
 export const revalidate = 3600;
 
@@ -21,6 +23,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${SITE_URL}/cookies`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.2 },
+    // Country and popular-model landing pages (keyword pages: "Japanese used cars in Kenya", "used Toyota Allion").
+    { url: `${SITE_URL}/export`, changeFrequency: "monthly", priority: 0.7 },
+    ...MARKETS.map((m) => ({ url: `${SITE_URL}/export/${m.slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
+    ...POPULAR_MODELS.map((m) => ({ url: `${SITE_URL}/models/${m.slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
   ];
   const seen = new Set<string>();
   const dynamic = rows.flatMap((r): MetadataRoute.Sitemap => {
