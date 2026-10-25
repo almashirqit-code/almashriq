@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ImageIcon } from "lucide-react";
+import { thumbUrl } from "@/lib/format";
 
 /**
  * Card photo that rotates through the car's first photos:
@@ -19,6 +20,13 @@ export function CardPhotos({ images, alt, dim = false }: { images: string[]; alt
     const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.4 });
     io.observe(el);
     return () => io.disconnect();
+  }, []);
+
+  // A thumbnail that failed before React took over never fired onError: swap those to the full photo now.
+  useEffect(() => {
+    ref.current?.querySelectorAll<HTMLImageElement>("img[data-full]").forEach((img) => {
+      if (img.complete && img.naturalWidth === 0 && img.dataset.full && img.src !== img.dataset.full) img.src = img.dataset.full;
+    });
   }, []);
 
   useEffect(() => {
@@ -44,9 +52,15 @@ export function CardPhotos({ images, alt, dim = false }: { images: string[]; alt
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={src}
-            src={src}
+            // The small card thumbnail; if it hasn't been made yet, switch to the full photo once.
+            src={thumbUrl(src)}
+            data-full={src}
+            onError={(e) => {
+              if (e.currentTarget.src !== src) e.currentTarget.src = src;
+            }}
             alt={k === 0 ? alt : ""}
-            loading={k === 0 ? "lazy" : "lazy"}
+            loading="lazy"
+            decoding="async"
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${k === i ? "opacity-100" : "opacity-0"} ${dim ? "grayscale-[40%]" : ""}`}
           />
         ) : null

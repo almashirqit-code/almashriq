@@ -4,7 +4,7 @@ import { useMemo, useRef, useState, useTransition } from "react";
 import { ImagePlus, Star, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { pool } from "@/lib/images";
-import { publicImageUrl } from "@/lib/format";
+import { publicImageUrl, withThumbs } from "@/lib/format";
 import { bucketPaths, uploadStockPhoto, type PhotoTable } from "@/lib/photo-zip";
 
 export type StockPhoto = { id: string; path: string; sort_order: number };
@@ -73,7 +73,7 @@ export function StockPhotos({
       const { error: e } = await supabase.from(table.table).delete().eq("id", p.id);
       if (e) return setError(e.message);
       const paths = bucketPaths([p.path]);
-      if (paths.length) await supabase.storage.from("vehicle-images").remove(paths);
+      if (paths.length) await supabase.storage.from("vehicle-images").remove(withThumbs(paths));
       await reload();
     });
 

@@ -11,6 +11,7 @@ import { groupZipImages, MACHINE_PHOTOS, readZipImages, uploadStockPhoto, type Z
 import { MACHINE_TEMPLATE_HEADERS, MACHINE_TEMPLATE_SAMPLE, normalizeMachineHeader, parseMachine, type MachineField, type MachineInput } from "@/lib/machinery";
 import type { Currency } from "@/lib/types";
 import { machineryImported } from "../actions";
+import { withThumbs } from "@/lib/format";
 
 type Row = { line: number; data: MachineInput; errors: string[] };
 type Result = { saved: number; skipped: number; photos: number; errors: string[] };
@@ -188,7 +189,7 @@ export function MachineryImporter() {
         if (replace) {
           await supabase.from("machinery_images").delete().in("id", existing.map((e) => e.id));
           const paths = existing.map((e) => e.path as string);
-          for (let j = 0; j < paths.length; j += 500) await supabase.storage.from("vehicle-images").remove(paths.slice(j, j + 500));
+          for (let j = 0; j < paths.length; j += 500) await supabase.storage.from("vehicle-images").remove(withThumbs(paths.slice(j, j + 500)));
         } else for (const e of existing) startAt.set(e.machinery_id, Math.max(startAt.get(e.machinery_id) ?? 0, e.sort_order + 1));
       }
       const jobs = [...perMachine].flatMap(([id, files]) => files.map((file, i) => ({ id, file, order: (startAt.get(id) ?? 0) + i })));

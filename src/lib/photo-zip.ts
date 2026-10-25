@@ -2,7 +2,7 @@
 
 import type JSZipType from "jszip";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { IMAGE_EXT, prepareListingPhoto } from "./images";
+import { IMAGE_EXT, prepareListingPhoto, uploadThumb } from "./images";
 
 /**
  * Photos ZIP helpers shared by the vehicle, part and machinery bulk importers.
@@ -91,6 +91,8 @@ export async function uploadStockPhoto(supabase: SupabaseClient, t: PhotoTable, 
     await supabase.storage.from("vehicle-images").remove([path]);
     throw new Error(ins.error.message);
   }
+  // Yard photos only appear in the car page gallery, never on cards.
+  if (t.folder !== "yard") await uploadThumb(supabase, path, body);
   return path;
 }
 

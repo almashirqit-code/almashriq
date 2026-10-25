@@ -5,6 +5,7 @@ import { checkDatabase, checkPage, timed, type Check } from "@/lib/health";
 import { SITE_URL } from "@/lib/public-site";
 import { PageHeader } from "@/components/ui";
 import { RefreshControls } from "./refresh";
+import { ThumbBackfill } from "./thumb-backfill";
 
 export const metadata = { title: "System monitor" };
 export const dynamic = "force-dynamic";
@@ -147,6 +148,7 @@ export default async function SystemPage() {
             are up and <b>503</b> when the database is down.
           </p>
         </section>
+        <ThumbBackfill />
       </div>
     </>
   );

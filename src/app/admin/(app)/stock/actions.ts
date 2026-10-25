@@ -7,6 +7,7 @@ import { assertRole } from "@/lib/auth";
 import { parseVehicle } from "@/lib/vehicle";
 import { VEHICLE_FIELDS, VEHICLE_STATUSES, type VehicleStatus } from "@/lib/types";
 import { pingIndexNow } from "@/lib/indexnow";
+import { withThumbs } from "@/lib/format";
 
 export type FormState = { error?: string; ok?: boolean };
 
@@ -93,7 +94,7 @@ export async function deleteVehicle(id: string) {
   if (error) throw new Error(error.message);
   // Photo rows cascade with the car; remove the files too (listing + in-yard photos).
   const paths = [...(imgs ?? []), ...(yard ?? [])].map((i) => i.path).filter((p) => !p.startsWith("site-assets:"));
-  if (paths.length) await supabase.storage.from("vehicle-images").remove(paths);
+  if (paths.length) await supabase.storage.from("vehicle-images").remove(withThumbs(paths));
   revalidatePath("/admin/stock");
   revalidateTag("public-site");
   redirect("/admin/stock");
@@ -104,7 +105,7 @@ export async function deleteImage(imageId: string, vehicleId: string) {
   const supabase = await createClient();
   const { data: img } = await supabase.from("vehicle_images").select("path").eq("id", imageId).single();
   await supabase.from("vehicle_images").delete().eq("id", imageId);
-  if (img) await supabase.storage.from("vehicle-images").remove([img.path]);
+  if (img) await supabase.storage.from("vehicle-images").remove(withThumbs([img.path]));
   revalidatePath(`/admin/stock/${vehicleId}`);
 }
 

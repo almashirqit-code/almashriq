@@ -1,6 +1,7 @@
 "use client";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { thumbPath } from "./format";
 
 export const IMAGE_EXT = /\.(jpe?g|png|webp|gif|heic)$/i;
 
@@ -113,6 +114,43 @@ export async function prepareListingPhoto(blob: Blob, opts: { watermark?: boolea
   }
 }
 
+/** Longest side of a card thumbnail: sharp on a ~340 px wide card at 1.4× and on desktop grids, ~25–35 KB as WebP. */
+export const THUMB_MAX = 480;
+const THUMB_QUALITY = 0.72;
+
+/** Small WebP copy of an (already watermarked) listing photo for cards. Null if the browser can't make one. */
+export async function makeThumb(blob: Blob): Promise<Blob | null> {
+  try {
+    const bitmap = await createImageBitmap(blob);
+    const scale = Math.min(1, THUMB_MAX / Math.max(bitmap.width, bitmap.height));
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close();
+    const out = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/webp", THUMB_QUALITY));
+    // The thumbnail path ends in .webp, so skip browsers that can't encode WebP (cards then use the full photo).
+    return out && out.type === "image/webp" ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Makes and stores the card thumbnail for a photo at `path`. Best effort: cards fall back to the full photo. */
+export async function uploadThumb(supabase: SupabaseClient, path: string, photo: Blob) {
+  const thumb = await makeThumb(photo);
+  if (!thumb) return false;
+  const { error } = await supabase.storage
+    .from("vehicle-images")
+    .upload(thumbPath(path), thumb, { contentType: "image/webp", upsert: true, cacheControl: "31536000" });
+  return !error;
+}
+
 function extFor(blob: Blob, name: string) {
   if (blob.type === "image/jpeg") return "jpg";
   if (blob.type === "image/png") return "png";
@@ -146,6 +184,7 @@ export async function uploadVehicleImage(
     await supabase.storage.from("vehicle-images").remove([path]);
     throw new Error(dbErr.message);
   }
+  await uploadThumb(supabase, path, body);
   return path;
 }
 

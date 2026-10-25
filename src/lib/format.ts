@@ -52,6 +52,32 @@ export function publicImageUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${p}`;
 }
 
+/*
+ * Card thumbnails: every listing photo in the vehicle-images bucket gets a small WebP copy at
+ * thumbs/<same path>.webp (made on upload; older photos by Admin → System → "Create missing thumbnails").
+ * Cards show the thumbnail and fall back to the full photo if it isn't there yet.
+ * Keep in sync with staff_photo_thumbs_missing() in migration 0032.
+ */
+const PUBLIC_BUCKET = "/storage/v1/object/public/vehicle-images/";
+
+/** Storage path of a photo's thumbnail (vehicle-images bucket). */
+export function thumbPath(path: string) {
+  return `thumbs/${path.replace(/\.[^./]+$/, "")}.webp`;
+}
+
+/** Thumbnail URL for a full photo URL; other URLs (site-assets, external) are returned unchanged. */
+export function thumbUrl(url: string) {
+  const i = url.indexOf(PUBLIC_BUCKET);
+  if (i < 0) return url;
+  const path = url.slice(i + PUBLIC_BUCKET.length).split("?")[0];
+  return path.startsWith("thumbs/") ? url : url.slice(0, i + PUBLIC_BUCKET.length) + thumbPath(path);
+}
+
+/** Photo paths plus their thumbnails, for deleting both from the bucket. */
+export function withThumbs(paths: string[]) {
+  return [...paths, ...paths.map(thumbPath)];
+}
+
 export function vehicleTitle(v: { year?: number | null; make: string; model: string; grade?: string | null }) {
   return [v.year, v.make, v.model, v.grade].filter(Boolean).join(" ");
 }

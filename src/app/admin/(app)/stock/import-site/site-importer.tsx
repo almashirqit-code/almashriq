@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Globe, Play, Pause, RotateCcw, CheckCircle2, AlertTriangle, ImageIcon, Car } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { pool } from "@/lib/images";
+import { pool, uploadThumb } from "@/lib/images";
 import { IconChip } from "@/components/ui";
 import { siteListPage, siteStatusTags, importSiteCar, finishSiteImport } from "./actions";
 
@@ -92,6 +92,7 @@ export function SiteImporter() {
           await supabase.storage.from("vehicle-images").remove([path]);
           throw ins.error;
         }
+        await uploadThumb(supabase, path, body);
         add("photos");
         add("photoBytes", body.size);
       } catch (e) {
