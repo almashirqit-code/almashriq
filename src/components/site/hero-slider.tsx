@@ -45,13 +45,18 @@ export function HeroSlider({ slides }: { slides: Slide[] }) {
           aria-hidden={k !== i}
           tabIndex={k === i ? 0 : -1}
         >
-          {s.image && (
+          {/* Only the current slide and its neighbours carry photos, so the first paint downloads one
+              photo instead of every slide's (the neighbours load in the background for the fade). */}
+          {s.image && (k === i || k === (i + 1) % slides.length || k === (i - 1 + slides.length) % slides.length) && (
             <>
-              {/* Blurred copy fills the frame; the real photo is shown whole (no cropping). */}
+              {/* Blurred copy fills the frame; the real photo is shown whole (no cropping). Same URL, so no extra download;
+                  drawn for the visible slide only, since a large blur is costly to paint on phones. */}
+              {k === i && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={s.image} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl" decoding="async" />
+              )}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={s.image} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl" loading={k === 0 ? "eager" : "lazy"} />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={s.image} alt={s.title} className="relative h-full w-full object-contain" loading={k === 0 ? "eager" : "lazy"} fetchPriority={k === 0 ? "high" : "auto"} />
+              <img src={s.image} alt={s.title} className="relative h-full w-full object-contain" loading={k === 0 ? "eager" : "lazy"} fetchPriority={k === 0 ? "high" : "low"} />
             </>
           )}
           <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#0a0a0c]/90 via-[#0a0a0c]/35 to-transparent" />
@@ -73,9 +78,10 @@ export function HeroSlider({ slides }: { slides: Slide[] }) {
           <button type="button" aria-label="Next" onClick={() => go(1)} className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white backdrop-blur hover:bg-black/55 sm:flex">
             <ChevronRight className="h-5 w-5" />
           </button>
-          <div className="absolute right-4 top-4 flex gap-1.5">
+          {/* 24 px tap targets around the small dots (accessibility: target size) */}
+          <div className="absolute right-2.5 top-2.5 flex">
             {slides.map((_, k) => (
-              <button key={k} type="button" aria-label={`Slide ${k + 1}`} onClick={() => setI(k)} className="flex h-6 items-center">
+              <button key={k} type="button" aria-label={`Show slide ${k + 1} of ${slides.length}`} aria-current={k === i} onClick={() => setI(k)} className="flex h-6 min-w-6 items-center justify-center px-[3px]">
                 <span className={`block h-1.5 rounded-full transition-all ${k === i ? "w-6 bg-white" : "w-1.5 bg-white/55"}`} />
               </button>
             ))}

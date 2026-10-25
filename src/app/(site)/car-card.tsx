@@ -37,21 +37,34 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
           <ShipsFrom code={c.branch} compact className="shrink-0 text-xs font-semibold text-white/80" />
         </div>
         <dl className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs text-white/75">
-          <div className="flex items-center gap-1.5 truncate">
-            <CalendarDays className="h-3.5 w-3.5 shrink-0 text-brand-600" />
-            {c.year ?? "—"}
+          {/* each row is a dt (icon + label for screen readers) and a dd (the value) */}
+          <div className="flex min-w-0 items-center gap-1.5">
+            <dt className="shrink-0">
+              <CalendarDays aria-hidden className="h-3.5 w-3.5 text-brand-600" />
+              <span className="sr-only">Year</span>
+            </dt>
+            <dd className="truncate">{c.year ?? "—"}</dd>
           </div>
-          <div className="flex items-center gap-1.5 truncate">
-            <Gauge className="h-3.5 w-3.5 shrink-0 text-brand-600" />
-            {c.mileage != null ? `${c.mileage.toLocaleString()} km` : "—"}
+          <div className="flex min-w-0 items-center gap-1.5">
+            <dt className="shrink-0">
+              <Gauge aria-hidden className="h-3.5 w-3.5 text-brand-600" />
+              <span className="sr-only">Mileage</span>
+            </dt>
+            <dd className="truncate">{c.mileage != null ? `${c.mileage.toLocaleString()} km` : "—"}</dd>
           </div>
-          <div className="flex items-center gap-1.5 truncate">
-            <Cog className="h-3.5 w-3.5 shrink-0 text-brand-600" />
-            {[c.engine_cc ? `${c.engine_cc.toLocaleString()}cc` : null, c.transmission].filter(Boolean).join(" ") || "—"}
+          <div className="flex min-w-0 items-center gap-1.5">
+            <dt className="shrink-0">
+              <Cog aria-hidden className="h-3.5 w-3.5 text-brand-600" />
+              <span className="sr-only">Engine</span>
+            </dt>
+            <dd className="truncate">{[c.engine_cc ? `${c.engine_cc.toLocaleString()}cc` : null, c.transmission].filter(Boolean).join(" ") || "—"}</dd>
           </div>
-          <div className="flex items-center gap-1.5 truncate">
-            <Fuel className="h-3.5 w-3.5 shrink-0 text-brand-600" />
-            {c.fuel ?? "—"}
+          <div className="flex min-w-0 items-center gap-1.5">
+            <dt className="shrink-0">
+              <Fuel aria-hidden className="h-3.5 w-3.5 text-brand-600" />
+              <span className="sr-only">Fuel</span>
+            </dt>
+            <dd className="truncate">{c.fuel ?? "—"}</dd>
           </div>
         </dl>
         <div className="mt-3 flex items-end justify-between gap-2 border-t border-white/10 pt-3">

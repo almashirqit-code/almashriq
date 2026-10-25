@@ -188,19 +188,32 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                         <ShipsFrom code={m.branch} compact className="shrink-0 text-xs font-semibold text-white/80" />
                       </div>
                       <dl className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs text-white/75">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <Clock className="h-3.5 w-3.5 shrink-0 text-brand-600" />
-                          {m.hours != null ? `${m.hours.toLocaleString()} h` : "—"}
+                        {/* each row is a dt (icon + label for screen readers) and a dd (the value) */}
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <dt className="shrink-0">
+                            <Clock aria-hidden className="h-3.5 w-3.5 text-brand-600" />
+                            <span className="sr-only">Hours</span>
+                          </dt>
+                          <dd className="truncate">{m.hours != null ? `${m.hours.toLocaleString()} h` : "—"}</dd>
                         </div>
-                        <div className="flex items-center gap-1.5 truncate">
-                          <Gauge className="h-3.5 w-3.5 shrink-0 text-brand-600" />
-                          {m.engine_power_hp != null ? `${Number(m.engine_power_hp).toLocaleString()} hp` : "—"}
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <dt className="shrink-0">
+                            <Gauge aria-hidden className="h-3.5 w-3.5 text-brand-600" />
+                            <span className="sr-only">Power</span>
+                          </dt>
+                          <dd className="truncate">{m.engine_power_hp != null ? `${Number(m.engine_power_hp).toLocaleString()} hp` : "—"}</dd>
                         </div>
-                        <div className="flex items-center gap-1.5 truncate">
-                          <Weight className="h-3.5 w-3.5 shrink-0 text-brand-600" />
-                          {m.operating_weight_kg != null ? `${(Number(m.operating_weight_kg) / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })} t` : "—"}
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <dt className="shrink-0">
+                            <Weight aria-hidden className="h-3.5 w-3.5 text-brand-600" />
+                            <span className="sr-only">Operating weight</span>
+                          </dt>
+                          <dd className="truncate">{m.operating_weight_kg != null ? `${(Number(m.operating_weight_kg) / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })} t` : "—"}</dd>
                         </div>
-                        <div className="truncate capitalize">{m.condition}</div>
+                        <div className="flex min-w-0">
+                          <dt className="sr-only">Condition</dt>
+                          <dd className="truncate capitalize">{m.condition}</dd>
+                        </div>
                       </dl>
                       <div className="mt-3 flex items-end justify-between gap-2 border-t border-white/10 pt-3">
                         <div>
