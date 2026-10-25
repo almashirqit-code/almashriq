@@ -141,8 +141,9 @@ export default async function PartUnitsPage({ searchParams }: { searchParams: Pr
                       {imgs.length ? (
                         <CardPhotos images={imgs} alt={`${title} for parts ${u.stock_no}`} />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-white/25">
-                          <Car className="h-12 w-12" />
+                        <div className="flex h-full flex-col items-center justify-center gap-2 opacity-40">
+                          <Car className="h-10 w-10" />
+                          <span className="text-xs font-semibold">Photos on request</span>
                         </div>
                       )}
                       <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{u.stock_no}</span>

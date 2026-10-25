@@ -165,8 +165,9 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                       {imgs.length ? (
                         <CardPhotos images={imgs} alt={`${machineTitle(m)} ${m.stock_no}`} dim={sold} />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-white/25">
-                          <Tractor className="h-12 w-12" />
+                        <div className="flex h-full flex-col items-center justify-center gap-2 opacity-40">
+                          <Tractor className="h-10 w-10" />
+                          <span className="text-xs font-semibold">Photos on request</span>
                         </div>
                       )}
                       <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{m.stock_no}</span>

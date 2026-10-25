@@ -6,6 +6,7 @@ import { WorldClock } from "@/components/world-clock";
 import { FxBadge } from "@/components/fx-badge";
 import { getUsdJpy } from "@/lib/fx";
 import { MobileMenu } from "@/components/site/mobile-menu";
+import { MobileSearch } from "@/components/site/mobile-search";
 import { BottomNav } from "@/components/site/bottom-nav";
 import { TawkChat } from "@/components/site/tawk-chat";
 import { GoogleAnalytics } from "@/components/site/google-analytics";
@@ -137,7 +138,7 @@ export default async function PublicLayout({ children }: { children: React.React
         </div>
       </header>
 
-      {/* Sticky bar: compact logo + search + menu on phones, the full navigation on desktop */}
+      {/* Sticky bar: logo + search icon + favourites + menu on phones, the full navigation on desktop */}
       <nav className="on-dark glass-strong sticky top-0 z-40 rounded-none border-x-0 border-t-0">
         <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center gap-2 px-3 lg:h-auto lg:px-4">
           <Link href="/" className="shrink-0 rounded-xl lg:hidden" aria-label="Al Mashriq Trading home">
@@ -196,12 +197,7 @@ export default async function PublicLayout({ children }: { children: React.React
               </li>
             ))}
           </ul>
-          <form action="/cars" className="min-w-0 flex-1 lg:hidden" role="search">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-              <input name="q" placeholder="Search cars…" aria-label="Search cars" className="h-11 w-full !rounded-xl pl-9 pr-3" enterKeyHint="search" />
-            </div>
-          </form>
+          <MobileSearch />
           <FavoritesLink className="text-white hover:bg-white/10 lg:ml-auto" />
           <MobileMenu
             links={links}

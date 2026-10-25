@@ -52,7 +52,7 @@ export function FavouritesList({ signedIn, agent }: { signedIn: boolean; agent: 
               )}
             </Link>
             <div className="min-w-0 flex-1">
-              <Link href={f.href} className="line-clamp-1 font-bold hover:underline">
+              <Link href={f.href} className="line-clamp-2 font-bold leading-snug hover:underline">
                 {f.title}
               </Link>
               <div className="text-xs text-white/70">

@@ -11,8 +11,8 @@ const LOGO_VERSION = 2;
 export const LOGO_SRC = `/brand/logo.png?v=${LOGO_VERSION}`;
 export const LOGO_LIGHT_SRC = `/brand/logo-light.png?v=${LOGO_VERSION}`;
 
-// sm = phone top bar (≈ 150 px wide), md = desktop header / admin sidebar (≈ 200 px), lg = footer, xl = login
-const SIZES = { sm: "h-[3.75rem]", md: "h-20", lg: "h-24", xl: "h-32" } as const;
+// sm = phone top bar (≈ 140 px wide, clear of the 68 px bar's edges), md = desktop header / admin sidebar (≈ 200 px), lg = footer, xl = login
+const SIZES = { sm: "h-14", md: "h-20", lg: "h-24", xl: "h-32" } as const;
 
 /** `tone="dark"` = for dark backgrounds, `"light"` = for light backgrounds. */
 export function Logo({ tone = "dark", size = "md", className = "", alt = "Al Mashriq Trading — Car & Spare Parts" }: { tone?: "dark" | "light"; size?: keyof typeof SIZES; className?: string; alt?: string }) {

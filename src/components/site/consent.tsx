@@ -92,14 +92,19 @@ function ConsentBanner({ initial, detailed, onSave, onClose }: { initial: Consen
       aria-label="Cookie consent"
       className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+5rem)] z-[60] mx-auto max-w-2xl lg:bottom-5"
     >
-      <div className="on-dark rounded-2xl bg-[#0a0a0c]/95 p-4 text-white shadow-2xl ring-1 ring-white/10 backdrop-blur-xl sm:p-5">
+      <div className="on-dark rounded-2xl bg-[#0a0a0c]/95 p-3.5 text-white shadow-2xl ring-1 ring-white/10 backdrop-blur-xl sm:p-5">
         <div className="flex items-start gap-3">
           <Cookie className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold">We use cookies</p>
             <p className="mt-1 text-xs leading-5 text-white/75">
-              Necessary cookies keep the site and your account working. With your permission we also use analytics (Google Analytics) to improve the site, and live chat
-              and reviews (Tawk.to, Trustpilot). See our{" "}
+              {/* Shorter on phones so the banner doesn't cover half the screen */}
+              <span className="sm:hidden">Necessary cookies keep the site working. Analytics, chat and reviews only if you allow.</span>
+              <span className="hidden sm:inline">
+                Necessary cookies keep the site and your account working. With your permission we also use analytics (Google Analytics) to improve the site, and live chat
+                and reviews (Tawk.to, Trustpilot).
+              </span>{" "}
+              See our{" "}
               <Link href="/cookies" className="font-semibold text-white underline">
                 Cookie Policy
               </Link>{" "}
@@ -131,14 +136,14 @@ function ConsentBanner({ initial, detailed, onSave, onClose }: { initial: Consen
               Save choices
             </button>
           ) : (
-            <button type="button" onClick={() => setSettings(true)} className="h-11 rounded-xl px-4 text-sm font-bold text-white ring-1 ring-white/25 hover:bg-white/10">
+            <button type="button" onClick={() => setSettings(true)} className="h-11 whitespace-nowrap rounded-xl px-2 text-sm font-bold text-white/80 underline-offset-4 hover:text-white hover:underline sm:px-4 sm:no-underline sm:ring-1 sm:ring-white/25">
               Settings
             </button>
           )}
-          <button type="button" onClick={() => onSave({ analytics: false, functional: false })} className="h-11 flex-1 rounded-xl px-4 text-sm font-bold text-white ring-1 ring-white/25 hover:bg-white/10">
+          <button type="button" onClick={() => onSave({ analytics: false, functional: false })} className="h-11 flex-1 whitespace-nowrap rounded-xl px-3 text-sm font-bold text-white ring-1 ring-white/25 hover:bg-white/10 sm:px-4">
             Only necessary
           </button>
-          <button type="button" onClick={() => onSave({ analytics: true, functional: true })} className="h-11 flex-1 rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white hover:bg-brand-700">
+          <button type="button" onClick={() => onSave({ analytics: true, functional: true })} className="h-11 flex-1 whitespace-nowrap rounded-xl bg-[var(--accent)] px-3 text-sm font-bold text-white hover:bg-brand-700 sm:px-4">
             Accept all
           </button>
         </div>
