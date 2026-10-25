@@ -5,6 +5,7 @@ import { carTitle, priceLabel, type PublicCard } from "@/lib/public-site";
 import { CardPhotos } from "@/components/site/card-photos";
 import { ShipsFrom } from "@/components/site/ships-from";
 import { StatusTag, statusTag } from "@/components/site/status-tag";
+import { FavoriteButton } from "@/components/site/favorite-button";
 
 export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
   const href = `/cars/${encodeURIComponent(c.stock_no)}`;
@@ -59,6 +60,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
             {price ? <div className="text-xl font-black leading-tight text-white">{price}</div> : <div className="text-sm font-bold text-white/85">Ask for price</div>}
           </div>
           <div className="flex gap-2">
+            <FavoriteButton item={{ kind: "vehicle", id: c.id, stock: c.stock_no, title: carTitle(c), image: imgs[0] ?? null, price }} />
             {wa && !sold && (
               <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${c.stock_no}`}>
                 <MessageCircle className="h-5 w-5" />

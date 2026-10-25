@@ -11,6 +11,7 @@ import { InquiryForm } from "@/components/site/inquiry-form";
 import { JsonLd } from "@/components/site/json-ld";
 import { ShipsFrom } from "@/components/site/ships-from";
 import { StickyContact } from "@/components/site/sticky-contact";
+import { FavoriteButton } from "@/components/site/favorite-button";
 
 export const revalidate = 60;
 
@@ -99,7 +100,10 @@ export default async function MachinePage({ params }: { params: Promise<{ stock:
 
         <div className="space-y-4">
           <div className="glass-lite rounded-3xl p-5">
-            <span className="inline-flex rounded-lg bg-white/10 px-2 py-0.5 text-xs font-bold text-white">Stock ID {m.stock_no}</span>
+            <div className="flex items-center justify-between gap-3">
+              <span className="inline-flex rounded-lg bg-white/10 px-2 py-0.5 text-xs font-bold text-white">Stock ID {m.stock_no}</span>
+              <FavoriteButton variant="pill" item={{ kind: "machine", id: m.id, stock: m.stock_no, title, image: images[0] ?? null, price: price ?? null }} />
+            </div>
             <h1 className="mt-2 text-2xl font-black tracking-tight text-navy-950 sm:text-3xl">{title}</h1>
             {m.category && <p className="text-slate-500">{m.category}</p>}
             <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-700">

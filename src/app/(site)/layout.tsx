@@ -10,6 +10,7 @@ import { BottomNav } from "@/components/site/bottom-nav";
 import { TawkChat } from "@/components/site/tawk-chat";
 import { GoogleAnalytics } from "@/components/site/google-analytics";
 import { ConsentProvider, CookieSettingsLink } from "@/components/site/consent";
+import { FavoritesLink, FavoritesSync } from "@/components/site/favorite-button";
 import { BodyIcon } from "@/components/site/body-icon";
 import { JsonLd } from "@/components/site/json-ld";
 import { Logo, LOGO_SRC } from "@/components/brand/logo";
@@ -201,6 +202,7 @@ export default async function PublicLayout({ children }: { children: React.React
               <input name="q" placeholder="Search cars…" aria-label="Search cars" className="h-11 w-full !rounded-xl pl-9 pr-3" enterKeyHint="search" />
             </div>
           </form>
+          <FavoritesLink className="text-white hover:bg-white/10 lg:ml-auto" />
           <MobileMenu
             links={links}
             makes={topMakes.map((m) => ({ href: `/makes/${m.slug}`, label: m.label }))}
@@ -294,6 +296,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <BottomNav wa={wa} />
       <TawkChat />
       <GoogleAnalytics />
+      <FavoritesSync />
 
       {/* Desktop-only WhatsApp bubble (phones have it in the bottom bar and the menu) */}
       {wa && (

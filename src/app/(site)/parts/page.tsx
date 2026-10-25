@@ -7,6 +7,7 @@ import { PartsTabs } from "@/components/site/parts-tabs";
 import { partFits } from "@/lib/parts";
 import { InquiryForm } from "@/components/site/inquiry-form";
 import { CardPhotos } from "@/components/site/card-photos";
+import { FavoriteButton } from "@/components/site/favorite-button";
 import { ShipsFrom } from "@/components/site/ships-from";
 import { FilterPanel, FilterSubmit, FilterToolbar } from "@/components/site/filter-sheet";
 import { StatusTag, statusTag } from "@/components/site/status-tag";
@@ -215,15 +216,18 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
                           <div className="text-xl font-black">{price ?? <span className="text-sm font-bold text-white/85">Ask for price</span>}</div>
                           {p.quantity > 1 && <div className="text-xs text-white/45">{p.quantity} in stock</div>}
                         </div>
-                        {wa ? (
-                          <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 hover:brightness-110">
-                            <MessageCircle className="h-4 w-4" /> Ask
-                          </a>
-                        ) : (
-                          <Link href="/contact" className="inline-flex h-11 items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white hover:bg-brand-700">
-                            Inquire
-                          </Link>
-                        )}
+                        <div className="flex gap-2">
+                          <FavoriteButton item={{ kind: "part", id: p.id, stock: p.part_no, title: p.name, image: imgs[0] ?? null, price: price ?? null }} />
+                          {wa ? (
+                            <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 hover:brightness-110">
+                              <MessageCircle className="h-4 w-4" /> Ask
+                            </a>
+                          ) : (
+                            <Link href="/contact" className="inline-flex h-11 items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white hover:bg-brand-700">
+                              Inquire
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </article>

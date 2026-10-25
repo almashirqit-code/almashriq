@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Plus, Trash2, Pencil, Mail, Phone, MessageCircle, MapPin, MessagesSquare } from "lucide-react";
+import { Plus, Trash2, Pencil, Mail, Phone, MessageCircle, MapPin, MessagesSquare, Heart } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -17,10 +17,12 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
   const { t, locale } = await getT();
   const supabase = await createClient();
 
-  const [{ data: customer }, { data: invoices }] = await Promise.all([
+  const [{ data: customer }, { data: invoices }, { data: favorites }] = await Promise.all([
     supabase.from("customers").select("*").eq("id", id).maybeSingle(),
     supabase.from("invoices").select("*").eq("customer_id", id).order("issue_date", { ascending: false }),
+    supabase.rpc("staff_customer_favorites", { p_customer: id }),
   ]);
+  const saved = (favorites ?? []) as { item_kind: "vehicle" | "part" | "machine"; item_id: string; stock_no: string | null; title: string | null; created_at: string }[];
   if (!customer) notFound();
   const { data: tagged } = (customer as Customer).assigned_to
     ? await supabase.from("profiles").select("full_name, email").eq("id", (customer as Customer).assigned_to!).maybeSingle()
@@ -156,6 +158,28 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
               </div>
             )}
           </section>
+
+          {saved.length > 0 && (
+            <section className="card">
+              <h2 className="flex items-center gap-2 border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">
+                <Heart className="h-4 w-4 text-rose-500" />
+                Saved on the website ({saved.length})
+              </h2>
+              <ul className="divide-y divide-slate-100 text-sm">
+                {saved.map((f) => (
+                  <li key={`${f.item_kind}:${f.item_id}`} className="flex items-center justify-between gap-3 px-5 py-2.5">
+                    <Link
+                      href={f.item_kind === "vehicle" ? `/admin/stock/${f.item_id}` : `/${f.item_kind === "part" ? "parts" : "machinery"}/${encodeURIComponent(f.stock_no ?? "")}`}
+                      className="min-w-0 truncate hover:underline"
+                    >
+                      <span className="font-semibold text-brand-700">{f.stock_no ?? "—"}</span> <span className="text-slate-600">{f.title}</span>
+                    </Link>
+                    <span className="shrink-0 text-xs text-slate-500">{date(f.created_at, locale)}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
         <section className="card overflow-hidden self-start">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">

@@ -26,6 +26,7 @@ import {
   Tractor,
   Activity,
   UserPlus,
+  Heart,
   MessagesSquare,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
@@ -69,6 +70,7 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
       { href: "/admin/support", label: "nav_support", icon: MessagesSquare },
       { href: "/admin/customers", label: "nav_customers", icon: Users },
       { href: "/admin/portal-signups", label: "nav_portal_signups", icon: UserPlus, roles: ["admin", "manager"] },
+      { href: "/admin/favorites", label: "nav_favorites", icon: Heart, roles: ["admin", "manager"] },
       { href: "/admin/reservations", label: "nav_reservations", icon: BookmarkCheck },
       {
         href: "/admin/invoices",
