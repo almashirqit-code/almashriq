@@ -14,6 +14,10 @@ import { StickyContact } from "@/components/site/sticky-contact";
 import { FavoriteButton } from "@/components/site/favorite-button";
 
 export const revalidate = 60;
+// Nothing is built up front: each page is rendered on its first visit, then served from cache until it revalidates.
+export async function generateStaticParams() {
+  return [];
+}
 
 const CONDITION: Record<string, string> = { new: "New", used: "Used", rebuilt: "Rebuilt" };
 

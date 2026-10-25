@@ -8,6 +8,10 @@ import { InquiryForm } from "@/components/site/inquiry-form";
 import { LOGO_SRC } from "@/components/brand/logo";
 
 export const revalidate = 300;
+// Nothing is built up front: each page is rendered on its first visit, then served from cache until it revalidates.
+export async function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const p = await getPost((await params).slug);

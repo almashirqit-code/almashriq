@@ -14,6 +14,10 @@ import { FavoriteButton } from "@/components/site/favorite-button";
 import { branchName } from "@/lib/branches";
 
 export const revalidate = 60;
+// Nothing is built up front: each page is rendered on its first visit, then served from cache until it revalidates.
+export async function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ stock: string }> }): Promise<Metadata> {
   const { stock } = await params;

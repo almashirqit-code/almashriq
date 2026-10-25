@@ -13,6 +13,10 @@ import { ShipsFrom } from "@/components/site/ships-from";
 import { StickyContact } from "@/components/site/sticky-contact";
 
 export const revalidate = 60;
+// Nothing is built up front: each page is rendered on its first visit, then served from cache until it revalidates.
+export async function generateStaticParams() {
+  return [];
+}
 
 const label = (p: string) => UNIT_PART_LABEL[p as UnitPart] ?? p;
 
