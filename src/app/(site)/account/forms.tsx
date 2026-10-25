@@ -116,6 +116,20 @@ export function SignUpForm() {
           <PasswordInput id="confirm" name="confirm" required minLength={8} autoComplete="new-password" className={F} />
         </div>
       </div>
+      <label className="flex items-start gap-2.5 text-sm">
+        <input type="checkbox" name="agree" required className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--accent)]" />
+        <span>
+          I agree to the{" "}
+          <Link href="/terms" target="_blank" className="font-semibold text-brand-700 underline">
+            Terms of Use
+          </Link>{" "}
+          and the{" "}
+          <Link href="/privacy" target="_blank" className="font-semibold text-brand-700 underline">
+            Privacy Policy
+          </Link>
+          .
+        </span>
+      </label>
       <ErrorLine state={state} />
       <Submit pending={pending}>Create account</Submit>
     </form>

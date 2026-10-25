@@ -24,17 +24,32 @@ export function Gallery({ images, alt, ribbon, stockNo }: { images: string[]; al
   const [zipping, setZipping] = useState<number | null>(null);
   const touch = useRef<{ x: number; y: number } | null>(null);
   const thumbs = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const [onScreen, setOnScreen] = useState(true);
+
+  // Auto-play only while the gallery is visible (no work, and no jumps, once the visitor scrolls past it).
+  useEffect(() => {
+    const el = root.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setOnScreen(e.isIntersecting), { threshold: 0.25 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
-    if (images.length < 2 || !playing || hover) return;
+    if (images.length < 2 || !playing || hover || !onScreen) return;
     const t = setInterval(() => setI((x) => (x + 1) % images.length), 3500);
     return () => clearInterval(t);
-  }, [images.length, playing, hover]);
+  }, [images.length, playing, hover, onScreen]);
 
-  // Keep the active thumbnail in view when the photo changes
+  // Keep the active thumbnail in view by scrolling the thumbnail strip sideways only.
+  // (scrollIntoView would also scroll the page and pull a reader back up to the gallery.)
   useEffect(() => {
-    const el = thumbs.current?.children[i] as HTMLElement | undefined;
-    el?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+    const strip = thumbs.current;
+    const el = strip?.children[i] as HTMLElement | undefined;
+    if (!strip || !el) return;
+    const delta = el.getBoundingClientRect().left - strip.getBoundingClientRect().left;
+    strip.scrollTo({ left: strip.scrollLeft + delta - (strip.clientWidth - el.clientWidth) / 2, behavior: "smooth" });
   }, [i]);
 
   if (!images.length)
@@ -74,7 +89,7 @@ export function Gallery({ images, alt, ribbon, stockNo }: { images: string[]; al
   }
 
   return (
-    <div>
+    <div ref={root}>
       <div
         className="glass-lite group relative aspect-[4/3] touch-pan-y overflow-hidden rounded-3xl bg-black/30"
         onMouseEnter={() => setHover(true)}

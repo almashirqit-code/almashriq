@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Script from "next/script";
+import { useConsent } from "./consent";
 
 // Trustpilot business unit for almashriqtrading.site.
 const BUSINESS_UNIT_ID = "6adbb9fe612465cdc9f14a28";
@@ -16,15 +17,27 @@ declare global {
   }
 }
 
-/** Trustpilot TrustBox. The bootstrap script finds this div and renders the widget in an iframe. */
+/**
+ * Trustpilot TrustBox. The bootstrap script finds this div and renders the widget in an iframe.
+ * It only loads once the visitor allows "Chat & reviews" cookies; until then a plain link is shown.
+ */
 export function TrustpilotWidget() {
   const ref = useRef<HTMLDivElement>(null);
+  const { consent } = useConsent();
+  const allowed = !!consent?.functional;
 
   // On client-side navigation the script is already loaded, so re-initialise this instance.
   useEffect(() => {
-    if (window.Trustpilot) window.Trustpilot.loadFromElement(ref.current, true);
-  }, []);
+    if (allowed && window.Trustpilot) window.Trustpilot.loadFromElement(ref.current, true);
+  }, [allowed]);
 
+  if (!allowed) {
+    return (
+      <a href={REVIEW_URL} target="_blank" rel="noopener noreferrer" className="flex h-[52px] items-center justify-center gap-2 text-sm font-bold hover:underline">
+        <span className="text-emerald-600">★</span> Review us on Trustpilot
+      </a>
+    );
+  }
   return (
     <>
       <Script src="https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" strategy="afterInteractive" />

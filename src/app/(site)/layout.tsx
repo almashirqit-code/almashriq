@@ -9,6 +9,7 @@ import { MobileMenu } from "@/components/site/mobile-menu";
 import { BottomNav } from "@/components/site/bottom-nav";
 import { TawkChat } from "@/components/site/tawk-chat";
 import { GoogleAnalytics } from "@/components/site/google-analytics";
+import { ConsentProvider, CookieSettingsLink } from "@/components/site/consent";
 import { BodyIcon } from "@/components/site/body-icon";
 import { JsonLd } from "@/components/site/json-ld";
 import { Logo, LOGO_SRC } from "@/components/brand/logo";
@@ -57,6 +58,7 @@ export default async function PublicLayout({ children }: { children: React.React
   );
 
   return (
+    <ConsentProvider>
     <div className="site-glass pb-nav">
       <JsonLd
         data={{
@@ -272,8 +274,20 @@ export default async function PublicLayout({ children }: { children: React.React
             )}
           </div>
         </div>
-        <div className="border-t border-white/10 py-4 text-center text-xs text-white/50">
-          © {new Date().getFullYear()} {company.company_name}. All rights reserved.
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">
+          <span>
+            © {new Date().getFullYear()} {company.company_name}. All rights reserved.
+          </span>
+          <Link href="/privacy" className="inline-flex min-h-8 items-center hover:text-white">
+            Privacy Policy
+          </Link>
+          <Link href="/cookies" className="inline-flex min-h-8 items-center hover:text-white">
+            Cookie Policy
+          </Link>
+          <Link href="/terms" className="inline-flex min-h-8 items-center hover:text-white">
+            Terms of Use
+          </Link>
+          <CookieSettingsLink className="inline-flex min-h-8 items-center underline hover:text-white" />
         </div>
       </footer>
 
@@ -294,5 +308,6 @@ export default async function PublicLayout({ children }: { children: React.React
         </a>
       )}
     </div>
+    </ConsentProvider>
   );
 }

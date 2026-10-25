@@ -50,6 +50,7 @@ export async function customerSignUp(_prev: AuthState, formData: FormData): Prom
   const password = String(formData.get("password") ?? "");
   const full_name = clean(formData.get("full_name"), 120);
   if (!full_name) return { error: "Please enter your name." };
+  if (!formData.get("agree")) return { error: "Please agree to the Terms of Use and Privacy Policy." };
   if (!EMAIL.test(email)) return { error: "Please enter a valid email address." };
   const bad = checkNewPassword(password, String(formData.get("confirm") ?? ""));
   if (bad) return { error: bad };
@@ -62,6 +63,7 @@ export async function customerSignUp(_prev: AuthState, formData: FormData): Prom
       emailRedirectTo: `${SITE_URL}/auth/callback?next=/account`,
       data: {
         full_name,
+        terms_accepted_at: new Date().toISOString(),
         company: clean(formData.get("company"), 120),
         phone: clean(formData.get("phone"), 40),
         whatsapp: clean(formData.get("whatsapp"), 40),

@@ -18,6 +18,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/reviews`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${SITE_URL}/blog`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${SITE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
+    { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/cookies`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.2 },
   ];
   const seen = new Set<string>();
   const dynamic = rows.flatMap((r): MetadataRoute.Sitemap => {

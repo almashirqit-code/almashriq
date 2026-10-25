@@ -111,8 +111,10 @@ export function SupportChat({
     if (threadId) markRead?.();
   }, [threadId, markRead]);
 
+  // Scroll the message list (not the page) to the newest message.
   useEffect(() => {
-    end.current?.scrollIntoView({ block: "end" });
+    const box = end.current?.parentElement;
+    if (box) box.scrollTop = box.scrollHeight;
   }, [messages.length]);
 
   function done(r: SendResult) {
