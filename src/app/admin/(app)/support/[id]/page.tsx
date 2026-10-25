@@ -6,7 +6,7 @@ import { getProfile } from "@/lib/auth";
 import { PageHeader } from "@/components/ui";
 import { SupportChat, type ChatMessage } from "@/components/support-chat";
 import { loadStaff } from "../../customers/staff";
-import { sendStaffMessage, markStaffRead } from "../actions";
+import { sendStaffMessage, sendStaffFile, markStaffRead } from "../actions";
 import { ThreadControls } from "../thread-controls";
 
 export const metadata = { title: "Support chat" };
@@ -21,7 +21,10 @@ export default async function SupportThread({ params }: { params: Promise<{ id: 
   const { data: thread } = await supabase.from("support_threads").select("id, display_name, email, customer_id, assigned_to, status").eq("id", id).maybeSingle();
   if (!thread) notFound();
   const [{ data: msgs }, staff] = await Promise.all([
-    supabase.from("support_messages").select("id, sender_kind, sender_name, body, created_at").eq("thread_id", id).order("created_at", { ascending: false }).limit(200),
+    supabase
+      .from("support_messages")
+      .select("id, sender_kind, sender_name, body, created_at, attachment_name, attachment_type, attachment_size")
+      .eq("thread_id", id).order("created_at", { ascending: false }).limit(200),
     me.role === "sales" ? Promise.resolve([]) : loadStaff(),
   ]);
   const messages = ((msgs ?? []) as ChatMessage[]).reverse();
@@ -61,6 +64,7 @@ export default async function SupportThread({ params }: { params: Promise<{ id: 
         initial={messages}
         me="staff"
         send={sendStaffMessage.bind(null, thread.id)}
+        sendFile={sendStaffFile.bind(null, thread.id)}
         markRead={markStaffRead.bind(null, thread.id)}
         tone="erp"
         closed={thread.status === "closed"}

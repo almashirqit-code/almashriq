@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPortalMe } from "@/lib/portal";
 import { SupportChat, type ChatMessage } from "@/components/support-chat";
-import { sendCustomerMessage, markCustomerRead } from "./actions";
+import { sendCustomerMessage, sendCustomerFile, markCustomerRead } from "./actions";
 
 export const metadata: Metadata = { title: "Support chat", robots: { index: false, follow: false } };
 
@@ -22,7 +22,7 @@ export default async function AccountSupport() {
   if (thread) {
     const { data } = await supabase
       .from("support_messages")
-      .select("id, sender_kind, sender_name, body, created_at")
+      .select("id, sender_kind, sender_name, body, created_at, attachment_name, attachment_type, attachment_size")
       .eq("thread_id", thread.id)
       .order("created_at", { ascending: false })
       .limit(200);
@@ -39,9 +39,10 @@ export default async function AccountSupport() {
         initial={messages}
         me="customer"
         send={sendCustomerMessage}
+        sendFile={sendCustomerFile}
         markRead={markCustomerRead}
         tone="site"
-        emptyText="Ask us anything about a car, a payment, shipping or documents."
+        emptyText="Ask us anything about a car, a payment, shipping or documents. Use the paperclip to send a photo or your TT slip."
       />
     </>
   );
