@@ -13,7 +13,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline' https://*.tawk.to https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://*.tawk.to https://fonts.gstatic.com",
-  `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace("https://", "wss://")} https://*.tawk.to wss://*.tawk.to https://*.trustpilot.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com`,
+  `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace("https://", "wss://")} https://*.tawk.to wss://*.tawk.to https://*.trustpilot.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://*.doubleclick.net`,
   "frame-src 'self' https://*.tawk.to https://*.trustpilot.com",
   "media-src 'self' https:",
   "object-src 'none'",
