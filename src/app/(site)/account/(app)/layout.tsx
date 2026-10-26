@@ -4,6 +4,8 @@ import { LogOut } from "lucide-react";
 import { avatarSrc } from "@/lib/avatar";
 import { createClient } from "@/lib/supabase/server";
 import { getPortalMe } from "@/lib/portal";
+import { getMyNotifications } from "@/lib/notifications";
+import { NotificationBell } from "@/components/notification-bell";
 import { customerSignOut } from "../actions";
 import { AccountNav } from "./account-nav";
 
@@ -23,7 +25,10 @@ export default async function AccountLayout({ children }: { children: React.Reac
   }
   const name = me?.customer?.name || me?.full_name || user.email || "";
   // Unread replies from support (own open thread only; RLS).
-  const { data: thread } = me ? await supabase.from("support_threads").select("customer_unread").eq("portal_user_id", user.id).eq("status", "open").maybeSingle() : { data: null };
+  const [{ data: thread }, bell] = await Promise.all([
+    me ? supabase.from("support_threads").select("customer_unread").eq("portal_user_id", user.id).eq("status", "open").maybeSingle() : Promise.resolve({ data: null }),
+    getMyNotifications(),
+  ]);
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8 lg:py-10">
@@ -41,11 +46,14 @@ export default async function AccountLayout({ children }: { children: React.Reac
             </p>
           </div>
         </div>
-        <form action={customerSignOut}>
-          <button className="glass inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold hover:brightness-105">
-            <LogOut className="h-4 w-4" /> Sign out
-          </button>
-        </form>
+        <div className="flex items-center gap-2">
+          {me && me.status !== "rejected" && <NotificationBell userId={user.id} initial={bell.items} unread={bell.unread} tone="site" />}
+          <form action={customerSignOut}>
+            <button className="glass inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold hover:brightness-105">
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
+          </form>
+        </div>
       </div>
       {me && me.status !== "rejected" && <AccountNav active={me.status === "active"} unread={thread?.customer_unread ?? 0} />}
       {children}

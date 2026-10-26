@@ -7,13 +7,15 @@ import { TopbarSearch, QuickCreate } from "@/components/topbar";
 import { WorldClock } from "@/components/world-clock";
 import { FxBadge } from "@/components/fx-badge";
 import { getUsdJpy } from "@/lib/fx";
+import { getMyNotifications } from "@/lib/notifications";
+import { NotificationBell } from "@/components/notification-bell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getProfile();
   const locale = await getLocale();
   const supabase = await createClient();
   const canApprove = profile.role === "admin" || profile.role === "manager";
-  const [fx, { data: settings }, { count: pendingSignups }, { count: unreadChats }, { count: waitingSlips }] = await Promise.all([
+  const [fx, { data: settings }, { count: pendingSignups }, { count: unreadChats }, { count: waitingSlips }, bell] = await Promise.all([
     getUsdJpy(),
     supabase.from("settings").select("company_name, company_name_ja, logo_url").single(),
     // New website sign-ups waiting for an admin/manager to link them and assign an agent.
@@ -26,6 +28,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     canApprove
       ? supabase.from("payment_slips").select("id", { count: "exact", head: true }).eq("status", "submitted")
       : Promise.resolve({ count: 0 }),
+    getMyNotifications(),
   ]);
   const companyName =
     (locale === "ja" && settings?.company_name_ja) || settings?.company_name || "Al Mashriq";
@@ -51,6 +54,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <WorldClock serverNow={Date.now()} labelClass="text-slate-400" timeClass="font-semibold text-slate-800" />
               <FxBadge fx={fx} showMillion className="border-l border-slate-200 pl-3 [&_b]:text-slate-900" />
             </div>
+            <NotificationBell userId={profile.id} initial={bell.items} unread={bell.unread} tone="erp" />
             <QuickCreate role={profile.role} />
             <LanguageToggle locale={locale} />
           </div>

@@ -38,7 +38,7 @@ export function OfficeShiftPicker({
     <div className={`flex gap-1.5 ${pending ? "opacity-60" : ""}`}>
       <select
         aria-label="Office"
-        className="input w-36 py-1.5 text-xs"
+        className="input w-40 py-1.5 text-sm"
         value={o}
         disabled={pending}
         onChange={(e) => {
@@ -53,7 +53,7 @@ export function OfficeShiftPicker({
       </select>
       <select
         aria-label="Shift"
-        className="input w-24 py-1.5 text-xs"
+        className="input w-28 py-1.5 text-sm"
         value={s}
         disabled={pending}
         onChange={(e) => {

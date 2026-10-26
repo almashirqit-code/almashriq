@@ -5,6 +5,9 @@ import { assertRole } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { ROLES, type Role } from "@/lib/types";
+import { validWhatsapp } from "./contact";
+
+const WHATSAPP_REQUIRED = "A WhatsApp number with country code is required (e.g. +81 90 1234 5678).";
 
 export type FormState = { error?: string; ok?: boolean };
 
@@ -16,7 +19,10 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
   const role = String(formData.get("role") || "sales") as Role;
   const office = String(formData.get("office") || "").trim() || null;
   const shift = String(formData.get("shift") || "").trim() || null;
+  const phone = String(formData.get("phone") || "").trim().slice(0, 40) || null;
+  const whatsapp = String(formData.get("whatsapp") || "").trim().slice(0, 40);
   if (!email || password.length < 8) return { error: "Email and a password of at least 8 characters are required." };
+  if (!validWhatsapp(whatsapp)) return { error: WHATSAPP_REQUIRED };
   if (!ROLES.includes(role)) return { error: "Invalid role." };
 
   const admin = createAdminClient();
@@ -32,7 +38,7 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
   if (error) return { error: error.message };
 
   // The signup trigger creates the profile as 'sales'; apply the chosen role.
-  const { error: pErr } = await admin.from("profiles").update({ role, full_name: full_name || null, office, shift }).eq("id", data.user.id);
+  const { error: pErr } = await admin.from("profiles").update({ role, full_name: full_name || null, office, shift, phone, whatsapp }).eq("id", data.user.id);
   if (pErr) return { error: pErr.message };
 
   revalidatePath("/admin/users");
@@ -65,10 +71,11 @@ export async function setOfficeShift(userId: string, office: string | null, shif
 /** Work phone / WhatsApp: customers can check a number on the website's "Verify an agent" page. */
 export async function setStaffContact(userId: string, phone: string, whatsapp: string) {
   await assertRole(["admin"]);
+  if (!validWhatsapp(whatsapp)) throw new Error(WHATSAPP_REQUIRED);
   const supabase = await createClient();
   const { error } = await supabase
     .from("profiles")
-    .update({ phone: phone.trim().slice(0, 40) || null, whatsapp: whatsapp.trim().slice(0, 40) || null })
+    .update({ phone: phone.trim().slice(0, 40) || null, whatsapp: whatsapp.trim().slice(0, 40) })
     .eq("id", userId);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/users");

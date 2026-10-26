@@ -405,6 +405,16 @@ export const en = {
   users_created: "User created",
   users_self: "You",
   users_service_key_missing: "SUPABASE_SERVICE_ROLE_KEY is not configured on the server, so users cannot be managed.",
+  users_total: "Staff",
+  users_contact: "Contact",
+  users_work_phone: "Work phone",
+  users_whatsapp: "WhatsApp",
+  users_whatsapp_required: "A WhatsApp number with country code is required (e.g. +81 90 1234 5678).",
+  users_whatsapp_help: "Use a WhatsApp Business number on a company phone, with the country code — not a personal number — so customers can always reach it and verify it on the website.",
+  users_whatsapp_missing: "No WhatsApp",
+  users_whatsapp_banner: "{count} staff have no WhatsApp number. Customers can't verify them on the website until one is added.",
+  users_test_whatsapp: "Open in WhatsApp",
+  users_joined: "Joined {date}",
 
   // master data
   nav_masters: "Ports & auctions",
@@ -1103,6 +1113,16 @@ export const ja: Record<DictKey, string> = {
   users_created: "ユーザーを作成しました",
   users_self: "あなた",
   users_service_key_missing: "サーバーに SUPABASE_SERVICE_ROLE_KEY が設定されていないため、ユーザーを管理できません。",
+  users_total: "スタッフ",
+  users_contact: "連絡先",
+  users_work_phone: "業務用電話",
+  users_whatsapp: "WhatsApp",
+  users_whatsapp_required: "国番号付きの WhatsApp 番号は必須です（例：+81 90 1234 5678）。",
+  users_whatsapp_help: "個人の番号ではなく、会社の端末の WhatsApp Business 番号を国番号付きで登録してください。お客様がいつでも連絡でき、ウェブサイトで本人確認できます。",
+  users_whatsapp_missing: "WhatsApp 未登録",
+  users_whatsapp_banner: "WhatsApp 番号が未登録のスタッフが {count} 名います。登録するまで、お客様はウェブサイトで本人確認できません。",
+  users_test_whatsapp: "WhatsApp で開く",
+  users_joined: "{date} 登録",
 
   // master data
   nav_masters: "港・オークション",

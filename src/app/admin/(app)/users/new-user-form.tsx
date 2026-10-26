@@ -39,6 +39,15 @@ export function NewUserForm({ offices, shifts }: { offices: string[]; shifts: st
         />
       </div>
       <div>
+        <label className="label">{t("users_whatsapp")} *</label>
+        <input name="whatsapp" type="tel" inputMode="tel" required minLength={8} maxLength={40} placeholder="+81 90 1234 5678" className="input" />
+        <p className="mt-1 text-xs text-slate-500">{t("users_whatsapp_help")}</p>
+      </div>
+      <div>
+        <label className="label">{t("users_work_phone")}</label>
+        <input name="phone" type="tel" inputMode="tel" maxLength={40} className="input" />
+      </div>
+      <div>
         <label className="label">{t("role")}</label>
         <select name="role" className="input" defaultValue="sales">
           {ROLES.map((r) => (

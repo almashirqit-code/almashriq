@@ -22,7 +22,8 @@ export function UserRowActions({ id, role, active, isSelf }: { id: string; role:
   return (
     <div className={`flex flex-wrap items-center justify-end gap-2 ${pending ? "opacity-50" : ""}`}>
       <select
-        className="input w-auto py-1.5"
+        aria-label={t("role")}
+        className="input w-auto py-1.5 text-sm"
         value={role}
         disabled={pending || isSelf}
         onChange={(e) => run(() => setRole(id, e.target.value as Role))}
@@ -37,6 +38,7 @@ export function UserRowActions({ id, role, active, isSelf }: { id: string; role:
         className="btn-secondary py-1.5"
         disabled={pending}
         title={t("users_reset_password")}
+        aria-label={t("users_reset_password")}
         onClick={() => {
           const pw = prompt(t("users_new_password"));
           if (pw) run(async () => {
