@@ -91,7 +91,7 @@ export function VehicleForm({
     const common = {
       name: f.name,
       id: f.name,
-      defaultValue: value === null || value === undefined ? (f.name === "price_currency" ? "JPY" : f.name === "steering" ? "RHD" : "") : String(value),
+      defaultValue: value === null || value === undefined ? (f.name === "price_currency" ? "USD" : f.name === "steering" ? "RHD" : "") : String(value),
       disabled: readOnly,
       required: f.required,
       className: "input",

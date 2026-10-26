@@ -16,6 +16,12 @@ export type PortalMe = {
   status: "pending" | "active" | "rejected";
   full_name: string | null;
   email: string;
+  company: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  country: string | null;
+  port: string | null;
+  avatar_url: string | null;
   customer: { customer_no: number; name: string; company: string | null; country: string | null; port: string | null } | null;
   agent: { name: string; email: string } | null;
 };
@@ -151,6 +157,30 @@ export const getPortalReservations = cache(() => rows<PortalReservation>("portal
 export const getPortalVehicles = cache(() => rows<PortalVehicle>("portal_vehicles"));
 export const getPortalDocuments = cache(() => rows<PortalDocument>("portal_documents"));
 export const getPortalStatement = cache(() => rows<StatementRow>("portal_statement"));
+
+export type PortalSlip = {
+  id: number;
+  currency: Currency;
+  amount: number;
+  sent_on: string;
+  bank: string | null;
+  reference: string | null;
+  note: string | null;
+  file_name: string;
+  file_type: string;
+  status: "submitted" | "received" | "rejected";
+  staff_note: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+};
+/** Payment slips the customer uploaded (migration 0033). */
+export const getPortalSlips = cache(() => rows<PortalSlip>("portal_payment_slips"));
+
+export const SLIP_STATUS: Record<PortalSlip["status"], { label: string; cls: string }> = {
+  submitted: { label: "Sent — we're checking", cls: "bg-amber-100 text-amber-900" },
+  received: { label: "Money received", cls: "bg-emerald-100 text-emerald-900" },
+  rejected: { label: "Not matched — see note", cls: "bg-red-100 text-red-900" },
+};
 
 export type PortalInquiry = { inquiry_no: number; created_at: string; stock_no: string | null; message: string | null; status: string; agent: string | null };
 /** The signed-in login's own inquiries (pending accounts too). */

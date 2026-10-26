@@ -12,9 +12,10 @@ const TABS = [
   { href: "/account/statement", label: "Statement" },
   { href: "/account/inquiries", label: "Inquiries", always: true },
   { href: "/account/support", label: "Support chat", always: true },
+  { href: "/account/profile", label: "Profile", always: true },
 ];
 
-/** Account tabs; scrolls sideways on phones. Pending accounts get Overview, Inquiries and Support chat. */
+/** Account tabs; scrolls sideways on phones. Pending accounts get Overview, Inquiries, Support chat and Profile. */
 export function AccountNav({ active, unread = 0 }: { active: boolean; unread?: number }) {
   const path = usePathname();
   const on = (href: string) => (href === "/account" ? path === "/account" : path.startsWith(href));

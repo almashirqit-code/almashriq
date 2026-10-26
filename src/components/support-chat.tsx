@@ -30,7 +30,7 @@ const time = (d: string) => new Date(d).toLocaleString("en-GB", { day: "numeric"
 const size = (n?: number | null) => (!n ? "" : n > 1_000_000 ? `${(n / 1_000_000).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1000))} KB`);
 
 /** Photos are downscaled to 1600 px JPEG; other image formats (e.g. HEIC) are converted when the browser can read them. */
-async function prepareFile(file: File): Promise<File | string> {
+export async function prepareFile(file: File): Promise<File | string> {
   if (file.type === "application/pdf") return file.size > MAX_BYTES ? "That PDF is too large. The limit is about 3.9 MB." : file;
   if (!file.type.startsWith("image/")) return "Only photos and PDFs can be sent.";
   let out: Blob = await resizeImage(file, 1600, 0.82);

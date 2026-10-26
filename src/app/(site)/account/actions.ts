@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { SITE_URL } from "@/lib/public-site";
@@ -106,6 +107,49 @@ export async function updatePassword(_prev: AuthState, formData: FormData): Prom
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: error.code === "same_password" ? "Choose a password you haven't used before." : error.message };
   redirect("/account");
+}
+
+/** The signed-in customer's own name and contact details (migration 0033). */
+export async function updateProfile(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const full_name = clean(formData.get("full_name"), 120);
+  if (!full_name) return { error: "Please enter your name." };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Please sign in again." };
+  if (!(await rateLimit("cust-profile", 20, 3600, user.id))) return { error: "Too many changes. Please try again later." };
+  const { error } = await supabase.rpc("portal_update_profile", {
+    p_full_name: full_name,
+    p_company: clean(formData.get("company"), 120),
+    p_phone: clean(formData.get("phone"), 40),
+    p_whatsapp: clean(formData.get("whatsapp"), 40),
+    p_country: clean(formData.get("country"), 80),
+    p_port: clean(formData.get("port"), 80),
+  });
+  if (error) return { error: "Your details couldn't be saved. Please try again." };
+  revalidatePath("/account", "layout");
+  return { ok: true };
+}
+
+/** Change password while signed in: the current password is checked first. */
+export async function changePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const current = String(formData.get("current") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const bad = checkNewPassword(password, String(formData.get("confirm") ?? ""));
+  if (bad) return { error: bad };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) return { error: "Please sign in again." };
+  // Same limit as sign-in, so this can't be used to guess the password.
+  if (!(await rateLimit("cust-login", 5, 900, user.email, true))) return { error: "Too many attempts. Please wait 15 minutes and try again." };
+  const { error: wrong } = await supabase.auth.signInWithPassword({ email: user.email, password: current });
+  if (wrong) return { error: "Your current password is not correct." };
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: error.code === "same_password" ? "Choose a password you haven't used before." : error.message };
+  return { ok: true };
 }
 
 export async function customerSignOut() {

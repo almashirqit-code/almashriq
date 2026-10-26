@@ -300,6 +300,9 @@ export default async function PublicLayout({ children }: { children: React.React
           <span>
             © {new Date().getFullYear()} {company.company_name}. All rights reserved.
           </span>
+          <Link href="/verify-agent" className="inline-flex min-h-8 items-center hover:text-white">
+            Verify an agent
+          </Link>
           <Link href="/privacy" className="inline-flex min-h-8 items-center hover:text-white">
             Privacy Policy
           </Link>

@@ -62,6 +62,18 @@ export async function setOfficeShift(userId: string, office: string | null, shif
   revalidatePath("/admin", "layout");
 }
 
+/** Work phone / WhatsApp: customers can check a number on the website's "Verify an agent" page. */
+export async function setStaffContact(userId: string, phone: string, whatsapp: string) {
+  await assertRole(["admin"]);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ phone: phone.trim().slice(0, 40) || null, whatsapp: whatsapp.trim().slice(0, 40) || null })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/users");
+}
+
 export async function setActive(userId: string, active: boolean) {
   const me = await assertRole(["admin"]);
   if (userId === me.id) throw new Error("You cannot disable your own account.");

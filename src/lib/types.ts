@@ -37,6 +37,9 @@ export interface Profile {
   active: boolean;
   office: string | null;
   shift: string | null;
+  /** Never shown on the website; only matched by the public "Verify an agent" check (migration 0033). */
+  phone?: string | null;
+  whatsapp?: string | null;
   created_at: string;
 }
 

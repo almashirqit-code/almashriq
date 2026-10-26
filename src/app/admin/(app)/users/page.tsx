@@ -10,6 +10,7 @@ import { PageHeader, Badge } from "@/components/ui";
 import { NewUserForm } from "./new-user-form";
 import { UserRowActions } from "./user-row-actions";
 import { OfficeShiftPicker } from "./office-shift-picker";
+import { StaffContact } from "./staff-contact";
 
 export default async function UsersPage() {
   const me = await requireRole(["admin"]);
@@ -66,6 +67,7 @@ export default async function UsersPage() {
                     <td>{t(`role_${u.role}` as DictKey)}</td>
                     <td>
                       <OfficeShiftPicker userId={u.id} office={u.office} shift={u.shift} offices={offices} shifts={shifts} />
+                      <StaffContact userId={u.id} phone={u.phone ?? null} whatsapp={u.whatsapp ?? null} />
                     </td>
                     <td>
                       {u.active ? (

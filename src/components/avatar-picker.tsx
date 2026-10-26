@@ -7,8 +7,25 @@ import { createClient } from "@/lib/supabase/client";
 import { resizeImage } from "@/lib/images";
 import { AVATAR_STYLES, avatarSrc, dicebear } from "@/lib/avatar";
 
-/** The signed-in user's avatar; click to upload a photo or pick a generated one. */
-export function AvatarPicker({ userId, name, current, size = "h-9 w-9" }: { userId: string; name: string; current: string | null; size?: string }) {
+/**
+ * The signed-in user's avatar; click to upload a photo or pick a generated one.
+ * Staff by default; customers pass folder "portal-avatars" and rpc "set_my_portal_avatar" (migration 0033).
+ */
+export function AvatarPicker({
+  userId,
+  name,
+  current,
+  size = "h-9 w-9",
+  folder = "avatars",
+  rpc = "set_my_avatar",
+}: {
+  userId: string;
+  name: string;
+  current: string | null;
+  size?: string;
+  folder?: "avatars" | "portal-avatars";
+  rpc?: "set_my_avatar" | "set_my_portal_avatar";
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(current);
@@ -19,7 +36,7 @@ export function AvatarPicker({ userId, name, current, size = "h-9 w-9" }: { user
   const save = (url: string | null) =>
     start(async () => {
       setErr(null);
-      const { error } = await createClient().rpc("set_my_avatar", { p_url: url });
+      const { error } = await createClient().rpc(rpc, { p_url: url });
       if (error) return setErr(error.message);
       setValue(url);
       setOpen(false);
@@ -31,10 +48,10 @@ export function AvatarPicker({ userId, name, current, size = "h-9 w-9" }: { user
     start(async () => {
       try {
         const blob = await resizeImage(f, 256);
-        const path = `avatars/${userId}/${Date.now()}.jpg`;
+        const path = `${folder}/${userId}/${Date.now()}.jpg`;
         const { error } = await createClient().storage.from("site-assets").upload(path, blob, { contentType: "image/jpeg", upsert: false });
         if (error) throw error;
-        const { error: e2 } = await createClient().rpc("set_my_avatar", { p_url: path });
+        const { error: e2 } = await createClient().rpc(rpc, { p_url: path });
         if (e2) throw e2;
         setValue(path);
         setOpen(false);
@@ -47,7 +64,7 @@ export function AvatarPicker({ userId, name, current, size = "h-9 w-9" }: { user
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} title="Change picture" className={`${size} shrink-0 overflow-hidden rounded-full ring-2 ring-white/20 transition hover:ring-white/60`}>
+      <button type="button" onClick={() => setOpen(true)} title="Change picture" aria-label="Change picture" className={`${size} shrink-0 overflow-hidden rounded-full ring-2 ring-white/20 transition hover:ring-white/60`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={avatarSrc(value, name)} alt="" className="h-full w-full object-cover" />
       </button>

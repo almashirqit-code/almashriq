@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { LogOut, UserRound } from "lucide-react";
+import Link from "next/link";
+import { LogOut } from "lucide-react";
+import { avatarSrc } from "@/lib/avatar";
 import { createClient } from "@/lib/supabase/server";
 import { getPortalMe } from "@/lib/portal";
 import { customerSignOut } from "../actions";
@@ -19,7 +21,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
     const { data: staff } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
     if (staff) redirect("/admin");
   }
-  const name = me?.customer?.name || me?.full_name || user.email;
+  const name = me?.customer?.name || me?.full_name || user.email || "";
   // Unread replies from support (own open thread only; RLS).
   const { data: thread } = me ? await supabase.from("support_threads").select("customer_unread").eq("portal_user_id", user.id).eq("status", "open").maybeSingle() : { data: null };
 
@@ -27,9 +29,10 @@ export default async function AccountLayout({ children }: { children: React.Reac
     <section className="mx-auto max-w-6xl px-4 py-8 lg:py-10">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-white">
-            <UserRound className="h-5 w-5" />
-          </span>
+          <Link href={me && me.status !== "rejected" ? "/account/profile" : "/account"} aria-label="My profile" className="h-11 w-11 shrink-0 overflow-hidden rounded-full ring-2 ring-white/20 hover:ring-white/60">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={avatarSrc(me?.avatar_url, me?.full_name || name)} alt="" className="h-full w-full object-cover" />
+          </Link>
           <div className="min-w-0">
             <h1 className="truncate text-xl font-black">{name}</h1>
             <p className="text-sm text-white/70">
