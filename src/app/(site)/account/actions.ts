@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { SITE_URL } from "@/lib/public-site";
+import { notifySignup } from "@/lib/notify";
 
 export type AuthState = { error?: string; ok?: boolean };
 
@@ -77,6 +78,8 @@ export async function customerSignUp(_prev: AuthState, formData: FormData): Prom
     if (error.code === "weak_password") return { error: error.message };
     return { error: "We couldn't create your account. Please check your details and try again." };
   }
+  // An existing email gets no new user (Supabase returns an obfuscated user with no identities): no alert then.
+  if (data.user?.identities?.length) notifySignup({ name: full_name, email, company: clean(formData.get("company"), 120), country: clean(formData.get("country"), 80) });
   // With email confirmation off there is a session already; otherwise they confirm by email first.
   if (data.session) redirect("/account");
   return { ok: true };

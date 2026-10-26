@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { readChatFile, storeChatFile, removeChatFile, fileMeta } from "@/lib/support-files";
+import { notifyCustomerMessage } from "@/lib/notify";
 import type { SendResult, ChatMessage } from "@/components/support-chat";
 
 const TOO_FAST = "You're sending messages very fast. Please wait a moment.";
@@ -26,8 +27,9 @@ export async function sendCustomerMessage(body: string): Promise<SendResult> {
 
   const { data, error } = await supabase.rpc("portal_send_message", { p_body: text });
   if (error) return { error: /too many/i.test(error.message) ? TOO_FAST : "Your message couldn't be sent. Please try again." };
-  revalidatePath("/account", "layout");
   const r = data as { thread_id: string; message: ChatMessage };
+  notifyCustomerMessage(r.thread_id, text);
+  revalidatePath("/account", "layout");
   return { thread_id: r.thread_id, message: r.message };
 }
 
@@ -53,8 +55,9 @@ export async function sendCustomerFile(formData: FormData): Promise<SendResult> 
     await removeChatFile(path);
     return { error: /too many/i.test(error.message) ? TOO_FAST : "Your file couldn't be sent. Please try again." };
   }
-  revalidatePath("/account", "layout");
   const r = data as { thread_id: string; message: ChatMessage };
+  notifyCustomerMessage(r.thread_id, String(formData.get("body") ?? "").trim() || `Sent a file: ${file.name || "attachment"}`);
+  revalidatePath("/account", "layout");
   return { thread_id: r.thread_id, message: r.message };
 }
 

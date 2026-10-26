@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
+import { notifyAccountApproved } from "@/lib/notify";
 
 type Result = { error?: string; ok?: boolean };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -37,6 +38,7 @@ export async function approveSignup(userId: string, customer: string, agentId: s
     p_agent: agentId || null,
   });
   if (error) return { error: error.message };
+  notifyAccountApproved(userId);
   refresh();
   return { ok: true };
 }

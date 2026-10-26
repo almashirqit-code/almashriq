@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { notifyInquiry } from "@/lib/notify";
 
 export type InquiryState = { ok?: boolean; no?: number; error?: string };
 
@@ -21,6 +22,7 @@ export async function sendPortalInquiry(_prev: InquiryState, formData: FormData)
 
   const { data, error } = await supabase.rpc("portal_create_inquiry", { p_message: message.slice(0, 4000), p_stock_no: stock.slice(0, 40) || null });
   if (error) return { error: /too many/i.test(error.message) ? "You've sent several inquiries already. Please try again later." : "We couldn't send your inquiry. Please try again." };
+  notifyInquiry(Number(data));
   revalidatePath("/account/inquiries");
   return { ok: true, no: Number(data) };
 }

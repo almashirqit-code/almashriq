@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole, getProfile } from "@/lib/auth";
 import { round } from "@/lib/format";
+import { notifyInvoiceIssued } from "@/lib/notify";
 import { CURRENCIES, DOC_LIST_PATH, DOC_TYPES, INCOTERMS, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type DocType, type ExtVehicle, type Invoice, type InvoiceItem, type ShipmentType } from "@/lib/types";
 
 export type InvoicePayload = {
@@ -162,6 +163,7 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
   if (p.issue) {
     const { error } = await supabase.from("invoices").update({ status: "issued" }).eq("id", id);
     if (error) return { error: error.message };
+    notifyInvoiceIssued(id);
   }
 
   if (p.reservation_id) {
@@ -254,8 +256,9 @@ export async function convertQuotationAndOpen(id: string) {
 export async function issueInvoice(id: string) {
   await getProfile();
   const supabase = await createClient();
-  const { error } = await supabase.from("invoices").update({ status: "issued" }).eq("id", id).eq("status", "draft");
+  const { data: issued, error } = await supabase.from("invoices").update({ status: "issued" }).eq("id", id).eq("status", "draft").select("id");
   if (error) throw new Error(error.message);
+  if (issued?.length) notifyInvoiceIssued(id);
   revalidatePath(`/admin/invoices/${id}`);
   revalidatePath("/admin/invoices");
   revalidatePath("/admin/stock");

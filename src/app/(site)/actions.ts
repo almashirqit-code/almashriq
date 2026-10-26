@@ -2,6 +2,7 @@
 
 import { submitInquiryRpc } from "@/lib/public-site";
 import { rateLimit } from "@/lib/rate-limit";
+import { notifyInquiry } from "@/lib/notify";
 
 export type InquiryState = { ok: boolean; message: string; no?: number | null } | null;
 
@@ -31,5 +32,6 @@ export async function sendInquiry(_prev: InquiryState, fd: FormData): Promise<In
     if (/too many/i.test(res.error)) return { ok: false, message: "You've sent several inquiries already — we'll reply soon. Please wait an hour before sending more." };
     return { ok: false, message: "Sorry, we couldn't send your inquiry. Please try WhatsApp or email instead." };
   }
+  notifyInquiry(res.no);
   return { ok: true, no: res.no, message: "Thank you! Your inquiry has been received. Our sales team will reply within 24 hours." };
 }

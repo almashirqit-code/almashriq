@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { readChatFile, fileMeta } from "@/lib/support-files";
 import { storeSlipFile, removeSlipFile, SLIP_CURRENCIES } from "@/lib/payment-slips";
+import { notifySlipSubmitted } from "@/lib/notify";
+import type { Currency } from "@/lib/types";
 
 export type SlipResult = { error?: string; ok?: boolean };
 
@@ -50,6 +52,7 @@ export async function submitSlip(formData: FormData): Promise<SlipResult> {
     if (/too many/i.test(error.message)) return { error: "Too many slips today. Please try again tomorrow." };
     return { error: "Your slip couldn't be sent. Please try again." };
   }
+  notifySlipSubmitted({ customerId: String(customerId), amount, currency: currency as Currency, reference: clean(formData.get("reference"), 120) });
   revalidatePath("/account/payments");
   return { ok: true };
 }
