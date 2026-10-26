@@ -100,7 +100,7 @@ export default async function MachinePage({ params }: { params: Promise<{ stock:
       </nav>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Gallery images={images} alt={title} stockNo={m.stock_no} ribbon={sold ? "sold" : m.status === "reserved" ? "reserved" : null} />
+        <Gallery images={images} alt={title} stockNo={m.stock_no} />
 
         <div className="space-y-4">
           <div className="glass-lite rounded-3xl p-5">
@@ -121,9 +121,9 @@ export default async function MachinePage({ params }: { params: Promise<{ stock:
             <div className="mt-4 flex items-end justify-between gap-3 rounded-lg bg-navy-50 p-4">
               <div>
                 <div className="text-xs font-bold uppercase tracking-wider text-navy-500">FOB price</div>
-                <div className={`text-3xl font-black ${sold ? "text-slate-500" : "text-brand-600"}`}>{sold ? "Sold" : price ?? "Ask for price"}</div>
+                <div className="text-3xl font-black text-brand-600">{price ?? "Ask for price"}</div>
               </div>
-              {wa && !sold && (
+              {wa && (
                 <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
                   <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
@@ -132,17 +132,15 @@ export default async function MachinePage({ params }: { params: Promise<{ stock:
             {m.description && <p className="mt-4 whitespace-pre-line text-sm leading-6 text-slate-700">{m.description}</p>}
           </div>
 
-          {!sold && (
-            <div id="quote" className="glass-lite scroll-mt-20 rounded-3xl p-5">
-              <h2 className="mb-1 font-black">Get a C&amp;F quotation</h2>
-              <p className="mb-3 text-sm text-slate-500">Tell us your destination port and we will send you the total price.</p>
-              <InquiryForm stockNo={m.stock_no} source="machinery" compact defaultMessage={`Please send me a C&F quotation for ${m.stock_no} ${title}. My destination port is: `} />
-            </div>
-          )}
+          <div id="quote" className="glass-lite scroll-mt-20 rounded-3xl p-5">
+            <h2 className="mb-1 font-black">Get a C&amp;F quotation</h2>
+            <p className="mb-3 text-sm text-slate-500">Tell us your destination port and we will send you the total price.</p>
+            <InquiryForm stockNo={m.stock_no} source="machinery" compact defaultMessage={`Please send me a C&F quotation for ${m.stock_no} ${title}. My destination port is: `} />
+          </div>
         </div>
       </div>
 
-      <StickyContact price={price} wa={wa} sold={sold} />
+      <StickyContact price={price} wa={wa} />
 
       <section className="glass-lite mt-6 overflow-hidden rounded-3xl">
         <h2 className="border-b border-white/10 px-5 py-3.5 font-black">Specifications</h2>

@@ -4,29 +4,25 @@ import { publicImageUrl } from "@/lib/format";
 import { carTitle, priceLabel, type PublicCard } from "@/lib/public-site";
 import { CardPhotos } from "@/components/site/card-photos";
 import { ShipsFrom } from "@/components/site/ships-from";
-import { StatusTag, statusTag } from "@/components/site/status-tag";
 import { FavoriteButton } from "@/components/site/favorite-button";
 
 export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
   const href = `/cars/${encodeURIComponent(c.stock_no)}`;
   const price = priceLabel(c);
-  const sold = c.status === "sold" || c.status === "shipped";
-  const reserved = c.status === "reserved";
   const imgs = (c.images?.length ? c.images : c.cover ? [c.cover] : []).map(publicImageUrl);
   return (
-    <article className={`glass-lite glass-hover group flex flex-col overflow-hidden rounded-2xl ${sold ? "opacity-80" : ""}`}>
+    <article className="glass-lite glass-hover group flex flex-col overflow-hidden rounded-2xl">
       <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-black/20" aria-label={`${carTitle(c)} — ${c.stock_no}`}>
-        <CardPhotos images={imgs} alt={`${carTitle(c)} ${c.stock_no}`} dim={sold} />
+        <CardPhotos images={imgs} alt={`${carTitle(c)} ${c.stock_no}`} />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a0a0c]/70 to-transparent" />
         <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{c.stock_no}</span>
-        {c.image_count > 1 && !statusTag(c.status) && (
+        {c.image_count > 1 && (
           <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
             <Camera className="h-3 w-3" />
             {c.image_count}
           </span>
         )}
-        <StatusTag status={c.status} />
-        {c.for_parts && !sold && !reserved && <span className="absolute bottom-2 left-2.5 rounded-lg bg-[var(--accent)] px-2 py-0.5 text-xs font-bold text-white">Parts car</span>}
+        {c.for_parts && <span className="absolute bottom-2 left-2.5 rounded-lg bg-[var(--accent)] px-2 py-0.5 text-xs font-bold text-white">Parts car</span>}
       </Link>
       <div className="flex flex-1 flex-col p-3.5">
         <Link href={href} className="line-clamp-1 py-1 text-[15px] font-extrabold text-white group-hover:text-[var(--accent-text)]">
@@ -74,7 +70,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
           </div>
           <div className="flex gap-2">
             <FavoriteButton item={{ kind: "vehicle", id: c.id, stock: c.stock_no, title: carTitle(c), image: imgs[0] ?? null, price }} />
-            {wa && !sold && (
+            {wa && (
               <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${c.stock_no}`}>
                 <MessageCircle className="h-5 w-5" />
               </a>

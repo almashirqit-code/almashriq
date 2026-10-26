@@ -87,7 +87,7 @@ export default async function PartPage({ params }: { params: Promise<{ partNo: s
       </nav>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Gallery images={images} alt={`${p.name} ${p.part_no}`} stockNo={p.part_no} ribbon={p.status === "reserved" ? "reserved" : null} />
+        <Gallery images={images} alt={`${p.name} ${p.part_no}`} stockNo={p.part_no} />
 
         <div className="space-y-4">
           <div className="glass-lite rounded-3xl p-5">

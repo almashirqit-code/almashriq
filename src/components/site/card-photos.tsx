@@ -8,7 +8,7 @@ import { thumbUrl } from "@/lib/format";
  * Card photo that rotates through the car's first photos:
  * slowly on its own while visible, quickly while hovered.
  */
-export function CardPhotos({ images, alt, dim = false }: { images: string[]; alt: string; dim?: boolean }) {
+export function CardPhotos({ images, alt }: { images: string[]; alt: string }) {
   const [i, setI] = useState(0);
   const [hover, setHover] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -61,7 +61,7 @@ export function CardPhotos({ images, alt, dim = false }: { images: string[]; alt
             alt={k === 0 ? alt : ""}
             loading="lazy"
             decoding="async"
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${k === i ? "opacity-100" : "opacity-0"} ${dim ? "grayscale-[40%]" : ""}`}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${k === i ? "opacity-100" : "opacity-0"}`}
           />
         ) : null
       )}

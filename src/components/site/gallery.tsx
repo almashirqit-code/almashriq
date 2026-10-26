@@ -17,7 +17,7 @@ async function saveBlob(blob: Blob, name: string) {
 }
 
 /** Photo gallery: swipe on phones, arrows on larger screens, auto-play, thumbnails, and downloads (one photo or all as a ZIP). */
-export function Gallery({ images, alt, ribbon, stockNo }: { images: string[]; alt: string; ribbon?: "sold" | "reserved" | null; stockNo: string }) {
+export function Gallery({ images, alt, stockNo }: { images: string[]; alt: string; stockNo: string }) {
   const [i, setI] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [hover, setHover] = useState(false);
@@ -145,15 +145,6 @@ export function Gallery({ images, alt, ribbon, stockNo }: { images: string[]; al
             <span className="hidden sm:inline">Download photo</span>
           </button>
         </div>
-        {ribbon && (
-          <span
-            className={`absolute right-[-44px] top-6 w-44 rotate-45 py-1.5 text-center text-xs font-black uppercase tracking-widest text-white shadow-lg ${
-              ribbon === "sold" ? "bg-gradient-to-r from-rose-600 to-red-700" : "bg-gradient-to-r from-amber-400 to-orange-500"
-            }`}
-          >
-            {ribbon === "sold" ? "Sold" : "Reserved"}
-          </span>
-        )}
       </div>
 
       {images.length > 1 && (

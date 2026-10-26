@@ -119,7 +119,7 @@ export default async function PartUnitPage({ params }: { params: Promise<{ stock
       </nav>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Gallery images={images} alt={`${name} for parts`} stockNo={u.stock_no} ribbon={sold ? "sold" : u.status === "reserved" ? "reserved" : null} />
+        <Gallery images={images} alt={`${name} for parts`} stockNo={u.stock_no} />
 
         <div className="space-y-4">
           <div className="glass-lite rounded-3xl p-5">
@@ -139,32 +139,30 @@ export default async function PartUnitPage({ params }: { params: Promise<{ stock
                 <ShipsFrom code={u.branch ?? "JP"} />
               </span>
             </div>
-            {price && !sold && (
+            {price && (
               <div className="mt-4 rounded-lg bg-white/5 p-4">
                 <div className="text-xs font-bold uppercase tracking-wider text-white/60">Whole unit</div>
                 <div className="text-3xl font-black text-[var(--accent-text)]">{price}</div>
               </div>
             )}
-            {!sold && (
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {wa && (
-                  <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
-                    <MessageCircle className="h-5 w-5" /> Ask for parts
-                  </a>
-                )}
-                {company.email && (
-                  <a
-                    href={`mailto:${company.email}?subject=${encodeURIComponent(`Parts from unit ${ref}`)}`}
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-bold ring-1 ring-white/20 hover:bg-white/15"
-                  >
-                    <Mail className="h-4 w-4" /> Email us
-                  </a>
-                )}
-              </div>
-            )}
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {wa && (
+                <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
+                  <MessageCircle className="h-5 w-5" /> Ask for parts
+                </a>
+              )}
+              {company.email && (
+                <a
+                  href={`mailto:${company.email}?subject=${encodeURIComponent(`Parts from unit ${ref}`)}`}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-bold ring-1 ring-white/20 hover:bg-white/15"
+                >
+                  <Mail className="h-4 w-4" /> Email us
+                </a>
+              )}
+            </div>
           </div>
 
-          {u.unit_parts.length > 0 && !sold && (
+          {u.unit_parts.length > 0 && (
             <section className="glass-lite rounded-3xl p-5">
               <h2 className="font-black">Available from this unit</h2>
               <p className="mt-0.5 text-sm text-white/60">We dismantle to order. Tap a cut or part to ask for a price.</p>
@@ -203,12 +201,12 @@ export default async function PartUnitPage({ params }: { params: Promise<{ stock
           )}
 
           <div id="quote" className="glass-lite scroll-mt-20 rounded-3xl p-5">
-            <h2 className="mb-3 text-lg font-black">{sold ? "Looking for a similar unit?" : "Ask for parts from this unit"}</h2>
+            <h2 className="mb-3 text-lg font-black">Ask for parts from this unit</h2>
             <InquiryForm
               stockNo={u.stock_no}
               source="parts"
               compact
-              defaultMessage={sold ? `I'm looking for a unit similar to ${ref}.` : `Please quote parts from unit ${ref}. I need: `}
+              defaultMessage={`Please quote parts from unit ${ref}. I need: `}
             />
           </div>
         </div>
@@ -228,7 +226,7 @@ export default async function PartUnitPage({ params }: { params: Promise<{ stock
         </dl>
       </section>
 
-      <StickyContact price={price} wa={wa} sold={sold} />
+      <StickyContact price={price} wa={wa} />
     </div>
   );
 }

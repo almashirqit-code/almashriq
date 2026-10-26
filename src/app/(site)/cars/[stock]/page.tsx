@@ -133,7 +133,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
       </nav>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Gallery images={images} alt={title} stockNo={c.stock_no} ribbon={sold ? "sold" : c.status === "reserved" ? "reserved" : null} />
+        <Gallery images={images} alt={title} stockNo={c.stock_no} />
 
         <div className="space-y-4">
           <div className="glass-lite rounded-3xl p-5">
@@ -156,40 +156,36 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
             <div className="mt-4 flex items-end justify-between gap-3 rounded-lg bg-navy-50 p-4">
               <div>
                 <div className="text-xs font-bold uppercase tracking-wider text-navy-500">FOB price</div>
-                <div className={`text-3xl font-black ${sold ? "text-slate-500" : "text-brand-600"}`}>{sold ? "Sold" : price ?? "Ask for price"}</div>
+                <div className="text-3xl font-black text-brand-600">{price ?? "Ask for price"}</div>
               </div>
-              {!sold && (
-                <div className="flex items-center gap-1 text-right text-xs text-navy-700">
-                  <Ship className="h-4 w-4" /> C&F / CIF on request
-                </div>
+              <div className="flex items-center gap-1 text-right text-xs text-navy-700">
+                <Ship className="h-4 w-4" /> C&F / CIF on request
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {wa && (
+                <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
+                  <MessageCircle className="h-5 w-5" /> WhatsApp
+                </a>
+              )}
+              {company.email && (
+                <a
+                  href={`mailto:${company.email}?subject=${encodeURIComponent(`Quotation: ${c.stock_no} ${title}`)}`}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-bold ring-1 ring-white/20 hover:bg-white/15"
+                >
+                  <Mail className="h-4 w-4" /> Email us
+                </a>
               )}
             </div>
-            {!sold && (
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {wa && (
-                  <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
-                    <MessageCircle className="h-5 w-5" /> WhatsApp
-                  </a>
-                )}
-                {company.email && (
-                  <a
-                    href={`mailto:${company.email}?subject=${encodeURIComponent(`Quotation: ${c.stock_no} ${title}`)}`}
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-bold ring-1 ring-white/20 hover:bg-white/15"
-                  >
-                    <Mail className="h-4 w-4" /> Email us
-                  </a>
-                )}
-              </div>
-            )}
           </div>
 
           <div id="quote" className="glass-lite scroll-mt-20 rounded-3xl p-5">
-            <h2 className="mb-3 text-lg font-black text-navy-950">{sold ? "Looking for a similar car?" : "Get a quotation for this car"}</h2>
+            <h2 className="mb-3 text-lg font-black text-navy-950">Get a quotation for this car</h2>
             <InquiryForm
               stockNo={c.stock_no}
               source="car_page"
               compact
-              defaultMessage={sold ? `I'm looking for a car similar to ${c.stock_no} ${title}.` : `Please send me a C&F quotation for ${c.stock_no} ${title}.`}
+              defaultMessage={`Please send me a C&F quotation for ${c.stock_no} ${title}.`}
             />
             <p className="mt-3 text-center text-sm">
               Already a customer?{" "}
@@ -241,7 +237,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
         )}
       </div>
 
-      <StickyContact price={price} wa={wa} sold={sold} />
+      <StickyContact price={price} wa={wa} />
 
       {related.length > 0 && (
         <section className="mt-10">

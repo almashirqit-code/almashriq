@@ -10,7 +10,6 @@ import { FavoriteButton } from "@/components/site/favorite-button";
 import { ShipsFrom } from "@/components/site/ships-from";
 import { FilterPanel, FilterSubmit, FilterToolbar } from "@/components/site/filter-sheet";
 import { SortSelect } from "../sort-select";
-import { StatusTag, statusTag } from "@/components/site/status-tag";
 
 export const revalidate = 300;
 const SIZE = 24;
@@ -154,16 +153,14 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {machines.map((m) => {
                 const price = priceLabel(m);
-                const sold = m.status === "sold" || m.status === "shipped";
-                const reserved = m.status === "reserved";
                 const detail = `/machinery/${encodeURIComponent(m.stock_no)}`;
                 const imgs = (m.images?.length ? m.images : m.cover ? [m.cover] : []).map(publicImageUrl);
                 const wa = whatsapp(company, `Hello Al Mashriq, please send me a C&F quotation for ${m.stock_no} ${machineTitle(m)}. My destination port is: `);
                 return (
-                  <article key={m.id} className={`glass-lite glass-hover group flex flex-col overflow-hidden rounded-2xl ${sold ? "opacity-80" : ""}`}>
+                  <article key={m.id} className="glass-lite glass-hover group flex flex-col overflow-hidden rounded-2xl">
                     <Link href={detail} className="relative block aspect-[4/3] overflow-hidden bg-black/20" aria-label={`${machineTitle(m)} — ${m.stock_no}`}>
                       {imgs.length ? (
-                        <CardPhotos images={imgs} alt={`${machineTitle(m)} ${m.stock_no}`} dim={sold} />
+                        <CardPhotos images={imgs} alt={`${machineTitle(m)} ${m.stock_no}`} />
                       ) : (
                         <div className="flex h-full flex-col items-center justify-center gap-2 opacity-40">
                           <Tractor className="h-10 w-10" />
@@ -171,13 +168,12 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                         </div>
                       )}
                       <span className="absolute left-2.5 top-2.5 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{m.stock_no}</span>
-                      {m.image_count > 1 && !statusTag(m.status) && (
+                      {m.image_count > 1 && (
                         <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
                           <Camera className="h-3 w-3" />
                           {m.image_count}
                         </span>
                       )}
-                      <StatusTag status={m.status} />
                     </Link>
                     <div className="flex flex-1 flex-col p-3.5">
                       <Link href={detail} className="line-clamp-1 py-1 text-[15px] font-extrabold group-hover:text-[var(--accent-text)]">
@@ -222,7 +218,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                         </div>
                         <div className="flex gap-2">
                           <FavoriteButton item={{ kind: "machine", id: m.id, stock: m.stock_no, title: machineTitle(m), image: imgs[0] ?? null, price: price ?? null }} />
-                          {wa && !sold && (
+                          {wa && (
                             <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${m.stock_no}`}>
                               <MessageCircle className="h-5 w-5" />
                             </a>
