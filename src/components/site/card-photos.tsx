@@ -58,7 +58,9 @@ export function CardPhotos({ images, alt }: { images: string[]; alt: string }) {
             onError={(e) => {
               if (e.currentTarget.src !== src) e.currentTarget.src = src;
             }}
-            alt={k === 0 ? alt : ""}
+            // Every photo gets a description; the faded-out one is hidden from screen readers.
+            alt={k === 0 ? alt : `${alt} — photo ${k + 1}`}
+            aria-hidden={k !== i}
             loading="lazy"
             decoding="async"
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${k === i ? "opacity-100" : "opacity-0"}`}
