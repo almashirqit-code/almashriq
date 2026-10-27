@@ -29,6 +29,10 @@ import {
   Heart,
   MessagesSquare,
   Receipt,
+  BookOpen,
+  Wallet,
+  History,
+  Gauge,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -58,6 +62,7 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
     label: "grp_inventory",
     items: [
       { href: "/admin/stock", label: "nav_stock", icon: Car },
+      { href: "/admin/stock/dashboard", label: "nav_vehicle_dashboard", icon: Gauge },
       { href: "/admin/third-party", label: "nav_third_party", icon: Handshake },
       { href: "/admin/parts", label: "nav_parts", icon: Wrench },
       { href: "/admin/machinery", label: "nav_machinery", icon: Tractor },
@@ -85,6 +90,8 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
         ],
       },
       { href: "/admin/remittances", label: "nav_remittances", icon: Banknote },
+      { href: "/admin/expenses", label: "nav_expenses", icon: Wallet, roles: ["admin", "manager"] },
+      { href: "/admin/ledger", label: "nav_ledger", icon: BookOpen, roles: ["admin", "manager"] },
     ],
   },
   {
@@ -99,6 +106,7 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
     label: "grp_admin",
     items: [
       { href: "/admin/users", label: "nav_users", icon: UserCog, roles: ["admin"] },
+      { href: "/admin/audit", label: "nav_audit", icon: History, roles: ["admin"] },
       { href: "/admin/settings", label: "nav_settings", icon: Settings, roles: ["admin", "manager"] },
       { href: "/admin/system", label: "nav_system", icon: Activity, roles: ["admin"] },
     ],
@@ -133,7 +141,7 @@ export function Sidebar({
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
-    if (href === "/admin/stock") return pathname === "/admin/stock" || (pathname.startsWith("/admin/stock/") && !pathname.startsWith("/admin/stock/import"));
+    if (href === "/admin/stock") return pathname === "/admin/stock" || (pathname.startsWith("/admin/stock/") && !pathname.startsWith("/admin/stock/import") && !pathname.startsWith("/admin/stock/dashboard"));
     return pathname.startsWith(href);
   };
   // Invoices sub-menu: quotations / auction deposits have their own pages; everything else under /admin/invoices is "Invoices".

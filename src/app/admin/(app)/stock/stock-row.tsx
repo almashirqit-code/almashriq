@@ -83,6 +83,7 @@ export function StockRow({
               {v.for_parts && <PartsBadge label={t("parts_badge")} />}
               {v.ownership === "third_party" && <Badge className="bg-amber-50 text-amber-800 ring-amber-600/20">{t("own_third_party_short")}</Badge>}
               {v.show_on_website && <Badge className="bg-sky-50 text-sky-700 ring-sky-600/20">Web</Badge>}
+              {v.commission_paid_at && <Badge className="bg-emerald-50 text-emerald-700 ring-emerald-600/20">Commission paid</Badge>}
             </div>
             <div className="truncate font-semibold uppercase text-slate-900">{vehicleTitle(v)}</div>
             <div className="truncate text-xs text-slate-500">

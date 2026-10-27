@@ -18,6 +18,8 @@ import { YardPhotos } from "./yard-photos";
 import type { StockPhoto } from "@/components/stock-photos";
 import { loadMasters } from "../masters-data";
 import { MakeAvailableButton } from "../make-available";
+import { CommissionPanel } from "./commission-panel";
+import { loadStaff } from "../../customers/staff";
 
 export default async function VehiclePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,7 +32,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
     supabase.from("vehicle_images").select("*").eq("vehicle_id", id).order("sort_order").order("created_at"),
     supabase
       .from("invoice_items")
-      .select("amount, invoices!inner(id, invoice_no, status, currency, issue_date, exchange_rate, customers(name))")
+      .select("amount, invoices!inner(id, invoice_no, status, currency, issue_date, exchange_rate, customers(name, assigned_to))")
       .eq("vehicle_id", id)
       .eq("invoices.doc_type", "invoice"),
     supabase.from("settings").select("exchange_rates").single(),
@@ -62,10 +64,26 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
   const cost = thirdParty ? convert(Number(v.supplier_price || 0), v.supplier_currency ?? "JPY", "JPY", rates) + expensesJpy(v) : costJpy(v);
   const priceJpy = v.price != null ? convert(Number(v.price), v.price_currency, "JPY", rates) : null;
 
-  type Inv = { id: string; invoice_no: string; status: InvoiceStatus; currency: Currency; issue_date: string; customers: { name: string } | null };
+  type Inv = { id: string; invoice_no: string; status: InvoiceStatus; currency: Currency; issue_date: string; customers: { name: string; assigned_to: string | null } | null };
   const invoices = (items ?? [])
     .map((it) => ({ amount: it.amount as number, inv: it.invoices as unknown as Inv | null }))
     .filter((x) => x.inv);
+
+  // Commission (admins): ready once the car's invoice is paid and the car is delivered.
+  const live = invoices.find((x) => x.inv!.status !== "cancelled" && x.inv!.status !== "draft")?.inv ?? null;
+  const commission =
+    profile.role === "admin"
+      ? await (async () => {
+          const staff = await loadStaff();
+          const agentName = v.commission_agent_id ? staff.find((s) => s.id === v.commission_agent_id)?.name ?? null : null;
+          return {
+            staff,
+            defaultAgent: live?.customers?.assigned_to ?? null,
+            ready: { delivered: v.shipping_status === "delivered", paid: live?.status === "paid" },
+            info: { paidAt: v.commission_paid_at ?? null, amount: v.commission_amount ?? null, currency: v.commission_currency ?? null, agent: agentName, note: v.commission_note ?? null },
+          };
+        })()
+      : null;
 
   return (
     <>
@@ -156,6 +174,16 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
         <div className="space-y-5 xl:col-span-2">
           {profile.role === "admin" && (
             <StatusPanel vehicleId={id} status={v.status} manual={!!v.status_manual} history={(changes ?? []) as unknown as StatusChange[]} />
+          )}
+          {profile.role === "admin" && commission && (
+            <CommissionPanel
+              vehicleId={id}
+              info={commission.info}
+              ready={commission.ready}
+              staff={commission.staff}
+              defaultAgent={commission.defaultAgent}
+              rates={rates}
+            />
           )}
           <ImageManager vehicleId={id} images={(images ?? []) as VehicleImage[]} canEdit={canEdit} />
           <YardPhotos vehicleId={id} photos={(yard ?? []) as StockPhoto[]} canEdit={canEdit} />

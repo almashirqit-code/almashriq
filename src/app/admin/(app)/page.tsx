@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Car, Clock, TrendingUp, Wallet, Users, Package, Plus, FileText, Banknote, Upload, ArrowUpRight } from "lucide-react";
+import { Car, Clock, TrendingUp, Wallet, Users, Package, Plus, FileText, Banknote, Upload, ArrowUpRight, BookOpen, Receipt, Gauge, History } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -10,6 +10,7 @@ import { Stat, InvoiceStatusBadge, VehicleStatusBadge, Empty, IconChip } from "@
 import { Greeting } from "./greeting";
 import { SalesChart, MakesChart } from "./dashboard-charts";
 import type { DictKey } from "@/lib/i18n/dictionaries";
+import { loadEntries, totals, loadProfit, loadReceivables } from "./ledger/data";
 
 const ACTIVE: InvoiceStatus[] = ["issued", "partially_paid", "paid"];
 
@@ -181,6 +182,8 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {can.seeCost(profile.role) && <FinanceMonth monthStart={monthStart} today={now.toISOString().slice(0, 10)} title={t("dash_finance_month")} isAdmin={profile.role === "admin"} />}
+
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="card p-5 lg:col-span-2">
           <h2 className="card-title mb-4">
@@ -278,5 +281,67 @@ export default async function DashboardPage() {
         </div>
       </div>
     </>
+  );
+}
+
+/** Admins and managers: this month's sales, money in, costs and profit, with links to the ledger tools. */
+async function FinanceMonth({ monthStart, today, title, isAdmin }: { monthStart: string; today: string; title: string; isAdmin: boolean }) {
+  const p = { from: monthStart, to: today };
+  const [entries, profit, receivables] = await Promise.all([loadEntries(p), loadProfit(p), loadReceivables()]);
+  const t = totals(entries);
+  const overdue = receivables.list.filter((r) => r.daysLate > 0).length;
+  const yen = (n: number) => money(n, "JPY");
+  const links = [
+    { href: "/admin/ledger", label: "Ledger", icon: BookOpen },
+    { href: "/admin/expenses", label: "Expenses", icon: Receipt },
+    { href: "/admin/stock/dashboard", label: "Vehicles dashboard", icon: Gauge },
+    ...(isAdmin ? [{ href: "/admin/audit", label: "Audit trail", icon: History }] : []),
+  ];
+  return (
+    <section className="card mt-4 p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="card-title">
+          <IconChip tone="emerald" size="sm">
+            <BookOpen />
+          </IconChip>
+          {title}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {links.map((l) => (
+            <Link key={l.href} href={l.href} className="btn-secondary py-1.5 text-xs">
+              <l.icon className="h-3.5 w-3.5" /> {l.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        {[
+          { label: "Sales invoiced", value: yen(t.sale) },
+          { label: "Payments received", value: yen(t.payment) },
+          { label: "Expenses", value: yen(t.expense) },
+          { label: "Gross profit (cars)", value: yen(profit.gross), bad: profit.gross < 0 },
+          { label: "Net profit", value: yen(profit.net), bad: profit.net < 0 },
+          { label: "Overdue invoices", value: String(overdue), bad: overdue > 0, href: "/admin/ledger?tab=receivables" },
+        ].map((x) => {
+          const body = (
+            <div className="h-full rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{x.label}</div>
+              <div className={`mt-1 text-lg font-bold tabular-nums ${x.bad ? "text-red-600" : "text-slate-900"}`}>{x.value}</div>
+            </div>
+          );
+          return x.href ? (
+            <Link key={x.label} href={x.href} className="block hover:brightness-95">
+              {body}
+            </Link>
+          ) : (
+            <div key={x.label}>{body}</div>
+          );
+        })}
+      </div>
+      <p className="mt-3 text-xs text-slate-500">
+        <ArrowUpRight className="mr-1 inline h-3 w-3" />
+        All amounts in JPY. Open the ledger for other periods, profit per car and what each customer owes.
+      </p>
+    </section>
   );
 }

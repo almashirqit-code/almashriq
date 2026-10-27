@@ -142,6 +142,14 @@ export interface Vehicle {
   /** 1 unit of cost_currency = N JPY (1 for JPY). */
   cost_fx_rate: number;
   cost_total_jpy: number | null;
+  /** Set by the shipping workflow (not_booked → booked → shipped → delivered). */
+  shipping_status?: ShippingStatus | null;
+  /** Commission paid for this car (migration 0035); admins mark and reverse it. */
+  commission_paid_at?: string | null;
+  commission_agent_id?: string | null;
+  commission_amount?: number | null;
+  commission_currency?: Currency | null;
+  commission_note?: string | null;
   created_at: string;
   updated_at: string;
   vehicle_images?: VehicleImage[];
