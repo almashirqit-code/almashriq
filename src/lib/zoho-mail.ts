@@ -195,6 +195,16 @@ export async function listMessages(mailboxId: string, folderId: string, opts: { 
   return (rows ?? []).map(toSummary);
 }
 
+/** Search the whole mailbox (subject, sender, body) — Zoho search syntax "entire:". */
+export async function searchMessages(mailboxId: string, q: string, opts: { start: number; limit: number }): Promise<MailSummary[]> {
+  const a = await account(mailboxId);
+  const term = q.replace(/[:"]/g, " ").trim().slice(0, 80);
+  if (!term) return [];
+  const p = new URLSearchParams({ searchKey: `entire:${term}`, receivedTime: String(Date.now()), start: String(opts.start), limit: String(opts.limit), includeto: "true" });
+  const rows = await zoho<RawMail[]>(a, `/messages/search?${p}`);
+  return (rows ?? []).map(toSummary);
+}
+
 export async function getMessage(mailboxId: string, folderId: string, messageId: string) {
   const a = await account(mailboxId);
   const [details, content] = await Promise.all([
