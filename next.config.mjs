@@ -13,7 +13,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline' https://*.tawk.to https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://*.tawk.to https://fonts.gstatic.com",
-  `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace("https://", "wss://")} https://*.tawk.to wss://*.tawk.to https://*.trustpilot.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://*.doubleclick.net`,
+  `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace("https://", "wss://")} https://*.tawk.to wss://*.tawk.to https://*.trustpilot.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://*.doubleclick.net https://vitals.vercel-insights.com`,
   // Google Maps embed on /contact (loaded only with "Chat, reviews & map" consent).
   "frame-src 'self' https://*.tawk.to https://*.trustpilot.com https://www.google.com https://maps.google.com",
   "media-src 'self' https:",
