@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Mail } from "lucide-react";
 import { PageHeader } from "@/components/ui";
-import { myMailboxes } from "@/lib/zoho-mail";
+import { myMailboxes, getSendAddresses } from "@/lib/zoho-mail";
 import { MailForm } from "../mail-form";
 
 export const metadata = { title: "New email" };
@@ -14,11 +14,12 @@ export default async function ComposePage({ searchParams }: { searchParams: Prom
   const box = boxes.find((b) => b.id === sp.mb) ?? boxes[0];
   if (!box) notFound();
   const to = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sp.to ?? "") ? sp.to! : "";
+  const fromOptions = await getSendAddresses(box.id).catch(() => [box.email]);
   return (
     <>
       <PageHeader icon={<Mail />} tone="sky" title="New email" back={{ href: `/admin/inbox?mb=${box.id}`, label: box.email }} />
       <div className="max-w-3xl">
-        <MailForm mailboxId={box.id} from={box.email} to={to} doneHref={`/admin/inbox?mb=${box.id}&folder=sent`} />
+        <MailForm mailboxId={box.id} from={box.email} fromOptions={fromOptions} to={to} doneHref={`/admin/inbox?mb=${box.id}&folder=sent`} />
       </div>
     </>
   );

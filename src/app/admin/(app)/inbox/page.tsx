@@ -5,7 +5,7 @@ import { getProfile } from "@/lib/auth";
 import { PageHeader, Empty } from "@/components/ui";
 import { zohoConfigured, myMailboxes, listFolders, listMessages, ZOHO_REDIRECT, type MailSummary } from "@/lib/zoho-mail";
 import { DisconnectButton } from "./mail-form";
-import { mailTime, emailOf } from "./format";
+import { mailTime, emailOf, groupAddress } from "./format";
 
 export const metadata = { title: "Inbox" };
 export const dynamic = "force-dynamic";
@@ -165,6 +165,9 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
                         {m.unread && <span className="h-2 w-2 shrink-0 rounded-full bg-sky-600" aria-label="Unread" />}
                         <span className={`truncate text-sm ${m.unread ? "font-bold text-slate-900" : "font-medium text-slate-700"}`}>{sp.folder === "sent" ? `To: ${other}` : other}</span>
                         {cust && <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">#{cust.customer_no} {cust.name}</span>}
+                        {sp.folder !== "sent" && groupAddress(m.toAddress, "", box.email) && (
+                          <span className="shrink-0 rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-700">{groupAddress(m.toAddress, "", box.email)!.split("@")[0]}@</span>
+                        )}
                       </div>
                       <div className={`truncate text-sm ${m.unread ? "font-semibold text-slate-900" : "text-slate-700"}`}>{m.subject}</div>
                       <div className="truncate text-xs text-slate-500">{m.summary}</div>

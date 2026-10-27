@@ -16,16 +16,18 @@ const plain = (v: string) =>
     .filter(Boolean)
     .join(",");
 
-function check(v: { to: string; cc: string; subject: string; text: string }) {
+type Draft = { from: string; to: string; cc: string; subject: string; text: string };
+
+function check(v: Draft) {
   const to = plain(v.to);
   const cc = plain(v.cc);
   if (!to || !EMAILS.test(to)) return { error: "Enter a valid recipient email." };
   if (cc && !EMAILS.test(cc)) return { error: "Check the Cc addresses." };
   if (!v.text.trim()) return { error: "Write your message." };
-  return { mail: { to, cc, subject: v.subject.trim().slice(0, 250) || "(no subject)", text: v.text.slice(0, 20000) } };
+  return { mail: { from: v.from, to, cc, subject: v.subject.trim().slice(0, 250) || "(no subject)", text: v.text.slice(0, 20000) } };
 }
 
-export async function replyAction(mailboxId: string, messageId: string, v: { to: string; cc: string; subject: string; text: string }): Promise<MailResult> {
+export async function replyAction(mailboxId: string, messageId: string, v: Draft): Promise<MailResult> {
   const me = await getProfile();
   if (!(await rateLimit("mail-send", 60, 3600, me.id))) return { error: "Too many emails sent. Please wait a little." };
   const c = check(v);
@@ -39,7 +41,7 @@ export async function replyAction(mailboxId: string, messageId: string, v: { to:
   return { ok: true };
 }
 
-export async function sendAction(mailboxId: string, v: { to: string; cc: string; subject: string; text: string }): Promise<MailResult> {
+export async function sendAction(mailboxId: string, v: Draft): Promise<MailResult> {
   const me = await getProfile();
   if (!(await rateLimit("mail-send", 60, 3600, me.id))) return { error: "Too many emails sent. Please wait a little." };
   const c = check(v);

@@ -218,18 +218,35 @@ export async function markRead(mailboxId: string, messageIds: string[]) {
 const htmlBody = (text: string) =>
   `<div style="font-family:Arial,sans-serif;font-size:14px">${text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!).replace(/\r?\n/g, "<br>")}</div>`;
 
-export async function replyTo(mailboxId: string, messageId: string, v: { to: string; cc: string; subject: string; text: string }) {
+/**
+ * Addresses this mailbox may send from: its own address, aliases, and "Send mail as" addresses such
+ * as the sales@ / support@ groups (Zoho → Settings → Send mail as).
+ */
+export async function getSendAddresses(mailboxId: string): Promise<string[]> {
+  const a = await account(mailboxId);
+  const d = await zoho<{ sendMailDetails?: { fromAddress?: string }[]; emailAddress?: { mailId?: string }[] }>(a, "");
+  const all = [a.email, ...(d?.emailAddress ?? []).map((x) => x.mailId), ...(d?.sendMailDetails ?? []).map((x) => x.fromAddress)];
+  return [...new Set(all.map((x) => (x ?? "").trim().toLowerCase()).filter((x) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))];
+}
+
+async function fromFor(a: Account, from: string) {
+  const f = from.trim().toLowerCase() || a.email;
+  if (f !== a.email && !(await getSendAddresses(a.id)).includes(f)) throw new Error(`This mailbox can't send as ${f}. Add it in Zoho → Settings → Send mail as.`);
+  return f;
+}
+
+export async function replyTo(mailboxId: string, messageId: string, v: { from: string; to: string; cc: string; subject: string; text: string }) {
   const a = await account(mailboxId);
   await zoho(a, `/messages/${messageId}`, {
     method: "POST",
-    body: { fromAddress: a.email, toAddress: v.to, ...(v.cc ? { ccAddress: v.cc } : {}), subject: v.subject, content: htmlBody(v.text), action: "reply", mailFormat: "html" },
+    body: { fromAddress: await fromFor(a, v.from), toAddress: v.to, ...(v.cc ? { ccAddress: v.cc } : {}), subject: v.subject, content: htmlBody(v.text), action: "reply", mailFormat: "html" },
   });
 }
 
-export async function sendMail(mailboxId: string, v: { to: string; cc: string; subject: string; text: string }) {
+export async function sendMail(mailboxId: string, v: { from: string; to: string; cc: string; subject: string; text: string }) {
   const a = await account(mailboxId);
   await zoho(a, "/messages", {
     method: "POST",
-    body: { fromAddress: a.email, toAddress: v.to, ...(v.cc ? { ccAddress: v.cc } : {}), subject: v.subject, content: htmlBody(v.text), mailFormat: "html" },
+    body: { fromAddress: await fromFor(a, v.from), toAddress: v.to, ...(v.cc ? { ccAddress: v.cc } : {}), subject: v.subject, content: htmlBody(v.text), mailFormat: "html" },
   });
 }

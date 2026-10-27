@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { Mail, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui";
-import { getMailbox, getMessage, markRead } from "@/lib/zoho-mail";
+import { getMailbox, getMessage, markRead, getSendAddresses } from "@/lib/zoho-mail";
 import { MailForm } from "../mail-form";
-import { mailTime, emailOf } from "../format";
+import { mailTime, emailOf, groupAddress } from "../format";
 
 export const metadata = { title: "Email" };
 export const dynamic = "force-dynamic";
@@ -35,8 +35,12 @@ export default async function MessagePage({ searchParams }: { searchParams: Prom
     );
   }
   if (mail.unread) await markRead(mb, [m]).catch(() => undefined);
+  const fromOptions = await getSendAddresses(mb).catch(() => [box.email]);
+  // Reply from the group the customer wrote to (sales@ / support@) when the mailbox may send as it.
+  const group = groupAddress(mail.toAddress, mail.ccAddress, box.email);
+  const replyFrom = group && fromOptions.includes(group) ? group : box.email;
 
-  const sentByUs = emailOf(mail.fromAddress) === box.email;
+  const sentByUs = fromOptions.includes(emailOf(mail.fromAddress)) || emailOf(mail.fromAddress) === box.email;
   const replyTo = sentByUs ? mail.toAddress : mail.fromAddress;
   const supabase = await createClient();
   const { data: cust } = await supabase.from("customers").select("id, name, customer_no").eq("email", emailOf(replyTo.split(",")[0])).maybeSingle();
@@ -76,7 +80,12 @@ export default async function MessagePage({ searchParams }: { searchParams: Prom
           {mail.hasAttachment && <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">This email has attachments — open it in Zoho Mail to download them.</p>}
         </section>
         <div className="xl:sticky xl:top-20">
-          <MailForm mailboxId={mb} from={box.email} messageId={m} to={replyTo} subject={subject} doneHref={`/admin/inbox?mb=${mb}`} />
+          <MailForm mailboxId={mb} from={replyFrom} fromOptions={fromOptions} messageId={m} to={replyTo} subject={subject} doneHref={`/admin/inbox?mb=${mb}`} />
+          {group && !fromOptions.includes(group) && (
+            <p className="mt-2 text-xs text-amber-700">
+              This email went to {group}. To reply as {group}, add it in Zoho → Settings → Mail accounts → Send mail as (the group must allow members to send as it).
+            </p>
+          )}
         </div>
       </div>
     </>
