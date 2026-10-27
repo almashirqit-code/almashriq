@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Mail, Phone, MapPin, MessageCircle, Printer, Search, ChevronDown, Send } from "lucide-react";
-import { getCompany, getFacets, getMakeTiles, whatsapp, SITE_URL } from "@/lib/public-site";
+import { getCompany, getFacets, getMakeTiles, whatsapp, SITE_URL, SUPPORT_EMAIL } from "@/lib/public-site";
 import { WorldClock } from "@/components/world-clock";
 import { FxBadge } from "@/components/fx-badge";
 import { getUsdJpy } from "@/lib/fx";
@@ -286,9 +286,12 @@ export default async function PublicLayout({ children }: { children: React.React
             )}
             {company.email && (
               <a href={`mailto:${company.email}`} className="flex min-h-11 items-center gap-2 break-all hover:text-white">
-                <Mail className="h-4 w-4 shrink-0 text-rose-300" /> {company.email}
+                <Mail className="h-4 w-4 shrink-0 text-rose-300" /> Sales: {company.email}
               </a>
             )}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="flex min-h-11 items-center gap-2 break-all hover:text-white">
+              <Mail className="h-4 w-4 shrink-0 text-rose-300" /> Support: {SUPPORT_EMAIL}
+            </a>
             {wa && (
               <a href={wa} target="_blank" rel="noreferrer" className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950 hover:brightness-110">
                 <MessageCircle className="h-4 w-4" /> WhatsApp{company.mobile ? ` · ${company.mobile}` : ""}

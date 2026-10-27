@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { avatarSrc } from "@/lib/avatar";
+import { SUPPORT_EMAIL } from "@/lib/public-site";
 
 export type VerifyState = {
   query?: string;
@@ -18,6 +19,8 @@ export async function verifyContact(_prev: VerifyState, formData: FormData): Pro
   const query = String(formData.get("q") ?? "").trim().slice(0, 200);
   if (query.length < 6) return { query, error: "Enter the full phone number, WhatsApp number or email address." };
   if (!(await rateLimit("verify-agent", 20, 600))) return { query, error: "Too many checks. Please wait a few minutes and try again." };
+  // The support mailbox isn't a staff login or the company email, but it is ours.
+  if (query.toLowerCase() === SUPPORT_EMAIL) return { query, result: "company" };
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("public_verify_contact", { p_query: query });

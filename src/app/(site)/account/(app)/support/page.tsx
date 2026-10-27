@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPortalMe } from "@/lib/portal";
+import { SUPPORT_EMAIL } from "@/lib/public-site";
 import { SupportChat, type ChatMessage } from "@/components/support-chat";
 import { sendCustomerMessage, sendCustomerFile, markCustomerRead } from "./actions";
 
@@ -32,7 +33,11 @@ export default async function AccountSupport() {
   return (
     <>
       <p className="mb-3 text-sm text-white/70">
-        {me.agent ? `Chat with ${me.agent.name} and our team.` : "Chat with our sales team."} We usually reply within working hours in Japan (JST).
+        {me.agent ? `Chat with ${me.agent.name} and our team.` : "Chat with our sales team."} We usually reply within working hours in Japan (JST). You can also email{" "}
+        <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-brand-700 hover:underline">
+          {SUPPORT_EMAIL}
+        </a>
+        .
       </p>
       <SupportChat
         threadId={thread?.id ?? null}

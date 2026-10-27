@@ -1,7 +1,7 @@
 import "server-only";
 import { after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { SITE_URL } from "@/lib/public-site";
+import { SITE_URL, SUPPORT_EMAIL } from "@/lib/public-site";
 import { money } from "@/lib/format";
 import type { Currency } from "@/lib/types";
 
@@ -14,7 +14,7 @@ import type { Currency } from "@/lib/types";
  * addresses that customers can never read. Only ids, names and email addresses are read here.
  */
 const FROM = "Al Mashriq Trading <noreply@almashriqtrading.site>";
-const REPLY_TO = "info@almashriqtrading.site";
+const REPLY_TO = SUPPORT_EMAIL;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** A person to tell: a login (bell) and/or an email address. */

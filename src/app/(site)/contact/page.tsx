@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Mail, Phone, MapPin, MessageCircle, Printer, Clock } from "lucide-react";
-import { getCompany, whatsapp } from "@/lib/public-site";
+import { getCompany, whatsapp, SUPPORT_EMAIL } from "@/lib/public-site";
 import { InquiryForm } from "@/components/site/inquiry-form";
 import { WorldClock } from "@/components/world-clock";
 import { SocialLinks } from "@/components/site/social-links";
@@ -47,10 +47,13 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               </div>
             )}
             {company.email && (
-              <a href={`mailto:${company.email}`} className="flex items-center gap-2 hover:text-white">
-                <Mail className="h-4 w-4 text-brand-600" /> {company.email}
+              <a href={`mailto:${company.email}`} className="flex items-center gap-2 break-all hover:text-white">
+                <Mail className="h-4 w-4 shrink-0 text-brand-600" /> Sales: {company.email}
               </a>
             )}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-2 break-all hover:text-white">
+              <Mail className="h-4 w-4 shrink-0 text-brand-600" /> Support: {SUPPORT_EMAIL}
+            </a>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-brand-600" /> <WorldClock zones={["japan"]} />
             </div>

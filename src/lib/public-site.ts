@@ -185,6 +185,9 @@ export function whatsapp(company: PublicCompany, message: string) {
   return num ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : null;
 }
 
+/** Customer support mailbox (Zoho). Sales inquiries use the company email from Configuration. */
+export const SUPPORT_EMAIL = "support@almashriqtrading.site";
+
 /** Public website address (used for canonical URLs, sitemap and share links). */
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site").replace(/\/$/, "");
 
