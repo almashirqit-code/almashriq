@@ -4,6 +4,7 @@ import { getProfile, can } from "@/lib/auth";
 import { COST_FIELDS, VEHICLE_FIELDS, VEHICLE_STATUSES } from "@/lib/types";
 import { parseBranch } from "@/lib/branches";
 import { fetchAll } from "@/lib/fetch-all";
+import { xlsxResponse } from "@/lib/xlsx";
 
 function csvCell(v: unknown) {
   if (v === null || v === undefined) return "";
@@ -35,6 +36,10 @@ export async function GET(req: NextRequest) {
 
   // The API caps one request at 1,000 rows; read every page.
   const rows = await fetchAll<Record<string, unknown>>(page);
+  if (sp.get("format") === "xlsx") {
+    const value = (v: unknown) => (v === null || v === undefined ? null : typeof v === "number" ? v : typeof v === "object" ? JSON.stringify(v) : String(v));
+    return xlsxResponse(`stock-${new Date().toISOString().slice(0, 10)}.xlsx`, [{ name: "Stock", header: fields, rows: rows.map((r) => fields.map((f) => value(r[f]))) }]);
+  }
   const cell = (v: unknown) => csvCell(v !== null && typeof v === "object" ? JSON.stringify(v) : v);
   const csv = "﻿" + [fields.join(","), ...rows.map((r) => fields.map((f) => cell(r[f])).join(","))].join("\r\n");
 

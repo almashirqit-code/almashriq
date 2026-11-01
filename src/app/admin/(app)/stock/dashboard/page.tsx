@@ -3,12 +3,13 @@ import { Gauge, BadgeCheck, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
-import { money, num } from "@/lib/format";
+import { num } from "@/lib/format";
 import { costJpy, branchName } from "@/lib/branches";
 import { VEHICLE_STATUSES, SHIPPING_STATUSES, type VehicleStatus, type ShippingStatus } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { PageHeader, Stat, VehicleStatusBadge } from "@/components/ui";
 import { fetchAll } from "@/lib/fetch-all";
+import { getDisplayCurrency } from "@/lib/display-currency";
 
 export const metadata = { title: "Vehicles dashboard" };
 
@@ -31,6 +32,7 @@ export default async function VehiclesDashboard() {
   const seeCost = can.seeCost(profile.role);
   const { t, locale } = await getT();
   const supabase = await createClient();
+  const { fmt } = await getDisplayCurrency();
   // Own stock only; third-party cars have their own list.
   const cars = await fetchAll<V>((from, to) =>
     supabase
@@ -77,7 +79,7 @@ export default async function VehiclesDashboard() {
       <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {VEHICLE_STATUSES.map((s) => (
           <Link key={s} href={`/admin/stock?status=${s}`} className="block">
-            <Stat tone={TONE[s]} label={t(`vs_${s}` as DictKey)} value={num(byStatus.get(s)!.n, locale)} hint={seeCost && byStatus.get(s)!.value ? `Cost ${money(byStatus.get(s)!.value, "JPY", locale)}` : undefined} />
+            <Stat tone={TONE[s]} label={t(`vs_${s}` as DictKey)} value={num(byStatus.get(s)!.n, locale)} hint={seeCost && byStatus.get(s)!.value ? `Cost ${fmt(byStatus.get(s)!.value, locale)}` : undefined} />
           </Link>
         ))}
       </div>
@@ -94,7 +96,7 @@ export default async function VehiclesDashboard() {
               </li>
             ))}
           </ul>
-          {seeCost && <p className="mt-3 text-xs text-slate-500">Over 90 days ties up {money(ages[3].value, "JPY", locale)} of own stock.</p>}
+          {seeCost && <p className="mt-3 text-xs text-slate-500">Over 90 days ties up {fmt(ages[3].value, locale)} of own stock.</p>}
         </section>
 
         <section className="card p-5">
@@ -202,7 +204,7 @@ export default async function VehiclesDashboard() {
                     {v.commission_paid_at && <BadgeCheck className="ml-1 inline h-4 w-4 text-emerald-600" aria-label="Commission paid" />}
                   </td>
                   <td className={`text-right tabular-nums ${days(v) > 90 ? "font-semibold text-red-600" : ""}`}>{days(v)}</td>
-                  {seeCost && <td className="text-right tabular-nums">{v.ownership === "third_party" ? "—" : money(costJpy(v), "JPY", locale)}</td>}
+                  {seeCost && <td className="text-right tabular-nums">{v.ownership === "third_party" ? "—" : fmt(costJpy(v), locale)}</td>}
                 </tr>
               ))}
             </tbody>

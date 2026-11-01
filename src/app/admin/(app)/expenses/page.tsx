@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Receipt, Download, Pencil, FileText } from "lucide-react";
+import { Receipt, Download, Pencil, FileText, FileSpreadsheet } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { money, num } from "@/lib/format";
 import { EXPENSE_CATEGORIES, expenseCategoryLabel, type Expense } from "@/lib/expenses";
 import { PageHeader, Stat, Empty } from "@/components/ui";
+import { getDisplayCurrency } from "@/lib/display-currency";
 import { loadRates } from "../reservations/data";
 import { readFilters, loadExpenses, filterQuery } from "./data";
 import { ExpenseForm } from "./expense-form";
@@ -18,6 +19,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const f = readFilters(sp);
   const supabase = await createClient();
+  const { fmt, cur, note } = await getDisplayCurrency();
   const editId = Number(sp.edit) || null;
 
   const [rows, { rates }, { data: settings }, { data: editing }] = await Promise.all([
@@ -42,16 +44,21 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
         title="Expenses"
         subtitle="Company costs — rent, salaries, shipping, fees and more. Each one is in the ledger and the audit trail."
         actions={
-          <a href={`/admin/expenses/export?${filterQuery(f)}`} className="btn-secondary">
-            <Download className="h-4 w-4" /> CSV
-          </a>
+          <div className="flex gap-2">
+            <a href={`/admin/expenses/export?${filterQuery(f)}&format=xlsx`} className="btn-secondary">
+              <FileSpreadsheet className="h-4 w-4" /> Excel
+            </a>
+            <a href={`/admin/expenses/export?${filterQuery(f)}`} className="btn-ghost">
+              <Download className="h-4 w-4" /> CSV
+            </a>
+          </div>
         }
       />
 
       <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-        <Stat tone="fuchsia" label="Total in period (JPY)" value={money(total, "JPY")} />
+        <Stat tone="fuchsia" label={`Total in period (${cur})`} value={fmt(total)} hint={note ?? undefined} />
         <Stat tone="violet" label="Entries" value={num(rows.length)} />
-        <Stat tone="amber" label="Biggest category" value={cats[0] ? expenseCategoryLabel(cats[0][0]) : "—"} hint={cats[0] ? money(cats[0][1], "JPY") : undefined} />
+        <Stat tone="amber" label="Biggest category" value={cats[0] ? expenseCategoryLabel(cats[0][0]) : "—"} hint={cats[0] ? fmt(cats[0][1]) : undefined} />
       </div>
 
       <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -93,7 +100,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                       {expenseCategoryLabel(c)}
                     </Link>
                     <span className="h-2 rounded-full bg-fuchsia-500/80" style={{ width: `${Math.max(2, (v / top) * 100)}%` }} />
-                    <span className="text-right tabular-nums">{money(v, "JPY")}</span>
+                    <span className="text-right tabular-nums">{fmt(v)}</span>
                   </li>
                 ))}
               </ul>
@@ -111,7 +118,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                       <th>Date</th>
                       <th>Expense</th>
                       <th className="text-right">Amount</th>
-                      <th className="text-right">JPY</th>
+                      <th className="text-right">{cur}</th>
                       <th />
                     </tr>
                   </thead>
@@ -134,7 +141,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                           </div>
                         </td>
                         <td className="whitespace-nowrap text-right tabular-nums">{money(Number(r.amount), r.currency)}</td>
-                        <td className="whitespace-nowrap text-right font-semibold tabular-nums">{money(Number(r.amount_jpy), "JPY")}</td>
+                        <td className="whitespace-nowrap text-right font-semibold tabular-nums">{fmt(Number(r.amount_jpy))}</td>
                         <td className="whitespace-nowrap text-right">
                           {r.receipt_path && (
                             <a href={`/api/expense-receipt/${r.id}`} target="_blank" rel="noreferrer" className="btn-ghost p-1.5" title="Receipt" aria-label={`Receipt for expense #${r.id}`}>
@@ -154,7 +161,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                       <td colSpan={3} className="text-right">
                         Total
                       </td>
-                      <td className="text-right tabular-nums">{money(total, "JPY")}</td>
+                      <td className="text-right tabular-nums">{fmt(total)}</td>
                       <td />
                     </tr>
                   </tfoot>

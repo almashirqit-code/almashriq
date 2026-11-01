@@ -16,9 +16,9 @@ const VIBE = ["#007ba7", "#d71920", "#17181c", "#2ea8df", "#fca5a8", "#10b981", 
 const compact = (locale: string) =>
   new Intl.NumberFormat(locale === "ja" ? "ja-JP" : "en-US", { notation: "compact", maximumFractionDigits: 1 });
 
-export function SalesChart({ data, locale }: { data: { label: string; value: number }[]; locale: string }) {
+export function SalesChart({ data, locale, currency = "JPY" }: { data: { label: string; value: number }[]; locale: string; currency?: string }) {
   const fmt = compact(locale);
-  const full = new Intl.NumberFormat(locale === "ja" ? "ja-JP" : "en-US", { style: "currency", currency: "JPY" });
+  const full = new Intl.NumberFormat(locale === "ja" ? "ja-JP" : "en-US", { style: "currency", currency, maximumFractionDigits: 0 });
   return (
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">

@@ -10,7 +10,8 @@
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
-  "observability": { "enabled": true },
+  // Logs keep the path but not the ?query (it can carry tokens, emails or search terms).
+  "observability": { "enabled": true, "redact_query_string": true },
   // The live site. Cloudflare creates the DNS records and certificates for these.
   "routes": [
     { "pattern": "www.almashriqtrading.site", "custom_domain": true },

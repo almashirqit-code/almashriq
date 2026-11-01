@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { BookOpen, Download, BadgeCheck, Printer } from "lucide-react";
+import { BookOpen, Download, BadgeCheck, Printer, FileSpreadsheet } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { money, num } from "@/lib/format";
 import type { Currency } from "@/lib/types";
 import { PageHeader, Stat, Empty } from "@/components/ui";
 import { PrintButton } from "@/components/buttons";
+import { getDisplayCurrency } from "@/lib/display-currency";
 import { loadStaff } from "../customers/staff";
 import { loadCustomerOptions, loadCustomerSoa, loadAgentSoa } from "./soa";
 import { readPeriod, loadEntries, totals, loadProfit, loadReceivables, ENTRY_LABEL, AGE_BUCKETS, type EntryKind, type Period } from "./data";
@@ -28,12 +29,16 @@ const KIND_STYLE: Record<EntryKind, string> = {
   car_expense: "bg-orange-50 text-orange-800",
   expense: "bg-fuchsia-50 text-fuchsia-700",
 };
-const yen = (n: number) => money(n, "JPY");
-const signed = (n: number) => <span className={n < 0 ? "text-red-600" : "text-emerald-700"}>{yen(n)}</span>;
+/** Totals are kept in JPY and shown in the currency picked in the header. */
+async function money2() {
+  const d = await getDisplayCurrency();
+  return { ...d, signed: (n: number) => <span className={n < 0 ? "text-red-600" : "text-emerald-700"}>{d.fmt(n)}</span> };
+}
 
 /** Business ledger: every money movement the ERP records, profit per car, and what customers owe. */
 export default async function LedgerPage({ searchParams }: { searchParams: Promise<{ from?: string; to?: string; tab?: string; kind?: string; c?: string; a?: string }> }) {
   await requireRole(["admin", "manager"]);
+  const display = await getDisplayCurrency();
   const sp = await searchParams;
   const p = readPeriod(sp);
   const tab: Tab = TABS.some((t) => t.key === sp.tab) ? (sp.tab as Tab) : "entries";
@@ -50,24 +55,25 @@ export default async function LedgerPage({ searchParams }: { searchParams: Promi
         icon={<BookOpen />}
         tone="emerald"
         title="Ledger"
-        subtitle="Sales, payments, TTs, car purchases and expenses in one place. Amounts in JPY use each document's own rate."
+        subtitle={`Sales, payments, TTs, car purchases and expenses in one place. Each document is converted at its own rate${display.note ? `; ${display.note}` : "."}`}
         actions={
-          tab === "entries" ? (
-            <a href={`/admin/ledger/export?${q(kind ? { kind } : {})}`} className="btn-secondary">
-              <Download className="h-4 w-4" /> CSV
-            </a>
-          ) : customerId || agentId ? (
-            <div className="no-print flex gap-2">
-              {customerId && (
-                <a href={`/admin/ledger/export?${q({ tab: "customer", c: customerId })}`} className="btn-secondary">
+          (tab === "customer" && !customerId) || (tab === "agent" && !agentId) ? undefined : (
+            <div className="no-print flex flex-wrap gap-2">
+              <a href={`/admin/ledger/export?${q({ tab, format: "xlsx", ...keep, ...(tab === "entries" && kind ? { kind } : {}) })}`} className="btn-secondary">
+                <FileSpreadsheet className="h-4 w-4" /> Excel
+              </a>
+              {(tab === "entries" || tab === "customer") && (
+                <a href={`/admin/ledger/export?${q({ tab, ...keep, ...(tab === "entries" && kind ? { kind } : {}) })}`} className="btn-ghost">
                   <Download className="h-4 w-4" /> CSV
                 </a>
               )}
-              <PrintButton>
-                <Printer className="h-4 w-4" /> Print
-              </PrintButton>
+              {(customerId || agentId) && (
+                <PrintButton>
+                  <Printer className="h-4 w-4" /> Print
+                </PrintButton>
+              )}
             </div>
-          ) : undefined
+          )
         }
       />
 
@@ -125,6 +131,7 @@ function PeriodForm({ p, tab, keep }: { p: Period; tab: Tab; keep: Record<string
 }
 
 async function Entries({ p, kind, q }: { p: Period; kind: EntryKind | null; q: (x: Record<string, string>) => string }) {
+  const { fmt: yen, cur, note } = await money2();
   const all = await loadEntries(p);
   const t = totals(all);
   const rows = kind ? all.filter((e) => e.kind === kind) : all;
@@ -144,7 +151,7 @@ async function Entries({ p, kind, q }: { p: Period; kind: EntryKind | null; q: (
         {card("expense", "fuchsia")}
       </div>
       <p className="mb-3 text-xs text-slate-500">
-        Payments include TT amounts applied to invoices, so &quot;Payment received&quot; and &quot;TT received&quot; overlap — don&apos;t add them together. Tap a box to show only that kind.
+        {note ? `${note} ` : ""}Payments include TT amounts applied to invoices, so &quot;Payment received&quot; and &quot;TT received&quot; overlap — don&apos;t add them together. Tap a box to show only that kind.
       </p>
       <div className="card overflow-hidden">
         {rows.length === 0 ? (
@@ -159,7 +166,7 @@ async function Entries({ p, kind, q }: { p: Period; kind: EntryKind | null; q: (
                   <th>Ref.</th>
                   <th>Party / detail</th>
                   <th className="text-right">Amount</th>
-                  <th className="text-right">JPY</th>
+                  <th className="text-right">{cur}</th>
                 </tr>
               </thead>
               <tbody>
@@ -196,6 +203,7 @@ async function Entries({ p, kind, q }: { p: Period; kind: EntryKind | null; q: (
 }
 
 async function Profit({ p }: { p: Period }) {
+  const { fmt: yen, signed, note } = await money2();
   const r = await loadProfit(p);
   return (
     <>
@@ -207,7 +215,7 @@ async function Profit({ p }: { p: Period }) {
         <Stat tone="violet" label="Net profit" value={signed(r.net)} />
       </div>
       <p className="mb-3 text-xs text-slate-500">
-        Cost = buying price + tax + the car&apos;s own expenses (third-party cars: supplier price + expenses), plus expense-book costs booked to that car such as commission. Overheads are expenses not linked to a car.
+        {note ? `${note} ` : ""}Cost = buying price + tax + the car&apos;s own expenses (third-party cars: supplier price + expenses), plus expense-book costs booked to that car such as commission. Overheads are expenses not linked to a car.
       </p>
       <div className="card overflow-hidden">
         {r.cars.length === 0 ? (

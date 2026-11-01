@@ -8,6 +8,7 @@ import { costJpy } from "@/lib/branches";
 import type { Currency, InvoiceStatus, VehicleStatus } from "@/lib/types";
 import { Stat, InvoiceStatusBadge, VehicleStatusBadge, Empty, IconChip } from "@/components/ui";
 import { fetchAll } from "@/lib/fetch-all";
+import { getDisplayCurrency } from "@/lib/display-currency";
 import { Greeting } from "./greeting";
 import { SalesChart, MakesChart } from "./dashboard-charts";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -19,6 +20,7 @@ export default async function DashboardPage() {
   const profile = await getProfile();
   const { t, locale } = await getT();
   const supabase = await createClient();
+  const display = await getDisplayCurrency();
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
@@ -171,7 +173,7 @@ export default async function DashboardPage() {
         <Stat label={t("dash_reserved")} value={num(reserved.count ?? 0, locale)} icon={<Clock />} tone="amber" />
         <Stat label={t("dash_sold_month")} value={num(soldThisMonth, locale)} icon={<Package />} tone="violet" />
         {can.seeCost(profile.role) ? (
-          <Stat label={t("dash_stock_value")} value={money(stockValue, "JPY", locale)} icon={<Wallet />} tone="emerald" />
+          <Stat label={t("dash_stock_value")} value={display.fmt(stockValue, locale)} icon={<Wallet />} tone="emerald" />
         ) : (
           <Stat label={t("dash_customers")} value={num(custCount.count ?? 0, locale)} icon={<Users />} tone="sky" />
         )}
@@ -195,7 +197,7 @@ export default async function DashboardPage() {
             </IconChip>
             {t("dash_sales_chart")}
           </h2>
-          <SalesChart data={months.map((m) => ({ label: m.label, value: Math.round(m.jpy) }))} locale={locale} />
+          <SalesChart data={months.map((m) => ({ label: m.label, value: Math.round(display.fromJpy(m.jpy)) }))} locale={locale} currency={display.cur} />
         </div>
         <div className="card p-5">
           <h2 className="card-title mb-4">
@@ -293,7 +295,8 @@ async function FinanceMonth({ monthStart, today, title, isAdmin }: { monthStart:
   const [entries, profit, receivables] = await Promise.all([loadEntries(p), loadProfit(p), loadReceivables()]);
   const t = totals(entries);
   const overdue = receivables.list.filter((r) => r.daysLate > 0).length;
-  const yen = (n: number) => money(n, "JPY");
+  const display = await getDisplayCurrency();
+  const yen = (n: number) => display.fmt(n);
   const links = [
     { href: "/admin/ledger", label: "Ledger", icon: BookOpen },
     { href: "/admin/expenses", label: "Expenses", icon: Receipt },
@@ -343,7 +346,7 @@ async function FinanceMonth({ monthStart, today, title, isAdmin }: { monthStart:
       </div>
       <p className="mt-3 text-xs text-slate-500">
         <ArrowUpRight className="mr-1 inline h-3 w-3" />
-        All amounts in JPY. Open the ledger for other periods, profit per car and what each customer owes.
+        {display.note ?? "All amounts in JPY."} Open the ledger for other periods, profit per car and what each customer owes.
       </p>
     </section>
   );

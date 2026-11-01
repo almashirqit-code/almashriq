@@ -92,6 +92,10 @@ export async function StockList({ sp, scope }: { sp: StockSearch; scope: "own" |
         subtitle={t("total_records", { count: num(count ?? 0, locale) })}
         actions={
           <>
+            <a href={`/admin/stock/export?${new URLSearchParams({ format: "xlsx", q, status: sp.status ?? "", make: sp.make ?? "", branch: sp.branch ?? "", own: scope })}`} className="btn-secondary">
+              <Download className="h-4 w-4" />
+              Excel
+            </a>
             <a href={`/admin/stock/export?${new URLSearchParams({ q, status: sp.status ?? "", make: sp.make ?? "", branch: sp.branch ?? "", own: scope })}`} className="btn-secondary">
               <Download className="h-4 w-4" />
               {t("stock_export_csv")}

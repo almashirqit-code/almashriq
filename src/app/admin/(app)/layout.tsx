@@ -9,10 +9,13 @@ import { FxBadge } from "@/components/fx-badge";
 import { getUsdJpy } from "@/lib/fx";
 import { getMyNotifications } from "@/lib/notifications";
 import { NotificationBell } from "@/components/notification-bell";
+import { CurrencySwitch } from "@/components/currency-switch";
+import { getDisplayCurrency } from "@/lib/display-currency";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getProfile();
   const locale = await getLocale();
+  const display = await getDisplayCurrency();
   const supabase = await createClient();
   const canApprove = profile.role === "admin" || profile.role === "manager";
   const [fx, { data: settings }, { count: pendingSignups }, { count: unreadChats }, { count: waitingSlips }, bell] = await Promise.all([
@@ -54,6 +57,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <WorldClock serverNow={Date.now()} labelClass="text-slate-400" timeClass="font-semibold text-slate-800" />
               <FxBadge fx={fx} showMillion className="border-l border-slate-200 pl-3 [&_b]:text-slate-900" />
             </div>
+            <CurrencySwitch value={display.cur} />
             <NotificationBell userId={profile.id} initial={bell.items} unread={bell.unread} tone="erp" />
             <QuickCreate role={profile.role} />
             <LanguageToggle locale={locale} />
