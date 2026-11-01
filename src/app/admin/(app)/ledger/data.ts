@@ -146,7 +146,7 @@ export function totals(entries: Entry[]) {
 }
 
 // -----------------------------------------------------------------------------------------------
-// Profit: cars invoiced in the period (sale − buying cost − costs booked to that car), then overheads.
+// Profit: own cars invoiced in the period (sale − buying cost − costs booked to that car), then overheads.
 // -----------------------------------------------------------------------------------------------
 export type CarProfit = { vehicleId: string; stockNo: string; title: string; invoiceNo: string; invoiceId: string; date: string; customer: string; saleJpy: number; costJpy: number; extraJpy: number; profitJpy: number; commissionPaid: boolean };
 
@@ -189,8 +189,9 @@ export async function loadProfit(p: Period) {
     for (const e of data ?? []) extra.set(e.vehicle_id as string, (extra.get(e.vehicle_id as string) ?? 0) + Number(e.amount_jpy));
   }
 
+  // Own stock only: third-party cars are sold on someone else's behalf, so their margin isn't ours.
   const cars: CarProfit[] = rows
-    .filter((r) => r.vehicles)
+    .filter((r) => r.vehicles?.ownership === "own")
     .map((r) => {
       const v = r.vehicles!;
       const saleJpy = jpy(r.amount, r.invoices.exchange_rate);
