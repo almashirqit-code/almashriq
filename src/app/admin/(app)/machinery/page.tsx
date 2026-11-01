@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fetchAll } from "@/lib/fetch-all";
 import { Tractor, Upload } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
@@ -41,7 +42,7 @@ export default async function MachineryAdmin({ searchParams }: { searchParams: P
 
   const [{ data, count }, { data: all }, { data: settings }, catalog] = await Promise.all([
     query,
-    supabase.from("machinery").select("status, category, show_on_website").limit(20000),
+    fetchAll<{ status: string; category: string | null; show_on_website: boolean }>((from, to) => supabase.from("machinery").select("status, category, show_on_website").order("id").range(from, to)).then((data) => ({ data })),
     supabase.from("settings").select("exchange_rates").single(),
     loadCatalog("machinery"),
   ]);

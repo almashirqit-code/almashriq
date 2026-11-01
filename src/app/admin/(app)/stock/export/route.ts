@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { COST_FIELDS, VEHICLE_FIELDS, VEHICLE_STATUSES } from "@/lib/types";
 import { parseBranch } from "@/lib/branches";
+import { fetchAll } from "@/lib/fetch-all";
 
 function csvCell(v: unknown) {
   if (v === null || v === undefined) return "";
@@ -18,21 +19,22 @@ export async function GET(req: NextRequest) {
   // Computed by the database (buying tax, total cost in JPY and FOB in USD)
   if (can.seeCost(profile.role)) fields.push("purchase_tax", "cost_total_jpy", "fob_usd");
 
-  let query = supabase.from("vehicles").select(fields.join(",")).order("created_at", { ascending: false }).limit(50000);
   const status = sp.get("status");
-  if (status && (VEHICLE_STATUSES as string[]).includes(status)) query = query.eq("status", status);
-  if (sp.get("make")) query = query.eq("make", sp.get("make")!);
   const branch = parseBranch(sp.get("branch"));
-  if (branch) query = query.eq("branch", branch);
   const own = sp.get("own");
-  if (own === "own" || own === "third_party") query = query.eq("ownership", own);
   const q = (sp.get("q") ?? "").trim().replace(/[%,()]/g, " ");
-  if (q) query = query.or(`stock_no.ilike.%${q}%,chassis_no.ilike.%${q}%,make.ilike.%${q}%,model.ilike.%${q}%`);
+  const page = (from: number, to: number) => {
+    let query = supabase.from("vehicles").select(fields.join(",")).order("created_at", { ascending: false }).order("id").range(from, to);
+    if (status && (VEHICLE_STATUSES as string[]).includes(status)) query = query.eq("status", status);
+    if (sp.get("make")) query = query.eq("make", sp.get("make")!);
+    if (branch) query = query.eq("branch", branch);
+    if (own === "own" || own === "third_party") query = query.eq("ownership", own);
+    if (q) query = query.or(`stock_no.ilike.%${q}%,chassis_no.ilike.%${q}%,make.ilike.%${q}%,model.ilike.%${q}%`);
+    return query;
+  };
 
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  const rows = (data ?? []) as unknown as Record<string, unknown>[];
+  // The API caps one request at 1,000 rows; read every page.
+  const rows = await fetchAll<Record<string, unknown>>(page);
   const cell = (v: unknown) => csvCell(v !== null && typeof v === "object" ? JSON.stringify(v) : v);
   const csv = "﻿" + [fields.join(","), ...rows.map((r) => fields.map((f) => cell(r[f])).join(","))].join("\r\n");
 

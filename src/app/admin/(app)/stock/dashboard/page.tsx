@@ -8,6 +8,7 @@ import { costJpy, branchName } from "@/lib/branches";
 import { VEHICLE_STATUSES, SHIPPING_STATUSES, type VehicleStatus, type ShippingStatus } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { PageHeader, Stat, VehicleStatusBadge } from "@/components/ui";
+import { fetchAll } from "@/lib/fetch-all";
 
 export const metadata = { title: "Vehicles dashboard" };
 
@@ -30,11 +31,15 @@ export default async function VehiclesDashboard() {
   const seeCost = can.seeCost(profile.role);
   const { t, locale } = await getT();
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("vehicles")
-    .select("id, stock_no, make, model, year, status, shipping_status, ownership, branch, purchase_date, created_at, purchase_price, purchase_tax, expenses, cost_fx_rate, commission_paid_at")
-    .limit(50000);
-  const cars = (data ?? []) as V[];
+  // Own stock only; third-party cars have their own list.
+  const cars = await fetchAll<V>((from, to) =>
+    supabase
+      .from("vehicles")
+      .select("id, stock_no, make, model, year, status, shipping_status, ownership, branch, purchase_date, created_at, purchase_price, purchase_tax, expenses, cost_fx_rate, commission_paid_at")
+      .eq("ownership", "own")
+      .order("id")
+      .range(from, to)
+  );
   const today = Date.now();
   const days = (v: V) => Math.max(0, Math.floor((today - new Date(v.purchase_date ?? v.created_at).getTime()) / 86400000));
 
@@ -67,7 +72,7 @@ export default async function VehiclesDashboard() {
 
   return (
     <>
-      <PageHeader icon={<Gauge />} tone="sky" title="Vehicles dashboard" subtitle={`${num(cars.length, locale)} vehicles in the system`} back={{ href: "/admin/stock", label: t("nav_stock") }} />
+      <PageHeader icon={<Gauge />} tone="sky" title="Vehicles dashboard" subtitle={`${num(cars.length, locale)} own vehicles (third-party stock not included)`} back={{ href: "/admin/stock", label: t("nav_stock") }} />
 
       <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {VEHICLE_STATUSES.map((s) => (

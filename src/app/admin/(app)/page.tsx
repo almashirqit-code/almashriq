@@ -7,6 +7,7 @@ import { money, date, num, vehicleTitle } from "@/lib/format";
 import { costJpy } from "@/lib/branches";
 import type { Currency, InvoiceStatus, VehicleStatus } from "@/lib/types";
 import { Stat, InvoiceStatusBadge, VehicleStatusBadge, Empty, IconChip } from "@/components/ui";
+import { fetchAll } from "@/lib/fetch-all";
 import { Greeting } from "./greeting";
 import { SalesChart, MakesChart } from "./dashboard-charts";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -30,7 +31,9 @@ export default async function DashboardPage() {
     await Promise.all([
       countStatus("in_stock"),
       countStatus("reserved"),
-      supabase.from("vehicles").select("make, purchase_price, purchase_tax, expenses, cost_fx_rate, ownership, status").in("status", ["in_stock", "reserved"]).limit(20000),
+      fetchAll<{ make: string; purchase_price: number | null; purchase_tax: number | null; expenses: number | null; cost_fx_rate: number | null; ownership: string; status: string }>((from, to) =>
+        supabase.from("vehicles").select("make, purchase_price, purchase_tax, expenses, cost_fx_rate, ownership, status").in("status", ["in_stock", "reserved"]).order("id").range(from, to)
+      ).then((data) => ({ data })),
       supabase
         .from("invoices")
         .select("issue_date, total, currency, exchange_rate")
