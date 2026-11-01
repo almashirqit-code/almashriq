@@ -5,6 +5,8 @@
   "main": ".open-next/worker.js",
   // Minified it is ~2.8 MB gzipped, under the Workers Free 3 MB limit (3.3 MB without).
   "minify": true,
+  // Keep variables added in the Cloudflare dashboard (e.g. RESEND_API_KEY) when deploying from here.
+  "keep_vars": true,
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
