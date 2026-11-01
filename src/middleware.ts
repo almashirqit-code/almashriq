@@ -44,7 +44,9 @@ export async function middleware(request: NextRequest) {
   // Production on *.vercel.app → same page on the custom domain (one site for Google, not two).
   // Printed QR codes use the vercel.app address and still land on /verify there. Preview deployments are untouched.
   const host = request.headers.get("host") ?? "";
-  if (process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app") && host !== CANONICAL_HOST) {
+  // The bare domain → www (one address for Google). Same for the old Vercel address in production.
+  const bare = CANONICAL_HOST.replace(/^www\./, "");
+  if ((host === bare && host !== CANONICAL_HOST) || (process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app") && host !== CANONICAL_HOST)) {
     const url = new URL(request.nextUrl.pathname + request.nextUrl.search, `https://${CANONICAL_HOST}`);
     return NextResponse.redirect(url, 308);
   }

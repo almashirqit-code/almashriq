@@ -9,6 +9,11 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   "observability": { "enabled": true },
+  // The live site. Cloudflare creates the DNS records and certificates for these.
+  "routes": [
+    { "pattern": "www.almashriqtrading.site", "custom_domain": true },
+    { "pattern": "almashriqtrading.site", "custom_domain": true }
+  ],
   "kv_namespaces": [
     { "binding": "NEXT_INC_CACHE_KV", "id": "33f29026371b4fb08656a6b45fedc505" },
     { "binding": "NEXT_TAG_CACHE_KV", "id": "4de61103cdaa4071ba20a145c74430ed" }
