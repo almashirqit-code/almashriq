@@ -8,5 +8,17 @@
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  "kv_namespaces": [
+    { "binding": "NEXT_INC_CACHE_KV", "id": "33f29026371b4fb08656a6b45fedc505" },
+    { "binding": "NEXT_TAG_CACHE_KV", "id": "4de61103cdaa4071ba20a145c74430ed" }
+  ],
+  // Public values (also baked into the build). Secrets — SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY,
+  // ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET — are set in the Cloudflare dashboard, never in this file.
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://rhttfwrzhuaglcjpxuja.supabase.co",
+    // The anon key is public by design (it is in every browser); RLS protects the data.
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodHRmd3J6aHVhZ2xjanB4dWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MDM2ODksImV4cCI6MjEwODA3OTY4OX0.3jn_Txjc2L-XLwiMN9oyVfZl-qwkDiVB9ev1SLvI2bE",
+    "NEXT_PUBLIC_SITE_URL": "https://www.almashriqtrading.site"
+  }
 }
