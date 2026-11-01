@@ -1,0 +1,12 @@
+{
+  // Cloudflare Workers config for the OpenNext build (`npm run cf:build`, `npm run cf:deploy`).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "almashriq",
+  "main": ".open-next/worker.js",
+  // Minified it is ~2.8 MB gzipped, under the Workers Free 3 MB limit (3.3 MB without).
+  "minify": true,
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "observability": { "enabled": true }
+}
