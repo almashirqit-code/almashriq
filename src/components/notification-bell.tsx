@@ -61,9 +61,15 @@ export function NotificationBell({ userId, initial, unread: initialUnread, tone 
     const next = !open;
     setOpen(next);
     if (next && unread > 0) {
+      const before = unread;
       setUnread(0);
       // Keep the "new" dots visible while the list is open; the database is updated right away.
-      void createClient().rpc("mark_notifications_read", { p_ids: null });
+      // Supabase builders only send on then/await, so the call must be awaited or nothing is saved.
+      createClient()
+        .rpc("mark_notifications_read", { p_ids: null })
+        .then(({ error }) => {
+          if (error) setUnread((u) => u + before);
+        });
     }
     if (!next) setItems((xs) => xs.map((x) => (x.read_at ? x : { ...x, read_at: new Date().toISOString() })));
   };
