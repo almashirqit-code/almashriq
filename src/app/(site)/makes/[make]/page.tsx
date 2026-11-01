@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getMakeTiles, type Filters } from "@/lib/public-site";
 import { CarListing } from "../../car-listing";
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 async function find(slug: string) {
   return (await getMakeTiles()).find((m) => m.slug === slug) ?? null;

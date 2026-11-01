@@ -12,7 +12,7 @@ import { JsonLd } from "@/components/site/json-ld";
 import { ShipsFrom } from "@/components/site/ships-from";
 import { StickyContact } from "@/components/site/sticky-contact";
 
-export const revalidate = 60;
+export const revalidate = 86400;
 // Nothing is built up front: each page is rendered on its first visit, then served from cache until it revalidates.
 export async function generateStaticParams() {
   return [];

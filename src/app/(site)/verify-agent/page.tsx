@@ -3,7 +3,7 @@ import { ShieldCheck } from "lucide-react";
 import { getCompany, whatsapp } from "@/lib/public-site";
 import { VerifyForm } from "./verify-form";
 
-export const revalidate = 600;
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Verify an agent — is this really Al Mashriq?",

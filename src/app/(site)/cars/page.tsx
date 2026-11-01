@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { makeSlug, type Filters } from "@/lib/public-site";
 import { CarListing } from "../car-listing";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 type SP = Filters & { brand?: string; body_type?: string; transmission?: string };
 const norm = (raw: SP): Filters => ({ ...raw, make: raw.make || raw.brand, body: raw.body || raw.body_type, trans: raw.trans || raw.transmission });

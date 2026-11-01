@@ -98,8 +98,10 @@ export const PAGE_SIZE = 24;
  * (they take search-params filters), so without a *data* cache each visit would hit
  * Supabase. unstable_cache keeps each distinct query in Next's cross-request data cache,
  * so a thousand visitors share one database read per revalidate window instead of one each.
- * Admin writes call revalidateTag(PUBLIC_TAG) to flush it immediately; the revalidate
- * window bounds staleness even if a write path forgets to.
+ * Admin writes call revalidateTag(PUBLIC_TAG) to flush it immediately; the one-hour revalidate
+ * window only bounds staleness if a write path forgets to. Keep it long: every expiry is a
+ * re-render and a cache write, and crawlers walking the 1,500+ sitemap pages turned short
+ * windows into Vercel CPU and ISR-write overages.
  */
 export const PUBLIC_TAG = "public-site";
 
@@ -126,7 +128,7 @@ export const listCars = unstable_cache(
     return { cars, total: cars[0] ? Number(cars[0].total_count) : 0, page, error: error?.message ?? null };
   },
   ["list-cars"],
-  { revalidate: 60, tags: ["public-site"] }
+  { revalidate: 3600, tags: ["public-site"] }
 );
 
 /**
@@ -145,7 +147,7 @@ export const getBodyPhotos = unstable_cache(
     return Object.fromEntries(rows.filter(([, p]) => p)) as Record<string, string>;
   },
   ["body-photos"],
-  { revalidate: 600 }
+  { revalidate: 3600, tags: ["public-site"] }
 );
 
 export type Facets = { make: [string, number][]; body: [string, number][]; fuel: [string, number][]; transmission: [string, number][]; steering: [string, number][]; total: number; available: number };
@@ -160,17 +162,17 @@ export const getFacets = unstable_cache(async (): Promise<Facets> => {
   }
   for (const k of ["make", "body", "fuel", "transmission", "steering"] as const) out[k].sort((a, b) => b[1] - a[1]);
   return out;
-}, ["facets"], { revalidate: 120, tags: ["public-site"] });
+}, ["facets"], { revalidate: 3600, tags: ["public-site"] });
 
 export const getCompany = unstable_cache(async (): Promise<PublicCompany> => {
   const { data } = await anon().rpc("public_company");
   return ((data ?? [])[0] as PublicCompany) ?? { company_name: "Al Mashriq Trading Co., Ltd.", phone: null, mobile: null, fax: null, email: null, website: null, logo_url: null, address: null };
-}, ["company"], { revalidate: 600, tags: ["public-site"] });
+}, ["company"], { revalidate: 3600, tags: ["public-site"] });
 
 export const getCar = unstable_cache(async (key: string): Promise<PublicCar | null> => {
   const { data } = await anon().rpc("public_vehicle", { p_key: key });
   return ((data ?? [])[0] as PublicCar) ?? null;
-}, ["car"], { revalidate: 60, tags: ["public-site"] });
+}, ["car"], { revalidate: 3600, tags: ["public-site"] });
 
 export const carTitle = (c: { year: number | null; make: string; model: string }) => [c.make, c.model, c.year].filter(Boolean).join(" ").toUpperCase();
 
@@ -198,7 +200,7 @@ export type PublicMake = { make: string; label: string; logo_path: string | null
 export const getMakes = unstable_cache(async (): Promise<PublicMake[]> => {
   const { data } = await anon().rpc("public_makes");
   return ((data ?? []) as PublicMake[]).map((m) => ({ ...m, n: Number(m.n) }));
-}, ["makes"], { revalidate: 600, tags: ["public-site"] });
+}, ["makes"], { revalidate: 3600, tags: ["public-site"] });
 
 export type PublicReview = {
   id: string;
@@ -261,12 +263,12 @@ export type PublicPartDetail = Omit<PublicPart, "total_count" | "cover" | "image
 export const getPart = unstable_cache(async (partNo: string): Promise<PublicPartDetail | null> => {
   const { data } = await anon().rpc("public_part", { p_part_no: partNo });
   return ((data ?? [])[0] as PublicPartDetail) ?? null;
-}, ["part"], { revalidate: 60, tags: ["public-site"] });
+}, ["part"], { revalidate: 3600, tags: ["public-site"] });
 /** Photos taken at the yard for a car (storage paths), shown under "In-yard photos" on its page. */
 export const getYardPhotos = unstable_cache(async (stockNo: string): Promise<string[]> => {
   const { data } = await anon().rpc("public_vehicle_yard_photos", { p_key: stockNo });
   return Array.isArray(data) ? (data as string[]) : [];
-}, ["yard-photos"], { revalidate: 60, tags: ["public-site"] });
+}, ["yard-photos"], { revalidate: 3600, tags: ["public-site"] });
 
 export type PartFilters = { q?: string; category?: string; make?: string; condition?: string; branch?: string; page?: string };
 
@@ -320,12 +322,12 @@ export const listPartUnits = unstable_cache(async (f: UnitFilters, size = PAGE_S
   });
   const units = (data ?? []) as PublicUnit[];
   return { units, total: units[0] ? Number(units[0].total_count) : 0, page, error: error?.message ?? null };
-}, ["part-units"], { revalidate: 60, tags: ["public-site"] });
+}, ["part-units"], { revalidate: 3600, tags: ["public-site"] });
 
 export const getPartUnit = unstable_cache(async (stockNo: string): Promise<PublicUnitDetail | null> => {
   const { data } = await anon().rpc("public_part_unit", { p_key: stockNo });
   return ((data ?? [])[0] as PublicUnitDetail) ?? null;
-}, ["part-unit"], { revalidate: 60, tags: ["public-site"] });
+}, ["part-unit"], { revalidate: 3600, tags: ["public-site"] });
 
 /** Makes and parts (with counts) for the Complete units filters; total = number of units. */
 export const getPartUnitFacets = cache(async () => {
@@ -374,7 +376,7 @@ export const listParts = unstable_cache(async (f: PartFilters, size = PAGE_SIZE)
   });
   const parts = (data ?? []) as PublicPart[];
   return { parts, total: parts[0] ? Number(parts[0].total_count) : 0, page, error: error?.message ?? null };
-}, ["parts"], { revalidate: 60, tags: ["public-site"] });
+}, ["parts"], { revalidate: 3600, tags: ["public-site"] });
 
 export const getPartFacets = unstable_cache(async () => {
   const { data } = await anon().rpc("public_part_facets");
@@ -386,7 +388,7 @@ export const getPartFacets = unstable_cache(async () => {
   out.category.sort((a, b) => b[1] - a[1]);
   out.make.sort((a, b) => b[1] - a[1]);
   return out;
-}, ["part-facets"], { revalidate: 300, tags: ["public-site"] });
+}, ["part-facets"], { revalidate: 3600, tags: ["public-site"] });
 
 export type PublicMachineCard = {
   id: string;
@@ -429,7 +431,7 @@ export const listMachinery = unstable_cache(async (f: MachineFilters, size = PAG
   });
   const machines = (data ?? []) as PublicMachineCard[];
   return { machines, total: machines[0] ? Number(machines[0].total_count) : 0, page, error: error?.message ?? null };
-}, ["machinery"], { revalidate: 60, tags: ["public-site"] });
+}, ["machinery"], { revalidate: 3600, tags: ["public-site"] });
 
 export type PublicMachine = Omit<PublicMachineCard, "total_count" | "cover" | "image_count" | "operating_weight_kg" | "engine_power_hp"> & {
   serial_no: string | null;
@@ -443,7 +445,7 @@ export type PublicMachine = Omit<PublicMachineCard, "total_count" | "cover" | "i
 export const getMachine = unstable_cache(async (key: string): Promise<PublicMachine | null> => {
   const { data } = await anon().rpc("public_machine", { p_key: key });
   return ((data ?? [])[0] as PublicMachine) ?? null;
-}, ["machine"], { revalidate: 60, tags: ["public-site"] });
+}, ["machine"], { revalidate: 3600, tags: ["public-site"] });
 
 export const getMachineryFacets = unstable_cache(async () => {
   const { data } = await anon().rpc("public_machinery_facets");
@@ -456,7 +458,7 @@ export const getMachineryFacets = unstable_cache(async () => {
   out.category.sort((a, b) => b[1] - a[1]);
   out.make.sort((a, b) => b[1] - a[1]);
   return out;
-}, ["machinery-facets"], { revalidate: 300, tags: ["public-site"] });
+}, ["machinery-facets"], { revalidate: 3600, tags: ["public-site"] });
 
 /**
  * All rows of a set-returning RPC. The API caps every response at 1,000 rows, so a plain call

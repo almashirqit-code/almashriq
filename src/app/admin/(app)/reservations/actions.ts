@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole, getProfile } from "@/lib/auth";
 import { round } from "@/lib/format";
@@ -32,6 +32,7 @@ function refresh(vehicleId: string, id?: string) {
   revalidatePath("/admin/stock");
   revalidatePath(`/admin/stock/${vehicleId}`);
   revalidatePath("/admin");
+  revalidateTag("public-site"); // reserved / available on the website
 }
 
 export async function saveReservation(p: ReservationPayload): Promise<{ id?: string; error?: string }> {

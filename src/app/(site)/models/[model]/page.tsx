@@ -6,7 +6,7 @@ import { makeSlug } from "@/lib/public-site";
 import { modelBySlug, POPULAR_MODELS } from "@/lib/models";
 import { CarListing } from "../../car-listing";
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }: { params: Promise<{ model: string }> }): Promise<Metadata> {
   const m = modelBySlug((await params).model);

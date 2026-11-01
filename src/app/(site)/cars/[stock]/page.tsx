@@ -13,7 +13,7 @@ import { StickyContact } from "@/components/site/sticky-contact";
 import { FavoriteButton } from "@/components/site/favorite-button";
 import { branchName } from "@/lib/branches";
 
-export const revalidate = 60;
+export const revalidate = 86400;
 // Nothing is built up front: each page is rendered on its first visit, then served from cache until it revalidates.
 export async function generateStaticParams() {
   return [];

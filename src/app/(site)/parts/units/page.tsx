@@ -10,7 +10,7 @@ import { ShipsFrom } from "@/components/site/ships-from";
 import { FilterPanel, FilterSubmit, FilterToolbar } from "@/components/site/filter-sheet";
 import { PartsTabs } from "@/components/site/parts-tabs";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 const SIZE = 24;
 const FIELD = "h-12 w-full rounded-xl px-3 text-sm font-semibold";
 const FLABEL = "mb-1 block text-xs font-bold uppercase tracking-wider text-white/60";

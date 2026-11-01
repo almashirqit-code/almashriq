@@ -8,7 +8,7 @@ import { BUY_STEPS } from "@/components/site/buy-steps";
 import { JsonLd } from "@/components/site/json-ld";
 import { CarCard } from "../../car-card";
 
-export const revalidate = 300;
+export const revalidate = 86400;
 export function generateStaticParams() {
   return MARKETS.map((m) => ({ country: m.slug }));
 }

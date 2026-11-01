@@ -7,7 +7,7 @@ import { SocialLinks } from "@/components/site/social-links";
 import { YardMap } from "@/components/site/yard-map";
 import { mapsQuery } from "@/lib/social";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Contact us — send an inquiry",

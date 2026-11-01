@@ -11,7 +11,7 @@ import { FavoriteButton } from "@/components/site/favorite-button";
 import { ShipsFrom } from "@/components/site/ships-from";
 import { FilterPanel, FilterSubmit, FilterToolbar } from "@/components/site/filter-sheet";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 const SIZE = 24;
 const FIELD = "h-12 w-full rounded-xl px-3 text-sm font-semibold";
 const FLABEL = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/60";

@@ -28,6 +28,13 @@ function limited(ip: string, kind: keyof typeof LIMITS) {
  *   /admin/...   the ERP — staff must be signed in (except /admin/login and /admin/setup)
  * Every request passes the rate limiter; only /admin and the staff image proxy need a session.
  */
+/**
+ * Scrapers that ignore robots.txt or crawl the whole site for SEO tools. Each page they open is a
+ * server render, which pushed the site over Vercel's CPU limit. Search engines (Google, Bing...)
+ * and link previews are not on this list.
+ */
+const BLOCKED_BOTS = /AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|Bytespider|DataForSeoBot|BLEXBot|serpstatbot|MegaIndex|Barkrowler|SeekportBot|ImagesiftBot/i;
+
 /** The one address search engines should see (the custom domain). */
 const CANONICAL_HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site").host;
 
@@ -40,6 +47,10 @@ export async function middleware(request: NextRequest) {
   if (process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app") && host !== CANONICAL_HOST) {
     const url = new URL(request.nextUrl.pathname + request.nextUrl.search, `https://${CANONICAL_HOST}`);
     return NextResponse.redirect(url, 308);
+  }
+
+  if (BLOCKED_BOTS.test(request.headers.get("user-agent") ?? "") && path !== "/robots.txt") {
+    return new NextResponse("Crawling is not allowed.", { status: 403, headers: { "Content-Type": "text/plain" } });
   }
 
   const ip = (request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || "unknown").trim();

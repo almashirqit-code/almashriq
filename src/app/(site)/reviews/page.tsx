@@ -7,7 +7,7 @@ import { Stars } from "@/components/site/stars";
 import { JsonLd } from "@/components/site/json-ld";
 import { InquiryForm } from "@/components/site/inquiry-form";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Customer reviews",

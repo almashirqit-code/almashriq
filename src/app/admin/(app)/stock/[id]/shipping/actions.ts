@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { CURRENCIES, SHIPMENT_TYPES, type Currency, type ShipmentType } from "@/lib/types";
@@ -22,6 +22,7 @@ function refresh(vehicleId: string) {
   revalidatePath("/admin/stock");
   revalidatePath(`/admin/stock/${vehicleId}`);
   revalidatePath(`/admin/stock/${vehicleId}/shipping`);
+  revalidateTag("public-site"); // shipped cars leave the website
 }
 
 /** Saves the shipping or courier part (only the keys sent are changed). */

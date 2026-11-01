@@ -16,7 +16,7 @@ import { HScrollRow } from "@/components/site/hscroll-row";
 import { HomeMoreStock } from "@/components/site/home-more-stock";
 import { TrustpilotWidget } from "@/components/site/trustpilot";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: { absolute: "Japanese Used Cars for Sale & Export | Al Mashriq Trading" },

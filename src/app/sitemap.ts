@@ -4,7 +4,7 @@ import { publicImageUrl } from "@/lib/format";
 import { MARKETS } from "@/lib/markets";
 import { POPULAR_MODELS } from "@/lib/models";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [rows, photos] = await Promise.all([getSitemapRows(), getSitemapImages()]);

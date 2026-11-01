@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { assetUrl, getPosts } from "@/lib/public-site";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 const SIZE = 12;
 
 export const metadata: Metadata = {

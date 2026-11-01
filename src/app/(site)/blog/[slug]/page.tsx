@@ -7,7 +7,7 @@ import { JsonLd } from "@/components/site/json-ld";
 import { InquiryForm } from "@/components/site/inquiry-form";
 import { LOGO_SRC } from "@/components/brand/logo";
 
-export const revalidate = 300;
+export const revalidate = 86400;
 // Nothing is built up front: each page is rendered on its first visit, then served from cache until it revalidates.
 export async function generateStaticParams() {
   return [];

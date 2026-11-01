@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { CURRENCIES, type Currency } from "@/lib/types";
@@ -57,6 +57,7 @@ export async function saveSettings(_prev: SettingsState, formData: FormData): Pr
     .eq("id", 1);
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
+  revalidateTag("public-site"); // company details on the website
   return { ok: true };
 }
 
@@ -69,5 +70,6 @@ export async function saveBranch(b: { code: string; currency: string; default_ta
   const { error } = await supabase.from("branches").update({ currency: b.currency, default_tax_rate: tax, active: !!b.active }).eq("code", b.code);
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
+  revalidateTag("public-site"); // company details on the website
   return {};
 }

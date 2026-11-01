@@ -4,7 +4,7 @@ import { Landmark, ShieldAlert, Phone, MessageCircle, FileText } from "lucide-re
 import { getBank, getCompany, whatsapp } from "@/lib/public-site";
 import { CopyButton } from "@/components/site/copy-button";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Payment & bank details",
