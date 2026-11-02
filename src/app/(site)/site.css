@@ -83,8 +83,31 @@ body:has(.site-glass) {
   background-color: var(--accent-hi);
 }
 .site-glass .text-brand-700,
-.site-glass .text-brand-600 {
+.site-glass .text-brand-600,
+.site-glass .text-brand-500,
+.site-glass .hover\:text-brand-700:hover,
+.site-glass .open\:text-brand-700[open] {
   color: var(--accent-text);
+}
+/* Heading accent rules and solid brand fills: gold rule, navy fill */
+.site-glass .border-brand-600 {
+  border-color: var(--gold);
+}
+.site-glass .bg-brand-600 {
+  background-color: var(--accent);
+}
+.site-glass .hover\:ring-brand-600:hover,
+.site-glass .ring-brand-600\/20,
+.site-glass .ring-brand-200 {
+  --tw-ring-color: rgb(49 90 120 / 0.3);
+}
+.site-glass .via-brand-500\/70 {
+  --tw-gradient-via: rgb(197 161 90 / 0.7) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
+}
+.site-glass .shadow-brand-900\/30,
+.site-glass .shadow-brand-900\/25 {
+  --tw-shadow-color: rgb(16 36 58 / 0.25);
 }
 .site-glass .bg-brand-50 {
   background-color: #eef2f6;
