@@ -12,6 +12,7 @@ import { ShipsFrom } from "@/components/site/ships-from";
 import { StickyContact } from "@/components/site/sticky-contact";
 import { FavoriteButton } from "@/components/site/favorite-button";
 import { branchName } from "@/lib/branches";
+import { CopyButton } from "@/components/site/copy-button";
 
 export const revalidate = 86400;
 // Nothing is built up front: each page is rendered on its first visit, then served from cache until it revalidates.
@@ -152,13 +153,14 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
         <div className="lg:col-start-2 lg:row-start-1">
           <div className="glass-lite rounded-3xl p-5">
             <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2">
-                <span className="inline-flex whitespace-nowrap rounded-lg bg-white/10 px-2 py-0.5 text-xs font-bold text-white">Stock ID {c.stock_no}</span>
+              <span className="inline-flex flex-wrap items-center gap-2">
+                <span className="inline-flex whitespace-nowrap rounded-lg bg-white/10 px-2 py-1 text-xs font-bold tabular-nums text-white">Stock ID {c.stock_no}</span>
+                <CopyButton text={c.stock_no} label="Copy ID" />
                 <Status status={c.status} />
               </span>
               <FavoriteButton variant="pill" item={{ kind: "vehicle", id: c.id, stock: c.stock_no, title, image: images[0] ?? null, price: price ?? null }} />
             </div>
-            <h1 className="mt-2 text-2xl font-black leading-snug tracking-tight text-navy-950 sm:text-3xl">{title}</h1>
+            <h1 className="mt-2 text-2xl font-extrabold leading-tight text-navy-950 sm:text-[2rem]">{title}</h1>
             {c.grade && <p className="text-slate-500">{c.grade}</p>}
             {/* Key facts buyers compare first, large enough to scan at a glance */}
             <dl className="mt-4 grid grid-cols-2 gap-x-4 border-y border-white/10 py-1 sm:grid-cols-3">
@@ -180,14 +182,19 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
               )}
               <ShipsFrom code={c.branch ?? "JP"} />
             </div>
-            <div className="mt-4 flex items-end justify-between gap-3 rounded-lg bg-navy-50 p-4">
-              <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-navy-500">FOB price</div>
-                <div className="text-3xl font-black text-brand-600">{price ?? "Ask for price"}</div>
+            {/* FOB is the confirmed price; shipping is quoted per port, never shown as fixed */}
+            <div className="on-dark mt-4 rounded-2xl bg-[#10243a] p-4">
+              <span aria-hidden className="mb-2.5 block h-0.5 w-10 rounded-full bg-[var(--red)]" />
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-white/70">FOB price</div>
+                  <div className="text-3xl font-extrabold tabular-nums text-white">{price ?? "Ask for price"}</div>
+                </div>
+                <a href="#quote" className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[var(--red)] px-3.5 text-sm font-extrabold text-white hover:bg-[#b5141a]">
+                  <Ship className="h-4 w-4" /> Get C&F price
+                </a>
               </div>
-              <div className="flex items-center gap-1 text-right text-xs text-navy-700">
-                <Ship className="h-4 w-4" /> C&F / CIF on request
-              </div>
+              <p className="mt-2 text-xs text-white/70">Shipping to your port (C&F / CIF) is quoted by our team, by RoRo or container.</p>
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {wa && (
@@ -222,7 +229,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
           {yard.length > 0 && (
             <section aria-labelledby="yard-photos">
               <h2 id="yard-photos" className="mb-1 flex items-center gap-2 text-lg font-extrabold">
-                <span className="h-5 w-1 rounded-full bg-[var(--accent)]" />
+                <span className="h-5 w-1 rounded-full bg-[var(--red)]" />
                 In-yard photos
               </h2>
               <p className="mb-3 text-sm text-white/65">Taken at our yard in Japan — the car as it is now, before shipping.</p>
@@ -261,7 +268,8 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
 
         <div className="lg:col-start-2 lg:row-start-2">
           <div id="quote" className="glass-lite scroll-mt-20 rounded-3xl p-5 lg:sticky lg:top-24">
-            <h2 className="mb-3 text-lg font-black text-navy-950">Get a quotation for this car</h2>
+            <h2 className="text-lg font-extrabold text-navy-950">Get a C&F / CIF quotation</h2>
+            <p className="mb-3 mt-1 text-sm text-white/70">Tell us your country and port. We reply with the shipping price by RoRo or container; it stays an estimate until the vessel is booked.</p>
             <QuoteForm stockNo={c.stock_no} title={title} wa={wa} />
             <p className="mt-3 text-center text-sm">
               Already a customer?{" "}
@@ -279,8 +287,8 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
         <section className="mt-10">
           <div className="mb-4 flex items-end justify-between gap-3">
             <h2 className="flex items-center gap-2 text-xl font-black">
-              <span className="h-6 w-1 rounded-full bg-gradient-to-b from-[var(--accent)] to-rose-300" />
-              More {c.make} in stock
+              <span className="h-6 w-1 rounded-full bg-[var(--red)]" />
+              Similar vehicles
             </h2>
             <Link href={`/makes/${makeSlug(c.make)}`} className="inline-flex min-h-11 items-center text-sm font-bold text-[var(--accent-text)] hover:underline">
               View all {c.make}

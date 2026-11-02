@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T00:00:00.000Z",
+  "title": "Design System: Al Mashriq Trading (public website)",
+  "scope": "Public website only (src/app/(site)/, src/components/site/, inside .site-glass). The ERP under src/app/admin keeps its logo-red / cerulean look and is out of scope.",
+  "extensions": {
+    "colorMeta": {
+      "navy": { "role": "primary", "displayName": "Harbour Navy", "canonical": "#10243a", "cssVar": "--accent", "tonalRamp": ["#08121d", "#0b1a2b", "#10243a", "#1c3a5a", "#315a78", "#6f8ba3", "#b4c3d1", "#eef2f6"] },
+      "navy-hi": { "role": "primary", "displayName": "Harbour Navy (hover)", "canonical": "#1c3a5a", "cssVar": "--accent-hi" },
+      "navy-deep": { "role": "primary", "displayName": "Deep Harbour", "canonical": "#0b1a2b" },
+      "steel": { "role": "secondary", "displayName": "Steel Blue", "canonical": "#315a78", "cssVar": "--accent-text / --focus", "tonalRamp": ["#142636", "#1f3a52", "#315a78", "#4a7594", "#7095b0", "#9cb6ca", "#c9d8e4", "#eef3f7"] },
+      "gold": { "role": "tertiary", "displayName": "Muted Gold", "canonical": "#c5a15a", "cssVar": "--gold", "tonalRamp": ["#3a2d12", "#5e4920", "#8a6a2c", "#b08c47", "#c5a15a", "#d4b273", "#e6d3a8", "#f6eedd"] },
+      "gold-hover": { "role": "tertiary", "displayName": "Muted Gold (hover)", "canonical": "#d4b273" },
+      "gold-on-navy-text": { "role": "tertiary", "displayName": "Pale Gold (links on navy)", "canonical": "#dcc28e", "cssVar": "--accent-text inside .on-dark" },
+      "page": { "role": "neutral", "displayName": "Cool Paper", "canonical": "#f5f6f8", "tonalRamp": ["#0a0a0c", "#33363d", "#555a63", "#6b7079", "#9aa0a8", "#c9cdd3", "#e6e8ec", "#f5f6f8"] },
+      "surface": { "role": "neutral", "displayName": "White", "canonical": "#ffffff", "cssVar": "--surface" },
+      "tint": { "role": "neutral", "displayName": "Mist Tint", "canonical": "#eef2f6" },
+      "ink": { "role": "neutral", "displayName": "Jet Ink", "canonical": "#0a0a0c", "cssVar": "--ink" },
+      "ink-2": { "role": "neutral", "displayName": "Graphite", "canonical": "#33363d", "cssVar": "--ink-2" },
+      "ink-3": { "role": "neutral", "displayName": "Slate Grey", "canonical": "#555a63", "cssVar": "--ink-3" },
+      "ink-4": { "role": "neutral", "displayName": "Placeholder Grey", "canonical": "#6b7079", "cssVar": "--ink-4" },
+      "ink-on-navy": { "role": "neutral", "displayName": "Navy Ink", "canonical": "#f4f6f8", "cssVar": "--ink inside .on-dark" },
+      "whatsapp": { "role": "neutral", "displayName": "WhatsApp Green (third-party)", "canonical": "#25D366" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Home hero headline only; 1.9rem on phones, 2.6rem from sm." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings with the gold section mark; stock-page title at 800." },
+      "title": { "displayName": "Title", "purpose": "Car-card titles and panel headings." },
+      "body": { "displayName": "Body", "purpose": "Intros, review quotes, step descriptions." },
+      "label": { "displayName": "Label", "purpose": "Uppercase field labels directly above a value (FOB price, fact labels); footer column headings in gold on navy." },
+      "price": { "displayName": "Price", "purpose": "FOB prices: navy tabular on white cards, white 1.875rem on the navy price panel." }
+    },
+    "shadows": [
+      { "name": "card-rest", "value": "0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.14)", "purpose": "Every white card, panel and chip at rest." },
+      { "name": "card-lift", "value": "0 2px 4px rgb(15 23 42 / 0.05), 0 14px 32px -12px rgb(15 23 42 / 0.22)", "purpose": "Hover on linked cards, with translateY(-2px)." },
+      { "name": "floating-panel", "value": "0 10px 40px rgb(15 23 42 / 0.16)", "purpose": "Menus and sheets over content, with an 18px backdrop blur." },
+      { "name": "on-navy-card", "value": "0 6px 20px rgb(0 0 0 / 0.22), inset 0 1px 0 rgb(255 255 255 / 0.1)", "purpose": "Translucent cards inside .on-dark areas." },
+      { "name": "bottom-bar", "value": "0 8px 32px rgb(15 23 42 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.8)", "purpose": "Frosted phone tab bar." },
+      { "name": "input-focus", "value": "0 0 0 3px rgb(49 90 120 / 0.22)", "purpose": "Focus ring on fields, with a steel border." }
+    ],
+    "motion": [
+      { "name": "card-hover", "value": "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease", "purpose": "Card lift on hover; scale(0.99) on press." },
+      { "name": "photo-zoom", "value": "transform 500ms", "purpose": "Body-type photos scale to 1.05 on hover." },
+      { "name": "reduced-motion", "value": "transition: none; animation: none", "purpose": "All motion stops under prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Navy solid button for primary actions on light surfaces (Details, Inquiry, Search).",
+      "html": "<button class=\"ds-btn-primary\">Details</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px; background: #10243a; color: #fff; border: 0; border-radius: 12px; font: 700 14px/1 Manrope, system-ui, sans-serif; cursor: pointer; transition: background-color 0.15s; } .ds-btn-primary:hover { background: #1c3a5a; } .ds-btn-primary:focus-visible { outline: 2px solid #315a78; outline-offset: 2px; }"
+    },
+    {
+      "name": "Gold Lead Button",
+      "kind": "button",
+      "refersTo": "button-gold",
+      "description": "The single lead action inside a navy area: hero search, Get C&F price, Request a vehicle. Navy text on gold.",
+      "html": "<div class=\"ds-navy-ground\"><button class=\"ds-btn-gold\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg> Search 1,240 cars</button></div>",
+      "css": ".ds-navy-ground { background: #10243a; padding: 16px; border-radius: 16px; } .ds-btn-gold { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; padding: 0 24px; background: #c5a15a; color: #10243a; border: 0; border-radius: 12px; font: 800 14px/1 Manrope, system-ui, sans-serif; cursor: pointer; transition: background-color 0.15s; } .ds-btn-gold:hover { background: #d4b273; } .ds-btn-gold:focus-visible { outline: 2px solid #dcc28e; outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "White field with hairline stroke; steel border and ring on focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"Make, model or stock ID\" aria-label=\"Keyword\">",
+      "css": ".ds-input { height: 48px; width: 100%; padding: 0 12px; background: #fff; color: #0a0a0c; border: 1px solid rgb(10 10 12 / 0.16); border-radius: 12px; box-shadow: 0 1px 2px rgb(15 23 42 / 0.04); font: 600 14px Manrope, system-ui, sans-serif; } .ds-input::placeholder { color: #6b7079; } .ds-input:focus { outline: none; border-color: #315a78; box-shadow: 0 0 0 3px rgb(49 90 120 / 0.22); }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "White pill link with live count (fuel, transmission, price bands).",
+      "html": "<a class=\"ds-chip\" href=\"#\">Hybrid <span>412</span></a>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; background: #fff; color: #0a0a0c; border: 1px solid rgb(10 10 12 / 0.1); border-radius: 9999px; box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.14); font: 600 14px Manrope, system-ui, sans-serif; text-decoration: none; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; } .ds-chip span { font-size: 12px; font-weight: 400; color: rgb(10 10 12 / 0.72); } .ds-chip:hover { transform: translateY(-2px); border-color: rgb(10 10 12 / 0.2); box-shadow: 0 2px 4px rgb(15 23 42 / 0.05), 0 14px 32px -12px rgb(15 23 42 / 0.22); } .ds-chip:focus-visible { outline: 2px solid #315a78; outline-offset: 2px; }"
+    },
+    {
+      "name": "Car Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Marketplace stock unit: 4:3 photo with stock ID tag and status badge, title, facts, FOB price in navy tabular figures.",
+      "html": "<article class=\"ds-car\"><div class=\"ds-car-photo\"><span class=\"ds-car-id\">AM-10482</span><span class=\"ds-badge-new\">New arrival</span></div><div class=\"ds-car-body\"><a class=\"ds-car-title\" href=\"#\">2018 Toyota Hiace Van</a><dl class=\"ds-car-facts\"><dd>2018</dd><dd>84,200 km</dd><dd>2,000cc AT</dd><dd>Petrol</dd></dl><div class=\"ds-car-foot\"><div><div class=\"ds-car-label\">FOB price</div><div class=\"ds-car-price\">$12,450</div></div><a class=\"ds-car-btn\" href=\"#\">Details</a></div></div></article>",
+      "css": ".ds-car { width: 280px; overflow: hidden; background: #fff; border: 1px solid rgb(10 10 12 / 0.1); border-radius: 16px; box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.14); font-family: Manrope, system-ui, sans-serif; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; } .ds-car:hover { transform: translateY(-2px); border-color: rgb(10 10 12 / 0.2); box-shadow: 0 2px 4px rgb(15 23 42 / 0.05), 0 14px 32px -12px rgb(15 23 42 / 0.22); } .ds-car-photo { position: relative; aspect-ratio: 4/3; background: linear-gradient(160deg, #c9d8e4, #6f8ba3); } .ds-car-id { position: absolute; left: 10px; top: 10px; padding: 2px 8px; border-radius: 8px; background: rgb(0 0 0 / 0.55); color: #fff; font-size: 12px; font-weight: 700; } .ds-badge-new { position: absolute; left: 10px; bottom: 10px; padding: 2px 8px; border-radius: 8px; background: #c5a15a; color: #10243a; font-size: 12px; font-weight: 700; } .ds-car-body { padding: 14px; } .ds-car-title { display: block; color: #0a0a0c; font-size: 15px; font-weight: 800; text-decoration: none; } .ds-car:hover .ds-car-title { color: #315a78; } .ds-car-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin: 10px 0 0; font-size: 12px; color: rgb(10 10 12 / 0.75); } .ds-car-facts dd { margin: 0; } .ds-car-foot { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgb(10 10 12 / 0.1); } .ds-car-label { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: rgb(10 10 12 / 0.72); } .ds-car-price { font-size: 1.35rem; font-weight: 800; line-height: 1.25; color: #10243a; font-variant-numeric: tabular-nums; } .ds-car-btn { display: inline-flex; align-items: center; height: 44px; padding: 0 16px; border-radius: 12px; background: #10243a; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; } .ds-car-btn:hover { background: #1c3a5a; } .ds-car-btn:focus-visible, .ds-car-title:focus-visible { outline: 2px solid #315a78; outline-offset: 2px; }"
+    },
+    {
+      "name": "Price Panel",
+      "kind": "custom",
+      "refersTo": "price-panel",
+      "description": "Navy FOB block on the stock page with a gold bar, white tabular price, gold C&F button and a quoted-shipping note.",
+      "html": "<div class=\"ds-price-panel\"><span class=\"ds-price-bar\"></span><div class=\"ds-price-row\"><div><div class=\"ds-price-label\">FOB price</div><div class=\"ds-price-value\">$12,450</div></div><a class=\"ds-price-btn\" href=\"#\">Get C&amp;F price</a></div><p class=\"ds-price-note\">Shipping to your port (C&amp;F / CIF) is quoted by our team, by RoRo or container.</p></div>",
+      "css": ".ds-price-panel { max-width: 420px; padding: 16px; border-radius: 16px; background: #10243a; color: #fff; font-family: Manrope, system-ui, sans-serif; } .ds-price-bar { display: block; width: 40px; height: 2px; margin-bottom: 10px; border-radius: 9999px; background: #c5a15a; } .ds-price-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; } .ds-price-label { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: rgb(255 255 255 / 0.72); } .ds-price-value { font-size: 1.875rem; font-weight: 800; font-variant-numeric: tabular-nums; } .ds-price-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; background: #c5a15a; color: #10243a; font-size: 14px; font-weight: 800; text-decoration: none; } .ds-price-btn:hover { background: #d4b273; } .ds-price-btn:focus-visible { outline: 2px solid #dcc28e; outline-offset: 2px; } .ds-price-note { margin: 8px 0 0; font-size: 12px; color: rgb(255 255 255 / 0.72); }"
+    },
+    {
+      "name": "Desktop Menu Bar",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Sticky navy bar with bold white links and a hairline beneath.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\">Home</a><a href=\"#\">Stock list</a><a href=\"#\">Parts</a><a href=\"#\">Machinery</a><a href=\"#\">How to buy</a><a href=\"#\">Contact</a></nav>",
+      "css": ".ds-nav { display: flex; background: #10243a; border-bottom: 2px solid rgb(197 161 90 / 0.7); font-family: Manrope, system-ui, sans-serif; } .ds-nav a { padding: 12px 16px; color: rgb(255 255 255 / 0.9); font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap; transition: background-color 0.15s; } .ds-nav a:hover { background: rgb(255 255 255 / 0.1); color: #fff; } .ds-nav a:focus-visible { outline: 2px solid #dcc28e; outline-offset: -2px; }"
+    },
+    {
+      "name": "Section Head",
+      "kind": "custom",
+      "description": "Section heading with the navy-to-gold vertical mark and a steel 'view all' link.",
+      "html": "<div class=\"ds-sec\"><h2><span></span>New arrivals</h2><a href=\"#\">View all stock &rarr;</a></div>",
+      "css": ".ds-sec { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; font-family: Manrope, system-ui, sans-serif; } .ds-sec h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: -0.02em; color: #0a0a0c; } .ds-sec h2 span { width: 4px; height: 24px; border-radius: 9999px; background: linear-gradient(#10243a, #c5a15a); } .ds-sec a { display: inline-flex; align-items: center; min-height: 44px; color: #315a78; font-size: 14px; font-weight: 700; text-decoration: none; } .ds-sec a:hover { text-decoration: underline; } .ds-sec a:focus-visible { outline: 2px solid #315a78; outline-offset: 2px; }"
+    },
+    {
+      "name": "Journey Steps",
+      "kind": "custom",
+      "description": "How-to-buy route: navy numbered discs with gold rings joined by a fading gold line.",
+      "html": "<ol class=\"ds-journey\"><li><b>1</b><span>Choose a car</span></li><li><b>2</b><span>Get a C&amp;F quote</span></li><li><b>3</b><span>Pay by TT</span></li><li><b>4</b><span>Ship &amp; receive</span></li></ol>",
+      "css": ".ds-journey { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 0; padding: 0; list-style: none; font-family: Manrope, system-ui, sans-serif; } .ds-journey::before { content: \"\"; position: absolute; left: 20px; right: 20px; top: 20px; height: 2px; background: linear-gradient(90deg, #c5a15a, rgb(197 161 90 / 0.25)); } .ds-journey li { position: relative; display: flex; flex-direction: column; gap: 12px; font-weight: 700; color: #0a0a0c; } .ds-journey b { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 9999px; border: 2px solid #c5a15a; background: #10243a; color: #fff; font-weight: 800; font-variant-numeric: tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Export House Ledger",
+    "overview": "The site reads like an established Japanese trading house that also runs a busy stock floor. Deep navy carries authority: the top strip, the desktop menu bar, the home hero band, the price panel and the footer. The working surfaces stay light and dense: a cool grey page (#f5f6f8) holding white cards, each a real car with a stock number, photos, four facts and an FOB price. Muted gold is the house's seal. It shows up as rules, hairlines, the route line of the buying journey, icons on navy, and the one gold button that starts a search or a quote.\n\nDensity follows the marketplace, not the brochure. Phones show stock as compact rows (photo left, facts right) so several cars fit on one screen. Swipe rows bleed to the screen edge and turn into grids on desktop. Everything is one face, Manrope, with weight (800 to 900) doing the hierarchy work and tabular numerals wherever a number is compared.\n\nTrust is shown through evidence, not decoration. Counts come from live data, badges come only from stock status, and shipping is always quoted, never shown as a fixed price.",
+    "keyCharacteristics": [
+      "Navy bands for authority, white cards for inventory, gold only as rule and seal.",
+      "One typeface (Manrope); weight-led hierarchy; tabular prices.",
+      "Light hairline-and-haze cards that lift 2px on hover.",
+      "Marketplace density: compact phone rows, edge-bleeding swipe rows, 4-up desktop grids.",
+      "Status-driven badges and live counts only."
+    ],
+    "rules": [
+      { "name": "The Gold Seal Rule", "body": "Gold marks things; it never speaks on white. Use it for rules, hairlines, icons and text on navy, and as a fill under navy text. Never set body or link text in gold on a white or light grey surface.", "section": "colors" },
+      { "name": "The Flip Rule", "body": "Tailwind `white` resolves to `--fg`. The light page sets it to jet black, and `.on-dark` areas (plus solid navy, black, emerald, amber and red fills) set it back to white. Write `text-white/70` once and it reads correctly on both grounds. Any new dark area must carry `.on-dark` rather than hard-coding colours.", "section": "colors" },
+      { "name": "The House Palette Rule", "body": "On the public site, logo red and cerulean do not appear. New markup uses the CSS variables (`--accent`, `--accent-hi`, `--accent-text`, `--gold`) directly. The `brand-*` remaps exist so older markup follows the palette; they are a compatibility layer, not a vocabulary to extend.", "section": "colors" },
+      { "name": "The One Face Rule", "body": "Manrope everywhere on the public site; hierarchy comes from weight and size, never from a second display face.", "section": "typography" },
+      { "name": "The Ledger Numerals Rule", "body": "Prices, counts, step numbers and stock IDs use tabular figures (any element whose class mentions `price` gets them automatically).", "section": "typography" },
+      { "name": "The Hairline-and-Haze Rule", "body": "Every light surface is white, has a 1px hairline at 10% ink, and carries the soft card-rest shadow. Depth increases only on hover or when a panel floats.", "section": "elevation" },
+      { "name": "The Clear-Glass Fallback Rule", "body": "Frosted surfaces fall back to solid white (or solid navy on dark) when backdrop-filter is unsupported or reduced transparency is requested. All motion stops under reduced motion.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use navy for primary buttons and dark bands, and give every new dark area `.on-dark` so the Flip Rule handles its text.",
+      "Do keep gold for rules, hairlines, icons on navy and the one gold lead button per navy area (navy text on gold).",
+      "Do set prices in navy, weight 800, tabular figures on white; white on the navy price panel.",
+      "Do derive every badge from real status: Sold, Reserved, or New arrival when listed 7 days ago or less.",
+      "Do label shipping (C&F / CIF) as quoted or estimated, never as a fixed price; FOB is the only confirmed price.",
+      "Do show counts and ratings from live data only (one live car count everywhere).",
+      "Do keep tap targets at 44px or more and phone inputs at 16px text."
+    ],
+    "donts": [
+      "Don't set gold text on white or light grey surfaces.",
+      "Don't use logo red or cerulean on the public site; they belong to the ERP and invoices.",
+      "Don't use flat black for dark bars; dark areas are navy (#10243a) or navy-deep.",
+      "Don't add a second display typeface.",
+      "Don't invent trust claims (years in business, export volumes, licence numbers, testimonials) or decorative badges.",
+      "Don't extend the `brand-*` remap layer for new work; use the CSS variables."
+    ]
+  }
+}

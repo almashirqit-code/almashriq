@@ -117,7 +117,10 @@ export async function CarListing({
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black tracking-tight sm:text-3xl">{heading}</h1>
-          <p className="text-sm text-white/60">{res.total.toLocaleString()} cars found</p>
+          <p className="text-sm text-white/60">{res.total.toLocaleString()} cars found
+            {/* Unfiltered list includes reserved/sold cars; say so, so it matches the "available" count elsewhere */}
+            {res.total === facets.total && facets.total > facets.available && ` · ${facets.available.toLocaleString()} available now`}
+          </p>
           {intro}
         </div>
         <div className="hidden lg:block">

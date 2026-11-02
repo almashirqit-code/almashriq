@@ -187,8 +187,8 @@ export default async function PartsPage({ searchParams }: { searchParams: Promis
                         <CardPhotos images={imgs} alt={`${p.name} ${p.part_no}`} />
                       ) : (
                         // inherits the card's text colour, so it shows on the light and the dark theme
-                        <div className="flex h-full flex-col items-center justify-center gap-2 opacity-40">
-                          <Wrench className="h-10 w-10" />
+                        <div className="flex h-full flex-col items-center justify-center gap-2 bg-[#eef2f6] text-[var(--accent-text)]">
+                          <Wrench className="h-10 w-10 opacity-70" />
                           <span className="text-xs font-semibold">Photos on request</span>
                         </div>
                       )}

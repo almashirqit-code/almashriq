@@ -186,27 +186,22 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                       </div>
                       <dl className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs text-white/75">
                         {/* each row is a dt (icon + label for screen readers) and a dd (the value) */}
-                        <div className="flex min-w-0 items-center gap-1.5">
-                          <dt className="shrink-0">
-                            <Clock aria-hidden className="h-3.5 w-3.5 text-brand-600" />
-                            <span className="sr-only">Hours</span>
-                          </dt>
-                          <dd className="truncate">{m.hours != null ? `${m.hours.toLocaleString()} h` : "—"}</dd>
-                        </div>
-                        <div className="flex min-w-0 items-center gap-1.5">
-                          <dt className="shrink-0">
-                            <Gauge aria-hidden className="h-3.5 w-3.5 text-brand-600" />
-                            <span className="sr-only">Power</span>
-                          </dt>
-                          <dd className="truncate">{m.engine_power_hp != null ? `${Number(m.engine_power_hp).toLocaleString()} hp` : "—"}</dd>
-                        </div>
-                        <div className="flex min-w-0 items-center gap-1.5">
-                          <dt className="shrink-0">
-                            <Weight aria-hidden className="h-3.5 w-3.5 text-brand-600" />
-                            <span className="sr-only">Operating weight</span>
-                          </dt>
-                          <dd className="truncate">{m.operating_weight_kg != null ? `${(Number(m.operating_weight_kg) / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })} t` : "—"}</dd>
-                        </div>
+                        {/* Only the specs this machine has: a card full of dashes reads as broken */}
+                        {([
+                          [Clock, "Hours", m.hours != null ? `${m.hours.toLocaleString()} h` : null],
+                          [Gauge, "Power", m.engine_power_hp != null ? `${Number(m.engine_power_hp).toLocaleString()} hp` : null],
+                          [Weight, "Operating weight", m.operating_weight_kg != null ? `${(Number(m.operating_weight_kg) / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })} t` : null],
+                        ] as const)
+                          .filter(([, , v]) => v)
+                          .map(([I, label, v]) => (
+                            <div key={label} className="flex min-w-0 items-center gap-1.5">
+                              <dt className="shrink-0">
+                                <I aria-hidden className="h-3.5 w-3.5 text-brand-600" />
+                                <span className="sr-only">{label}</span>
+                              </dt>
+                              <dd className="truncate">{v}</dd>
+                            </div>
+                          ))}
                         <div className="flex min-w-0">
                           <dt className="sr-only">Condition</dt>
                           <dd className="truncate capitalize">{m.condition}</dd>
@@ -215,7 +210,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                       <div className="mt-3 flex items-end justify-between gap-2 border-t border-white/10 pt-3">
                         <div>
                           <div className="text-xs font-bold uppercase tracking-wider text-white/60">FOB price</div>
-                          {price ? <div className="text-xl font-black leading-tight">{price}</div> : <div className="text-sm font-bold text-white/85">Ask for price</div>}
+                          {price ? <div className="text-[1.35rem] font-extrabold leading-tight tabular-nums text-[var(--accent)]">{price}</div> : <div className="text-sm font-bold text-white/85">Ask for price</div>}
                         </div>
                         <div className="flex gap-2">
                           <FavoriteButton item={{ kind: "machine", id: m.id, stock: m.stock_no, title: machineTitle(m), image: imgs[0] ?? null, price: price ?? null }} />

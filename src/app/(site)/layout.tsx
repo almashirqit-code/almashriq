@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Mail, Phone, MapPin, MessageCircle, Printer, Search, ChevronDown, Send, UserRound } from "lucide-react";
+import { Mail, Phone, MapPin, MessageCircle, Search, ChevronDown, Send, UserRound } from "lucide-react";
 import { getCompany, getFacets, getMakeTiles, whatsapp, SITE_URL, SUPPORT_EMAIL } from "@/lib/public-site";
 import { WorldClock } from "@/components/world-clock";
 import { FxBadge } from "@/components/fx-badge";
@@ -12,13 +12,20 @@ import { TawkChat } from "@/components/site/tawk-chat";
 import { GoogleAnalytics } from "@/components/site/google-analytics";
 import { ConsentProvider, CookieSettingsLink } from "@/components/site/consent";
 import { FavoritesLink, FavoritesSync } from "@/components/site/favorite-button";
-import { BodyIcon } from "@/components/site/body-icon";
 import { JsonLd } from "@/components/site/json-ld";
 import { Logo, LOGO_SRC } from "@/components/brand/logo";
 import { SocialLinks } from "@/components/site/social-links";
 import { SAME_AS, SOCIAL } from "@/lib/social";
 import { MARKETS } from "@/lib/markets";
+import { Manrope } from "next/font/google";
 import "./site.css";
+
+// Public site face (the ERP keeps Plus Jakarta Sans); falls back to it and Noto Sans JP via site.css
+// Desktop bar: these sit under "More". Makes, body types, offers and reviews are already on the home page and in the stock filters
+const MORE = ["/offers", "/reviews", "/payment", "/blog"];
+const FOOT_HEAD = "text-xs font-bold uppercase tracking-[0.18em] text-[var(--red-text)]";
+
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-site", display: "swap" });
 
 const OG_IMAGE = { url: "/brand/og.jpg?v=1", width: 1200, height: 630, alt: "Al Mashriq Trading — Japanese used cars, parts & machinery exported worldwide" };
 
@@ -32,12 +39,11 @@ export const metadata: Metadata = {
   // No site-wide canonical here: a page that forgot its own would point Google at the home page.
 };
 
-export const viewport: Viewport = { themeColor: "#2a3f58", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#10243a", width: "device-width", initialScale: 1 };
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [company, facets, makes, fx] = await Promise.all([getCompany(), getFacets(), getMakeTiles(), getUsdJpy()]);
   const wa = whatsapp(company, "Hello Al Mashriq, I'd like to know about your cars.");
-  const bodies = facets.body.map(([b]) => b).filter((b) => !/^others?$/i.test(b)).slice(0, 14);
   const topMakes = makes.slice(0, 24);
 
   const links = [
@@ -67,7 +73,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <ConsentProvider>
-    <div className="site-glass pb-nav">
+    <div className={`site-glass pb-nav ${manrope.variable}`}>
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -170,43 +176,26 @@ export default async function PublicLayout({ children }: { children: React.React
                 </Link>
               </li>
             ))}
-            <li className="group relative">
-              <span className={`${navLink} flex cursor-default items-center gap-1`}>
-                Makes <ChevronDown className="h-3.5 w-3.5" />
-              </span>
-              <div className="glass-strong invisible absolute left-0 top-full w-[34rem] rounded-b-2xl p-4 opacity-0 transition group-hover:visible group-hover:opacity-100">
-                <div className="grid grid-cols-3 gap-1">
-                  {topMakes.map((m) => (
-                    <Link key={m.slug} href={`/makes/${m.slug}`} className="flex items-center justify-between rounded-lg px-3 py-1.5 text-sm text-white/85 hover:bg-white/10 hover:text-white">
-                      {m.label}
-                      <span className="text-xs text-white/40">{m.n}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </li>
-            {bodies.length > 0 && (
-              <li className="group relative">
-                <span className={`${navLink} flex cursor-default items-center gap-1`}>
-                  Body type <ChevronDown className="h-3.5 w-3.5" />
-                </span>
-                <div className="glass-strong invisible absolute left-0 top-full w-64 rounded-b-2xl p-2 opacity-0 transition group-hover:visible group-hover:opacity-100">
-                  {bodies.map((b) => (
-                    <Link key={b} href={`/cars?body=${encodeURIComponent(b)}`} className="flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm text-white/85 hover:bg-white/10 hover:text-white">
-                      <BodyIcon type={b} className="h-5 w-10 shrink-0 text-white/80" />
-                      {b}
-                    </Link>
-                  ))}
-                </div>
-              </li>
-            )}
-            {links.slice(4).map((l) => (
+            {links.slice(4).filter((l) => !MORE.includes(l.href)).map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className={navLink}>
                   {l.label}
                 </Link>
               </li>
             ))}
+            {/* Secondary pages folded into one menu so the bar stays short (phones list them all in the drawer) */}
+            <li className="group relative">
+              <button type="button" aria-haspopup="true" className={`${navLink} flex items-center gap-1`}>
+                More <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+              <div className="glass-strong invisible absolute right-0 top-full w-48 rounded-b-2xl p-2 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                {links.filter((l) => MORE.includes(l.href)).map((l) => (
+                  <Link key={l.href} href={l.href} className="block rounded-lg px-3 py-2 text-sm text-white/85 hover:bg-white/10 hover:text-white">
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+            </li>
           </ul>
           <MobileSearch />
           {/* Phones: one tap to sign in / the customer account (signed-out visitors are sent to /account/login) */}
@@ -221,91 +210,72 @@ export default async function PublicLayout({ children }: { children: React.React
             fx={fx}
           />
         </div>
-        <div className="hidden h-0.5 bg-gradient-to-r from-cerulean-500 via-brand-500/70 to-transparent lg:block" />
+        <div className="hidden h-0.5 bg-gradient-to-r from-[var(--red)] via-brand-500/70 to-transparent lg:block" />
       </nav>
 
       <main>{children}</main>
 
       {/* Footer */}
       <footer className="on-dark on-dark-bar mt-14 border-t border-white/10">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-6 lg:py-10 lg:grid-cols-5 lg:px-6">
-          {/* Phones get a slim footer (company, address, call/WhatsApp, legal row): the side menu already has the page links */}
+        {/* Desktop: four calm columns (brand · pages · markets · contact). Makes live in the Makes menu above.
+            Phones get a slim footer (company, address, call/WhatsApp, legal row): the side menu already has the page links */}
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-10 gap-y-8 px-4 py-6 lg:grid-cols-[1.25fr_1fr_1.25fr_1.1fr] lg:px-6 lg:py-10">
           <div className="hidden lg:block">
             {custom ? logoImg("h-11") : <span className={logoPlate}><Logo tone="light" size="lg" /></span>}
-            <p className="mt-3 text-sm leading-6 text-white/70">{company.company_name} exports quality Japanese used vehicles and spare parts worldwide by RoRo and container.</p>
+            <p className="mt-3 max-w-[34ch] text-sm leading-6 text-white/70">{company.company_name} exports quality Japanese used vehicles and spare parts worldwide by RoRo and container.</p>
             <SocialLinks className="mt-4 text-white/85" />
           </div>
-          <div className="hidden lg:block">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">Popular makes</div>
-            <ul className="mt-2 flex flex-wrap gap-x-4 text-sm lg:mt-3 lg:block lg:space-y-1">
-              {makes.slice(0, 8).map((m) => (
-                <li key={m.slug}>
-                  <Link href={`/makes/${m.slug}`} className="inline-flex min-h-10 items-center text-white/70 hover:text-white lg:min-h-11">
-                    {m.label}
+          <nav className="hidden lg:block" aria-label="Footer">
+            <div className={FOOT_HEAD}>Explore</div>
+            <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+              {links.slice(1).filter((l) => l.href !== "/account").map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="inline-flex min-h-8 items-center text-white/70 hover:text-white">
+                    {l.label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
           <div className="hidden lg:block">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">
+            <div className={FOOT_HEAD}>
               <Link href="/export" className="hover:underline">
                 We export to
               </Link>
             </div>
-            <ul className="mt-2 flex flex-wrap gap-x-4 text-sm lg:mt-3 lg:block lg:space-y-1">
+            <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
               {MARKETS.map((m) => (
                 <li key={m.slug}>
-                  <Link href={`/export/${m.slug}`} className="inline-flex min-h-10 items-center text-white/70 hover:text-white lg:min-h-11">
+                  <Link href={`/export/${m.slug}`} className="inline-flex min-h-8 items-center text-white/70 hover:text-white">
                     {m.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="hidden lg:block">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">Information</div>
-            <ul className="mt-2 flex flex-wrap gap-x-4 text-sm lg:mt-3 lg:block lg:space-y-1">
-              {links.slice(1).map((l) => (
-                <li key={l.href}>
-                  <Link href={l.href} className="inline-flex min-h-10 items-center text-white/70 hover:text-white lg:min-h-11">
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="col-span-2 space-y-2.5 text-sm text-white/75 lg:col-span-1">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">
+          <div className="col-span-2 space-y-1.5 text-sm text-white/75 lg:col-span-1">
+            <div className={FOOT_HEAD}>
               <span className="lg:hidden">{company.company_name}</span>
               <span className="hidden lg:inline">Contact</span>
             </div>
             {company.address && (
-              <div className="flex gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
+              <div className="flex gap-2 pt-1.5">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--red-text)]" />
                 <span className="whitespace-pre-line">{company.address}</span>
               </div>
             )}
             {company.phone && (
-              <a href={`tel:${company.phone}`} className="flex min-h-11 items-center gap-2 hover:text-white">
-                <Phone className="h-4 w-4 text-rose-300" /> {company.phone}
+              <a href={`tel:${company.phone}`} className="flex min-h-11 items-center gap-2 hover:text-white lg:min-h-8">
+                <Phone className="h-4 w-4 text-[var(--red-text)]" /> {company.phone}
               </a>
-            )}
-            {company.fax && (
-              <div className="hidden items-center gap-2 lg:flex">
-                <Printer className="h-4 w-4 text-rose-300" /> Fax {company.fax}
-              </div>
             )}
             {company.email && (
-              <a href={`mailto:${company.email}`} className="hidden min-h-11 lg:flex items-center gap-2 break-all hover:text-white">
-                <Mail className="h-4 w-4 shrink-0 text-rose-300" /> Sales: {company.email}
+              <a href={`mailto:${company.email}`} className="hidden min-h-8 items-center gap-2 hover:text-white lg:flex">
+                <Mail className="h-4 w-4 shrink-0 text-[var(--red-text)]" /> {company.email}
               </a>
             )}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="hidden min-h-11 lg:flex items-center gap-2 break-all hover:text-white">
-              <Mail className="h-4 w-4 shrink-0 text-rose-300" /> Support: {SUPPORT_EMAIL}
-            </a>
             {wa && (
-              <a href={wa} target="_blank" rel="noopener" className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950 hover:brightness-110">
+              <a href={wa} target="_blank" rel="noopener" className="!mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950 hover:brightness-110">
                 <MessageCircle className="h-4 w-4" /> WhatsApp{company.mobile ? ` · ${company.mobile}` : ""}
               </a>
             )}
@@ -315,6 +285,9 @@ export default async function PublicLayout({ children }: { children: React.React
           <span>
             © {new Date().getFullYear()} {company.company_name}. All rights reserved.
           </span>
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex min-h-8 items-center hover:text-white">
+            Support: {SUPPORT_EMAIL}
+          </a>
           <Link href="/verify-agent" className="inline-flex min-h-8 items-center hover:text-white">
             Verify an agent
           </Link>
