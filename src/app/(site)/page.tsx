@@ -161,13 +161,6 @@ export default async function PublicHome() {
         </div>
       </section>
 
-      {/* Trustpilot review collector */}
-      <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">
-        <div className="glass rounded-2xl px-4 py-3">
-          <TrustpilotWidget />
-        </div>
-      </section>
-
       {/* Shop by make */}
       {makes.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">
@@ -307,6 +300,13 @@ export default async function PublicHome() {
           </div>
         </section>
       )}
+
+      {/* Trustpilot review collector — after the reviews, not before the stock */}
+      <section className={`mx-auto max-w-7xl px-4 lg:px-6 ${reviews.count > 0 ? "pt-4" : "pt-12"}`}>
+        <div className="glass rounded-2xl px-4 py-3">
+          <TrustpilotWidget />
+        </div>
+      </section>
 
       {/* How to buy */}
       <section className="mx-auto max-w-7xl px-4 pt-12 lg:px-6">

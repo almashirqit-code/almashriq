@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { X, Car } from "lucide-react";
-import { carTitle, getBranches, getCompany, getFacets, listCars, whatsapp, PAGE_SIZE, type Filters } from "@/lib/public-site";
+import { carTitle, getBranches, getCompany, getFacets, listCars, makeSlug, whatsapp, PAGE_SIZE, SITE_URL, type Filters } from "@/lib/public-site";
 import { branchName } from "@/lib/branches";
+import { JsonLd } from "@/components/site/json-ld";
 import { CarCard } from "./car-card";
 import { SortSelect } from "./sort-select";
 import { FilterPanel, FilterSubmit, FilterToolbar } from "@/components/site/filter-sheet";
@@ -64,11 +65,53 @@ export async function CarListing({
     else if (nums[nums.length - 1] !== "…") nums.push("…");
   }
 
+  // A model page sits under its make: Home / Toyota / Toyota Allion.
+  const makeCrumb = lockMake && f.make ? { name: f.make, path: `/makes/${makeSlug(f.make)}` } : null;
+  const trail = [
+    { name: "Home", path: "/" },
+    { name: "Stock list", path: "/cars" },
+    ...(makeCrumb ? [makeCrumb] : []),
+    ...(crumb && crumb !== makeCrumb?.name ? [{ name: crumb, path }] : []),
+  ];
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 lg:px-6 lg:py-6">
+      {/* Breadcrumb + the cars on this page as a list, so Google can show them as a carousel. */}
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: trail.map((t, i) => ({ "@type": "ListItem", position: i + 1, name: t.name, item: `${SITE_URL}${t.path}` })),
+          },
+          ...(res.cars.length
+            ? [
+                {
+                  "@context": "https://schema.org",
+                  "@type": "ItemList",
+                  name: heading,
+                  itemListElement: res.cars.map((c, i) => ({
+                    "@type": "ListItem",
+                    position: (res.page - 1) * PAGE_SIZE + i + 1,
+                    url: `${SITE_URL}/cars/${encodeURIComponent(c.stock_no)}`,
+                    name: carTitle(c),
+                  })),
+                },
+              ]
+            : []),
+        ]}
+      />
       <nav className="mb-3 text-xs text-white/60" aria-label="Breadcrumb">
-        <Link href="/" className="inline-block py-2 hover:text-white">Home</Link> / <Link href="/cars" className="inline-block py-2 hover:text-white">Stock list</Link>
-        {crumb ? ` / ${crumb}` : lockMake && f.make ? ` / ${f.make}` : ""}
+        {trail.map((t, i) =>
+          i === trail.length - 1 && trail.length > 2 ? (
+            <span key={t.path} aria-current="page">{t.name}</span>
+          ) : (
+            <span key={t.path}>
+              <Link href={t.path} className="inline-block py-2 hover:text-white">{t.name}</Link>
+              {i < trail.length - 1 && " / "}
+            </span>
+          )
+        )}
       </nav>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
