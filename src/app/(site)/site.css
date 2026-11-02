@@ -31,12 +31,12 @@ body:has(.site-glass) {
   --surface-hi: #fbfbfc;
   --line: rgb(10 10 12 / 0.1);
   --line-hi: rgb(10 10 12 / 0.2);
-  /* Navy (primary actions, dark bars) · steel blue (links) · muted gold (rules, highlights; never text on white) */
+  /* Navy (primary actions, dark bars) · steel blue (links) · logo red (rules, highlights, lead buttons) */
   --accent: #10243a;
   --accent-hi: #1c3a5a;
   --accent-text: #315a78;
-  --gold: #c5a15a;
-  --gold-text: #8a6a2c;
+  --red: #d71920;
+  --red-text: #b5141a;
   --cerulean: #315a78;
   --cerulean-text: #315a78;
   --focus: #315a78;
@@ -56,11 +56,11 @@ body:has(.site-glass) {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(40rem 28rem at 105% -5%, rgb(197 161 90 / 0.07), transparent 60%),
+    radial-gradient(40rem 28rem at 105% -5%, rgb(215 25 32 / 0.07), transparent 60%),
     radial-gradient(38rem 30rem at -10% 28%, rgb(49 90 120 / 0.07), transparent 60%);
 }
 .site-glass ::selection {
-  background: rgb(197 161 90 / 0.35);
+  background: rgb(215 25 32 / 0.35);
   color: var(--ink);
 }
 .site-glass {
@@ -76,51 +76,29 @@ body:has(.site-glass) {
   font-variant-numeric: tabular-nums;
 }
 /*
- * The shared Tailwind "brand" scale is logo red (the ERP and invoices keep it). On the public site
- * it maps to the navy / steel / gold palette, so existing markup follows the new identity.
+ * The Tailwind "brand" scale is the logo red and stays red here (icons, heading rules, badges).
+ * Only the hover of navy buttons is kept navy, so a navy button doesn't flash red.
  */
 .site-glass .hover\:bg-brand-700:hover {
   background-color: var(--accent-hi);
 }
-.site-glass .text-brand-700,
-.site-glass .text-brand-600,
-.site-glass .text-brand-500,
-.site-glass .hover\:text-brand-700:hover,
-.site-glass .open\:text-brand-700[open] {
-  color: var(--accent-text);
-}
-/* Heading accent rules and solid brand fills: gold rule, navy fill */
-.site-glass .border-brand-600 {
-  border-color: var(--gold);
-}
-.site-glass .bg-brand-600 {
-  background-color: var(--accent);
-}
-.site-glass .hover\:ring-brand-600:hover,
-.site-glass .ring-brand-600\/20,
-.site-glass .ring-brand-200 {
-  --tw-ring-color: rgb(49 90 120 / 0.3);
-}
 .site-glass .via-brand-500\/70 {
-  --tw-gradient-via: rgb(197 161 90 / 0.7) !important;
+  --tw-gradient-via: rgb(215 25 32 / 0.7) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 .site-glass .shadow-brand-900\/30,
 .site-glass .shadow-brand-900\/25 {
   --tw-shadow-color: rgb(16 36 58 / 0.25);
 }
-.site-glass .bg-brand-50 {
-  background-color: #eef2f6;
-}
 .site-glass .shadow-brand-900\/40 {
   --tw-shadow-color: rgb(16 36 58 / 0.3);
 }
 .site-glass .to-rose-300 {
-  --tw-gradient-from: var(--gold) !important;
-  --tw-gradient-to: var(--gold) !important;
+  --tw-gradient-from: var(--red) !important;
+  --tw-gradient-to: var(--red) !important;
 }
 .site-glass .text-rose-300 {
-  color: var(--gold);
+  color: var(--red-text);
 }
 .site-glass :focus-visible {
   outline: 2px solid var(--focus);
@@ -204,9 +182,11 @@ body:has(.site-glass) {
   --surface-hi: rgb(255 255 255 / 0.12);
   --line: rgb(255 255 255 / 0.14);
   --line-hi: rgb(255 255 255 / 0.28);
-  --accent-text: #dcc28e;
+  --accent-text: #ff8a8e;
+  /* Red text and icons on navy: lighter than the logo red so they stay readable */
+  --red-text: #ff6b70;
   --cerulean-text: #a9c4da;
-  --focus: #dcc28e;
+  --focus: #ff8a8e;
   color-scheme: dark;
   color: var(--ink);
 }
@@ -222,15 +202,15 @@ body:has(.site-glass) {
   background: linear-gradient(180deg, #10243a, #0b1a2b);
 }
 
-/* Home hero band: deep navy, a faint steel lift top-right, a gold hairline where it meets the page */
+/* Home hero band: deep navy, a faint steel lift top-right, a red hairline where it meets the page */
 .site-glass .home-hero {
   background:
     radial-gradient(48rem 26rem at 85% 0%, rgb(49 90 120 / 0.45), transparent 70%),
     #10243a;
-  border-bottom: 1px solid rgb(197 161 90 / 0.55);
+  border-bottom: 1px solid rgb(215 25 32 / 0.55);
 }
 
-/* Home "How to buy" journey: the gold route line behind the step numbers */
+/* Home "How to buy" journey: the red route line behind the step numbers */
 .site-glass .journey::before {
   content: "";
   position: absolute;
@@ -238,7 +218,7 @@ body:has(.site-glass) {
   top: 1.25rem;
   bottom: 1.25rem;
   width: 2px;
-  background: linear-gradient(var(--gold), rgb(197 161 90 / 0.25));
+  background: linear-gradient(var(--red), rgb(215 25 32 / 0.25));
 }
 @media (min-width: 1024px) {
   .site-glass .journey::before {
@@ -248,7 +228,7 @@ body:has(.site-glass) {
     bottom: auto;
     width: auto;
     height: 2px;
-    background: linear-gradient(90deg, var(--gold), rgb(197 161 90 / 0.25));
+    background: linear-gradient(90deg, var(--red), rgb(215 25 32 / 0.25));
   }
 }
 .site-glass .home-hero.rounded-3xl {

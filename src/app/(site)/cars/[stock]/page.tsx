@@ -184,13 +184,13 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
             </div>
             {/* FOB is the confirmed price; shipping is quoted per port, never shown as fixed */}
             <div className="on-dark mt-4 rounded-2xl bg-[#10243a] p-4">
-              <span aria-hidden className="mb-2.5 block h-0.5 w-10 rounded-full bg-[var(--gold)]" />
+              <span aria-hidden className="mb-2.5 block h-0.5 w-10 rounded-full bg-[var(--red)]" />
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-white/70">FOB price</div>
                   <div className="text-3xl font-extrabold tabular-nums text-white">{price ?? "Ask for price"}</div>
                 </div>
-                <a href="#quote" className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[var(--gold)] px-3.5 text-sm font-extrabold text-[#10243a] hover:bg-[#d4b273]">
+                <a href="#quote" className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[var(--red)] px-3.5 text-sm font-extrabold text-white hover:bg-[#b5141a]">
                   <Ship className="h-4 w-4" /> Get C&F price
                 </a>
               </div>
@@ -229,7 +229,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
           {yard.length > 0 && (
             <section aria-labelledby="yard-photos">
               <h2 id="yard-photos" className="mb-1 flex items-center gap-2 text-lg font-extrabold">
-                <span className="h-5 w-1 rounded-full bg-[var(--gold)]" />
+                <span className="h-5 w-1 rounded-full bg-[var(--red)]" />
                 In-yard photos
               </h2>
               <p className="mb-3 text-sm text-white/65">Taken at our yard in Japan — the car as it is now, before shipping.</p>
@@ -287,7 +287,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
         <section className="mt-10">
           <div className="mb-4 flex items-end justify-between gap-3">
             <h2 className="flex items-center gap-2 text-xl font-black">
-              <span className="h-6 w-1 rounded-full bg-[var(--gold)]" />
+              <span className="h-6 w-1 rounded-full bg-[var(--red)]" />
               Similar vehicles
             </h2>
             <Link href={`/makes/${makeSlug(c.make)}`} className="inline-flex min-h-11 items-center text-sm font-bold text-[var(--accent-text)] hover:underline">

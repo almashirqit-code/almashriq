@@ -73,7 +73,7 @@ export default async function PublicHome() {
         <div className="mx-auto grid max-w-7xl gap-6 px-4 pb-6 pt-6 lg:grid-cols-[minmax(0,26rem)_1fr] lg:gap-10 lg:px-6 lg:pb-8 lg:pt-10">
           <SearchForm action="/cars" className="flex flex-col" role="search">
             <h1 className="text-[1.9rem] font-extrabold leading-[1.08] sm:text-[2.6rem]">
-              Japanese vehicles, exported <span className="text-[var(--gold)]">to your port</span>
+              Japanese vehicles, exported <span className="text-[var(--red-text)]">to your port</span>
             </h1>
             <p className="mt-3 max-w-[34ch] text-[15px] leading-6 text-white/75">
               Our own stock in Japan with real photos and FOB prices, shipped by RoRo or container with the export papers done for you.
@@ -136,7 +136,7 @@ export default async function PublicHome() {
                   </select>
                 </div>
               </details>
-              <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--gold)] text-sm font-extrabold text-[#10243a] hover:bg-[#d4b273]">
+              <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--red)] text-sm font-extrabold text-white hover:bg-[#b5141a]">
                 <Search className="h-4 w-4" /> Search {facets.available.toLocaleString()} cars
               </button>
             </div>
@@ -159,7 +159,7 @@ export default async function PublicHome() {
             { icon: FileCheck2, t: "Export documents", d: "Sent by DHL / FedEx" },
           ].map(({ icon: I, t, d }) => (
             <li key={t} className="flex items-center gap-3 py-3.5 pr-3 sm:py-4">
-              <I className="h-5 w-5 shrink-0 text-[var(--gold)]" />
+              <I className="h-5 w-5 shrink-0 text-[var(--red-text)]" />
               <div className="min-w-0">
                 <div className="text-[13px] font-bold leading-tight sm:text-sm">{t}</div>
                 <div className="text-xs text-white/65">{d}</div>
@@ -383,11 +383,11 @@ export default async function PublicHome() {
       {/* How to buy */}
       <section className="mx-auto max-w-7xl px-4 pt-12 lg:px-6">
         <SectionHead title="How to buy from Japan" href="/how-to-buy" link="Full guide" />
-        {/* One route from Japan to your port: a gold line joins the steps (down the side on phones, across on desktop) */}
+        {/* One route from Japan to your port: a red line joins the steps (down the side on phones, across on desktop) */}
         <ol className="journey relative grid gap-5 lg:grid-cols-6 lg:gap-4">
           {BUY_STEPS.map((s, i) => (
             <li key={s.title} className="relative flex gap-4 lg:flex-col lg:gap-3">
-              <span className="on-dark relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--gold)] bg-[#10243a] text-base font-extrabold tabular-nums text-white">{i + 1}</span>
+              <span className="on-dark relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--red)] bg-[#10243a] text-base font-extrabold tabular-nums text-white">{i + 1}</span>
               <div className="min-w-0 pt-1.5 lg:pt-0">
                 <h3 className="font-bold">{s.title}</h3>
                 <p className="mt-1 text-sm leading-6 text-white/70">{s.body}</p>
@@ -456,13 +456,13 @@ export default async function PublicHome() {
       <section className="mx-auto max-w-7xl px-4 pt-12 lg:px-6">
         <div className="on-dark home-hero relative flex flex-col items-start justify-between gap-5 overflow-hidden rounded-3xl p-6 sm:p-8 md:flex-row md:items-center">
           <div className="relative flex gap-4">
-            <Globe className="hidden h-12 w-12 shrink-0 text-[var(--gold)] sm:block" />
+            <Globe className="hidden h-12 w-12 shrink-0 text-[var(--red-text)] sm:block" />
             <div>
               <h2 className="text-xl font-extrabold sm:text-2xl">Can&apos;t find the car you want?</h2>
               <p className="mt-1 max-w-[52ch] text-white/75">Tell us the model, year, budget and your port. We buy daily at Japanese auctions and can source it for you.</p>
             </div>
           </div>
-          <Link href="/contact" className="relative inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-6 font-extrabold text-[#10243a] hover:bg-[#d4b273] md:w-auto">
+          <Link href="/contact" className="relative inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--red)] px-6 font-extrabold text-white hover:bg-[#b5141a] md:w-auto">
             <Send className="h-4 w-4" /> Request a vehicle
           </Link>
         </div>

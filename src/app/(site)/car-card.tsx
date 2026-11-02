@@ -19,7 +19,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
       : c.status === "reserved"
         ? { t: "Reserved", c: "bg-amber-100 text-amber-900" }
         : Date.now() - new Date(c.created_at).getTime() < NEW_DAYS * 864e5
-          ? { t: "New arrival", c: "bg-[var(--gold)] text-[#10243a]" }
+          ? { t: "New arrival", c: "bg-[var(--red)] text-white" }
           : null;
   return (
     // Phones: a compact row (photo left, details right) so several cars fit on one screen; a tall card from sm up.

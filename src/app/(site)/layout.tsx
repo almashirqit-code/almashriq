@@ -23,7 +23,7 @@ import "./site.css";
 // Public site face (the ERP keeps Plus Jakarta Sans); falls back to it and Noto Sans JP via site.css
 // Desktop bar: these sit under "More". Makes, body types, offers and reviews are already on the home page and in the stock filters
 const MORE = ["/offers", "/reviews", "/payment", "/blog"];
-const FOOT_HEAD = "text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]";
+const FOOT_HEAD = "text-xs font-bold uppercase tracking-[0.18em] text-[var(--red-text)]";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-site", display: "swap" });
 
@@ -210,7 +210,7 @@ export default async function PublicLayout({ children }: { children: React.React
             fx={fx}
           />
         </div>
-        <div className="hidden h-0.5 bg-gradient-to-r from-[var(--gold)] via-brand-500/70 to-transparent lg:block" />
+        <div className="hidden h-0.5 bg-gradient-to-r from-[var(--red)] via-brand-500/70 to-transparent lg:block" />
       </nav>
 
       <main>{children}</main>
@@ -260,18 +260,18 @@ export default async function PublicLayout({ children }: { children: React.React
             </div>
             {company.address && (
               <div className="flex gap-2 pt-1.5">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" />
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--red-text)]" />
                 <span className="whitespace-pre-line">{company.address}</span>
               </div>
             )}
             {company.phone && (
               <a href={`tel:${company.phone}`} className="flex min-h-11 items-center gap-2 hover:text-white lg:min-h-8">
-                <Phone className="h-4 w-4 text-[var(--gold)]" /> {company.phone}
+                <Phone className="h-4 w-4 text-[var(--red-text)]" /> {company.phone}
               </a>
             )}
             {company.email && (
               <a href={`mailto:${company.email}`} className="hidden min-h-8 items-center gap-2 hover:text-white lg:flex">
-                <Mail className="h-4 w-4 shrink-0 text-[var(--gold)]" /> {company.email}
+                <Mail className="h-4 w-4 shrink-0 text-[var(--red-text)]" /> {company.email}
               </a>
             )}
             {wa && (
