@@ -148,9 +148,16 @@ body:has(.site-glass) {
   color-scheme: dark;
   color: var(--ink);
 }
-/* The black bars themselves */
+/* The dark bars themselves: deep navy-slate (tinted toward the cerulean accent), not flat black */
 .site-glass .on-dark-bar {
-  background: #0a0a0c;
+  background: #2a3f58;
+}
+/* The thin utility strip above the header sits a step deeper so the two rows read apart */
+.site-glass div.on-dark-bar {
+  background: #22354b;
+}
+.site-glass footer.on-dark-bar {
+  background: linear-gradient(180deg, #2a3f58, #22354b);
 }
 
 /* ---------- 3. surfaces ---------- */
@@ -190,9 +197,33 @@ body:has(.site-glass) {
 }
 .site-glass .on-dark.glass-strong,
 .site-glass .on-dark .glass-strong {
-  background: rgb(10 10 12 / 0.9);
+  background: rgb(42 63 88 / 0.92);
   border-color: var(--line);
   box-shadow: 0 10px 40px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+/* Phone bottom tab bar: frosted light glass, so it doesn't merge with the navy footer behind it */
+.site-glass .glass-strong.glass-bar {
+  background: rgb(255 255 255 / 0.62);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 8px 32px rgb(15 23 42 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.8);
+}
+
+/* Phone top bar: white like the desktop logo row (the navy menu row is desktop only) */
+@media (max-width: 1023.98px) {
+  /* nav.site-nav outranks the .on-dark.glass-strong fallbacks further down */
+  .site-glass nav.site-nav.on-dark.glass-strong {
+    --fg: 10 10 12;
+    --ink: #0a0a0c;
+    --line: rgb(10 10 12 / 0.1);
+    --focus: #007ba7;
+    color-scheme: light;
+    color: var(--ink);
+    background: rgb(255 255 255 / 0.94);
+    border-color: var(--line);
+    box-shadow: 0 1px 0 var(--line), 0 6px 20px -12px rgb(15 23 42 / 0.25);
+  }
 }
 
 /* ---------- 4. form controls ---------- */
@@ -231,7 +262,7 @@ body:has(.site-glass) {
   color: #0a0a0c;
 }
 .site-glass .on-dark select option {
-  background: #17181c;
+  background: #2a3f58;
   color: #f4f6f8;
 }
 .site-glass input:-webkit-autofill {
@@ -347,7 +378,7 @@ body:has(.site-glass) {
   }
   .site-glass .on-dark .glass-strong,
   .site-glass .on-dark.glass-strong {
-    background: rgb(10 10 12 / 0.98);
+    background: rgb(42 63 88 / 0.98);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
@@ -358,7 +389,7 @@ body:has(.site-glass) {
   }
   .site-glass .on-dark .glass-strong,
   .site-glass .on-dark.glass-strong {
-    background: #111114;
+    background: #2a3f58;
   }
 }
 @media (prefers-reduced-motion: reduce) {

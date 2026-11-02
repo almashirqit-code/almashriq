@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Mail, Phone, MapPin, MessageCircle, Printer, Search, ChevronDown, Send } from "lucide-react";
+import { Mail, Phone, MapPin, MessageCircle, Printer, Search, ChevronDown, Send, UserRound } from "lucide-react";
 import { getCompany, getFacets, getMakeTiles, whatsapp, SITE_URL, SUPPORT_EMAIL } from "@/lib/public-site";
 import { WorldClock } from "@/components/world-clock";
 import { FxBadge } from "@/components/fx-badge";
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   // No site-wide canonical here: a page that forgot its own would point Google at the home page.
 };
 
-export const viewport: Viewport = { themeColor: "#0a0a0c", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#2a3f58", width: "device-width", initialScale: 1 };
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [company, facets, makes, fx] = await Promise.all([getCompany(), getFacets(), getMakeTiles(), getUsdJpy()]);
@@ -55,6 +55,8 @@ export default async function PublicLayout({ children }: { children: React.React
   const navLink = "block px-4 py-3 text-sm font-bold text-white/90 transition hover:bg-white/10 hover:text-white";
   // A logo uploaded in Settings wins; otherwise the built-in Al Mashriq mark + wordmark (crisp SVG, light text on the dark site).
   const custom = company.logo_url;
+  // The original-colour logo (as on the login page), straight on the dark bars
+  const logoPlate = "inline-block";
   const logoImg = (h: string) => (
     <span className="inline-block rounded-xl bg-white/95 px-2 py-1">
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -119,10 +121,11 @@ export default async function PublicLayout({ children }: { children: React.React
       </div>
 
       {/* Desktop header: logo, search, contact buttons */}
-      <header className="on-dark on-dark-bar hidden lg:block">
+      {/* White logo row: the original logo (black lettering) reads on white; navy stays on the strip, menu and footer */}
+      <header className="hidden border-b border-[var(--line)] bg-white lg:block">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3">
           <Link href="/" className="shrink-0 rounded-xl" aria-label={`${company.company_name} home`}>
-            {custom ? logoImg("h-11") : <Logo size="md" />}
+            {custom ? logoImg("h-11") : <span className={logoPlate}><Logo tone="light" size="lg" /></span>}
           </Link>
           <form action="/cars" className="mx-auto w-full max-w-xl" role="search">
             <div className="glass flex overflow-hidden rounded-2xl focus-within:ring-2 focus-within:ring-[var(--focus)]">
@@ -146,7 +149,7 @@ export default async function PublicLayout({ children }: { children: React.React
       </header>
 
       {/* Sticky bar: logo + search icon + favourites + menu on phones, the full navigation on desktop */}
-      <nav className="on-dark glass-strong sticky top-0 z-40 rounded-none border-x-0 border-t-0">
+      <nav className="site-nav on-dark glass-strong sticky top-0 z-40 rounded-none border-x-0 border-t-0">
         <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center gap-2 px-3 lg:h-auto lg:px-4">
           <Link href="/" className="shrink-0 rounded-xl lg:hidden" aria-label="Al Mashriq Trading home">
             {custom ? (
@@ -155,7 +158,7 @@ export default async function PublicLayout({ children }: { children: React.React
                 <img src={custom} alt="" className="h-8 w-auto object-contain" />
               </span>
             ) : (
-              <Logo size="sm" alt="" />
+              <span className={logoPlate}><Logo tone="light" size="sm" alt="" /></span>
             )}
           </Link>
           <ul className="hidden items-center lg:flex">
@@ -205,10 +208,14 @@ export default async function PublicLayout({ children }: { children: React.React
             ))}
           </ul>
           <MobileSearch />
+          {/* Phones: one tap to sign in / the customer account (signed-out visitors are sent to /account/login) */}
+          <Link href="/account" aria-label="My account" className="ml-auto flex h-11 w-11 items-center justify-center rounded-xl text-white hover:bg-white/10 lg:hidden">
+            <UserRound className="h-5 w-5" />
+          </Link>
           <FavoritesLink className="text-white hover:bg-white/10 lg:ml-auto" />
           <MobileMenu
             links={links}
-            makes={topMakes.map((m) => ({ href: `/makes/${m.slug}`, label: m.label }))}
+            makes={topMakes.map((m) => ({ href: `/makes/${m.slug}`, label: m.label, logo: m.logo }))}
             contact={{ email: company.email, phone: company.phone ?? company.mobile, address: company.address, wa }}
             fx={fx}
           />
@@ -220,46 +227,47 @@ export default async function PublicLayout({ children }: { children: React.React
 
       {/* Footer */}
       <footer className="on-dark on-dark-bar mt-14 border-t border-white/10">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 lg:grid-cols-5 lg:px-6">
-          <div className="col-span-2 lg:col-span-1">
-            {custom ? logoImg("h-11") : <Logo size="lg" />}
-            <p className="mt-4 text-sm leading-6 text-white/70">{company.company_name} exports quality Japanese used vehicles and spare parts worldwide by RoRo and container.</p>
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-6 lg:py-10 lg:grid-cols-5 lg:px-6">
+          {/* Phones get a slim footer (company, address, call/WhatsApp, legal row): the side menu already has the page links */}
+          <div className="hidden lg:block">
+            {custom ? logoImg("h-11") : <span className={logoPlate}><Logo tone="light" size="lg" /></span>}
+            <p className="mt-3 text-sm leading-6 text-white/70">{company.company_name} exports quality Japanese used vehicles and spare parts worldwide by RoRo and container.</p>
             <SocialLinks className="mt-4 text-white/85" />
           </div>
-          <div>
+          <div className="hidden lg:block">
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">Popular makes</div>
-            <ul className="mt-3 space-y-1 text-sm">
+            <ul className="mt-2 flex flex-wrap gap-x-4 text-sm lg:mt-3 lg:block lg:space-y-1">
               {makes.slice(0, 8).map((m) => (
                 <li key={m.slug}>
-                  <Link href={`/makes/${m.slug}`} className="inline-flex min-h-11 items-center text-white/70 hover:text-white">
+                  <Link href={`/makes/${m.slug}`} className="inline-flex min-h-10 items-center text-white/70 hover:text-white lg:min-h-11">
                     {m.label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          <div>
+          <div className="hidden lg:block">
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">
               <Link href="/export" className="hover:underline">
                 We export to
               </Link>
             </div>
-            <ul className="mt-3 space-y-1 text-sm">
+            <ul className="mt-2 flex flex-wrap gap-x-4 text-sm lg:mt-3 lg:block lg:space-y-1">
               {MARKETS.map((m) => (
                 <li key={m.slug}>
-                  <Link href={`/export/${m.slug}`} className="inline-flex min-h-11 items-center text-white/70 hover:text-white">
+                  <Link href={`/export/${m.slug}`} className="inline-flex min-h-10 items-center text-white/70 hover:text-white lg:min-h-11">
                     {m.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          <div>
+          <div className="hidden lg:block">
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">Information</div>
-            <ul className="mt-3 space-y-1 text-sm">
+            <ul className="mt-2 flex flex-wrap gap-x-4 text-sm lg:mt-3 lg:block lg:space-y-1">
               {links.slice(1).map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-flex min-h-11 items-center text-white/70 hover:text-white">
+                  <Link href={l.href} className="inline-flex min-h-10 items-center text-white/70 hover:text-white lg:min-h-11">
                     {l.label}
                   </Link>
                 </li>
@@ -267,7 +275,10 @@ export default async function PublicLayout({ children }: { children: React.React
             </ul>
           </div>
           <div className="col-span-2 space-y-2.5 text-sm text-white/75 lg:col-span-1">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">Contact</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">
+              <span className="lg:hidden">{company.company_name}</span>
+              <span className="hidden lg:inline">Contact</span>
+            </div>
             {company.address && (
               <div className="flex gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
@@ -280,16 +291,16 @@ export default async function PublicLayout({ children }: { children: React.React
               </a>
             )}
             {company.fax && (
-              <div className="flex items-center gap-2">
+              <div className="hidden items-center gap-2 lg:flex">
                 <Printer className="h-4 w-4 text-rose-300" /> Fax {company.fax}
               </div>
             )}
             {company.email && (
-              <a href={`mailto:${company.email}`} className="flex min-h-11 items-center gap-2 break-all hover:text-white">
+              <a href={`mailto:${company.email}`} className="hidden min-h-11 lg:flex items-center gap-2 break-all hover:text-white">
                 <Mail className="h-4 w-4 shrink-0 text-rose-300" /> Sales: {company.email}
               </a>
             )}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="flex min-h-11 items-center gap-2 break-all hover:text-white">
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="hidden min-h-11 lg:flex items-center gap-2 break-all hover:text-white">
               <Mail className="h-4 w-4 shrink-0 text-rose-300" /> Support: {SUPPORT_EMAIL}
             </a>
             {wa && (
