@@ -10,6 +10,7 @@ import { PieBreakdown } from "../dashboard-charts";
 import { loadStaff } from "../customers/staff";
 import { loadCustomerOptions, loadCustomerSoa, loadAgentSoa } from "./soa";
 import { readPeriod, loadEntries, totals, loadProfit, loadReceivables, ENTRY_LABEL, AGE_BUCKETS, type Entry, type EntryKind, type Period } from "./data";
+import { SearchSelect } from "@/components/search-select";
 
 export const metadata = { title: "Ledger" };
 
@@ -172,25 +173,11 @@ async function Entries({ p, kind, where }: { p: Period; kind: EntryKind | null; 
         {kind && <input type="hidden" name="kind" value={kind} />}
         <label className="text-xs">
           <span className="label">Office</span>
-          <select name="office" defaultValue={where.office} className="input w-auto">
-            <option value="">All offices</option>
-            {offices.map((o) => (
-              <option key={o} value={o}>
-                {placeName(o, "No office (company)")}
-              </option>
-            ))}
-          </select>
+          <SearchSelect name="office" label="Office" defaultValue={where.office} allLabel="All offices" options={offices.map((o) => ({ value: o, label: placeName(o, "No office (company)") }))} />
         </label>
         <label className="text-xs">
           <span className="label">Shift</span>
-          <select name="shift" defaultValue={where.shift} className="input w-auto">
-            <option value="">All shifts</option>
-            {shifts.map((o) => (
-              <option key={o} value={o}>
-                {placeName(o, "No shift")}
-              </option>
-            ))}
-          </select>
+          <SearchSelect name="shift" label="Shift" defaultValue={where.shift} allLabel="All shifts" options={shifts.map((o) => ({ value: o, label: placeName(o, "No shift") }))} />
         </label>
         <button className="btn-secondary">Show</button>
         {(where.office || where.shift) && (

@@ -141,3 +141,21 @@
     margin: 10mm;
   }
 }
+
+/* ERP loading bar (components/nav-progress.tsx): fills fast, then creeps until the page arrives. */
+@keyframes nav-progress {
+  0% { width: 0; }
+  20% { width: 45%; }
+  100% { width: 90%; }
+}
+.nav-progress {
+  animation: nav-progress 8s cubic-bezier(0.1, 0.7, 0.2, 1) forwards;
+}
+html[data-nav-loading] main {
+  opacity: 0.6;
+  transition: opacity 150ms ease 120ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress { animation: none; width: 60%; }
+  html[data-nav-loading] main { transition: none; }
+}

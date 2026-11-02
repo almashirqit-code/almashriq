@@ -3,6 +3,7 @@ import { History } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { PageHeader, Empty, NumberedPagination } from "@/components/ui";
+import { SearchSelect } from "@/components/search-select";
 
 export const metadata = { title: "Audit trail" };
 
@@ -70,30 +71,27 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
 
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <form action="/admin/audit" className="flex flex-wrap items-end gap-2">
-          <select name="table" defaultValue={sp.table ?? ""} aria-label="Record type" className="input w-auto">
-            <option value="">All records</option>
-            {Object.entries(TABLES).map(([k, v]) => (
-              <option key={k} value={k}>
-                {v.label}
-              </option>
-            ))}
-          </select>
-          <select name="action" defaultValue={sp.action ?? ""} aria-label="Action" className="input w-auto">
-            <option value="">All actions</option>
-            {Object.entries(ACTION_LABEL).map(([k, v]) => (
-              <option key={k} value={k}>
-                {v}
-              </option>
-            ))}
-          </select>
-          <select name="user" defaultValue={sp.user ?? ""} aria-label="Staff member" className="input w-auto">
-            <option value="">Everyone</option>
-            {(staff ?? []).map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.full_name || p.email}
-              </option>
-            ))}
-          </select>
+          <SearchSelect
+            name="table"
+            label="Record type"
+            defaultValue={sp.table ?? ""}
+            allLabel="All records"
+            options={Object.entries(TABLES).map(([k, v]) => ({ value: k, label: v.label }))}
+          />
+          <SearchSelect
+            name="action"
+            label="Action"
+            defaultValue={sp.action ?? ""}
+            allLabel="All actions"
+            options={Object.entries(ACTION_LABEL).map(([k, v]) => ({ value: k, label: v }))}
+          />
+          <SearchSelect
+            name="user"
+            label="Staff member"
+            defaultValue={sp.user ?? ""}
+            allLabel="Everyone"
+            options={(staff ?? []).map((p) => ({ value: p.id, label: p.full_name || p.email }))}
+          />
           <input type="date" name="from" defaultValue={sp.from ?? ""} aria-label="From" className="input w-auto" />
           <input type="date" name="to" defaultValue={sp.to ?? ""} aria-label="To" className="input w-auto" />
           {sp.row && <input type="hidden" name="row" value={sp.row} />}

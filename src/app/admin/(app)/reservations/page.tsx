@@ -10,6 +10,7 @@ import { RESERVATION_STATUSES, type Reservation } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { PageHeader, Badge, Empty, Stat, NumberedPagination } from "@/components/ui";
 import { RES_STATUS_BADGE } from "./status";
+import { SearchSelect } from "@/components/search-select";
 
 export const metadata = { title: "Reservations" };
 
@@ -93,24 +94,21 @@ export default async function ReservationsPage({
         <form action="/admin/reservations" className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3">
           <RowsSelect value={SIZE} />
           <input name="q" defaultValue={sp.q ?? ""} placeholder={t("search_placeholder")} className="input w-64" />
-          <select name="status" defaultValue={status} className="input w-auto">
-            <option value="all">
-              {t("status")}: {t("all")}
-            </option>
-            {RESERVATION_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {t(`rvs_${s}` as DictKey)}
-              </option>
-            ))}
-          </select>
-          <select name="agent" defaultValue={sp.agent ?? ""} className="input w-auto">
-            <option value="">{t("rv_all_agents")}</option>
-            {(agents ?? []).map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.full_name || a.email}
-              </option>
-            ))}
-          </select>
+          <SearchSelect
+            name="status"
+            label={t("status")}
+            defaultValue={status}
+            allValue="all"
+            allLabel={`${t("status")}: ${t("all")}`}
+            options={RESERVATION_STATUSES.map((s) => ({ value: s, label: t(`rvs_${s}` as DictKey) }))}
+          />
+          <SearchSelect
+            name="agent"
+            label={t("rv_agent")}
+            defaultValue={sp.agent ?? ""}
+            allLabel={t("rv_all_agents")}
+            options={(agents ?? []).map((a) => ({ value: a.id, label: a.full_name || a.email }))}
+          />
           <button className="btn-secondary">{t("search")}</button>
           <div className="ml-auto">
             <NumberedPagination page={page} pages={pages} makeHref={href} />

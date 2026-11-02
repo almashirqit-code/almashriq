@@ -62,3 +62,38 @@ export async function deleteVehicleDoc(docId: string, vehicleId: string) {
 export async function refreshShipping(vehicleId: string) {
   refresh(vehicleId);
 }
+
+/** What cars on one booking / BL / container have in common (not charges, courier or documents). */
+const SHARED = [
+  "ship_company", "vessel_name", "voyage_no", "etd", "eta", "port_of_loading", "place_of_delivery", "forwarding_agent",
+  "cut_off_date", "bl_no", "bl_date", "booking_no", "track_url", "shipment_type", "container_no",
+] as const;
+
+/**
+ * Copies this car's shared shipping info to other cars of the same shipment: the given ids,
+ * or one car found by stock no. (to add it to the container).
+ */
+export async function shareShipment(vehicleId: string, to: { ids?: string[]; stockNo?: string }): Promise<{ error?: string; count?: number }> {
+  const profile = await assertRole(["admin", "manager"]);
+  const supabase = await createClient();
+  const { data: src } = await supabase.from("vehicle_shipments").select(SHARED.join(",")).eq("vehicle_id", vehicleId).maybeSingle();
+  const s = src as Record<(typeof SHARED)[number], unknown> | null;
+  if (!s || !(s.booking_no || s.bl_no || s.container_no)) return { error: "Save a booking, BL or container no. first." };
+
+  let ids = (to.ids ?? []).filter((x) => typeof x === "string" && x !== vehicleId).slice(0, 100);
+  if (to.stockNo !== undefined) {
+    const no = to.stockNo.trim();
+    if (!no) return { error: "Enter a stock no." };
+    const { data: v } = await supabase.from("vehicles").select("id").ilike("stock_no", no.replace(/[\\%_]/g, (c) => `\\${c}`)).maybeSingle();
+    if (!v) return { error: `No car with stock no. ${no}` };
+    if (v.id === vehicleId) return { error: "That is this car." };
+    ids = [v.id as string];
+  }
+  if (!ids.length) return { count: 0 };
+
+  const rows = ids.map((id) => ({ ...s, vehicle_id: id, updated_by: profile.id }));
+  const { error } = await supabase.from("vehicle_shipments").upsert(rows, { onConflict: "vehicle_id" });
+  if (error) return { error: error.message };
+  for (const id of [vehicleId, ...ids]) refresh(id);
+  return { count: ids.length };
+}

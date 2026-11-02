@@ -11,6 +11,7 @@ import type { DictKey } from "@/lib/i18n/dictionaries";
 import { Empty, NumberedPagination, PageHeader } from "@/components/ui";
 import { RowActions } from "./list-controls";
 import { DocIcons } from "./doc-icons";
+import { SearchSelect } from "@/components/search-select";
 
 type Row = Remittance & {
   customers: { id: string; customer_no: number; name: string; phone: string | null; assigned_to: string | null } | null;
@@ -120,35 +121,18 @@ export default async function RemittancesPage({
         <form action="/admin/remittances" className="flex flex-wrap items-center gap-2">
           <RowsSelect value={size} />
           <input name="q" defaultValue={sp.q ?? ""} placeholder={t("search_placeholder")} className="input w-56" />
-          <select name="status" defaultValue={sp.status ?? ""} className="input w-auto">
-            <option value="">
-              {t("status")}: {t("all")}
-            </option>
-            {REMITTANCE_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {t(`rs_${s}` as DictKey)}
-              </option>
-            ))}
-          </select>
+          <SearchSelect
+            name="status"
+            label={t("status")}
+            defaultValue={sp.status ?? ""}
+            allLabel={`${t("status")}: ${t("all")}`}
+            options={REMITTANCE_STATUSES.map((s) => ({ value: s, label: t(`rs_${s}` as DictKey) }))}
+          />
           {offices.length > 1 && (
-            <select name="office" defaultValue={sp.office ?? ""} className="input w-auto">
-              <option value="">
-                {t("rem_office")}: {t("all")}
-              </option>
-              {offices.map((o) => (
-                <option key={o}>{o}</option>
-              ))}
-            </select>
+            <SearchSelect name="office" label={t("rem_office")} defaultValue={sp.office ?? ""} allLabel={`${t("rem_office")}: ${t("all")}`} options={offices.map((o) => ({ value: o, label: o }))} />
           )}
           {shifts.length > 0 && (
-            <select name="shift" defaultValue={sp.shift ?? ""} className="input w-auto">
-              <option value="">
-                {t("rem_shift")}: {t("all")}
-              </option>
-              {shifts.map((o) => (
-                <option key={o}>{o}</option>
-              ))}
-            </select>
+            <SearchSelect name="shift" label={t("rem_shift")} defaultValue={sp.shift ?? ""} allLabel={`${t("rem_shift")}: ${t("all")}`} options={shifts.map((o) => ({ value: o, label: o }))} />
           )}
           <button className="btn-secondary">{t("search")}</button>
         </form>

@@ -10,6 +10,7 @@ import { loadRates } from "../reservations/data";
 import { readFilters, loadExpenses, filterQuery } from "./data";
 import { ExpenseForm } from "./expense-form";
 import { DeleteExpenseButton } from "./delete-button";
+import { SearchSelect } from "@/components/search-select";
 
 export const metadata = { title: "Expenses" };
 
@@ -74,14 +75,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
             </label>
             <label className="text-xs">
               <span className="label">Category</span>
-              <select name="category" defaultValue={f.category} className="input w-auto">
-                <option value="">All</option>
-                {EXPENSE_CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
+              <SearchSelect name="category" label="Category" defaultValue={f.category} allLabel="All" options={EXPENSE_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))} />
             </label>
             <label className="text-xs">
               <span className="label">Search</span>

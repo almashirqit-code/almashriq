@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Settings as SettingsIcon, Anchor, Ship, Tag, SlidersHorizontal, Globe, ListTree } from "lucide-react";
+import { Settings as SettingsIcon, Anchor, Ship, Tag, SlidersHorizontal, Globe, ListTree, Building2 } from "lucide-react";
 import type { CatalogMake } from "@/lib/catalog";
 import { CatalogManager } from "./catalog-manager";
 import { createClient } from "@/lib/supabase/server";
@@ -13,8 +13,9 @@ import { SettingsForm } from "./settings-form";
 import { MastersManager } from "../masters/masters-manager";
 import { FreightManager } from "../freight/freight-manager";
 import { MakeLogos, type MakeRow } from "./make-logos";
+import { OfficesManager } from "./offices-manager";
 
-type Tab = "general" | "branches" | "catalog" | "ports" | "freight" | "makes";
+type Tab = "general" | "offices" | "branches" | "catalog" | "ports" | "freight" | "makes";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string; sub?: string }> }) {
   const profile = await requireRole(["admin", "manager"]);
@@ -23,6 +24,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const isAdmin = profile.role === "admin";
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     ...(isAdmin ? [{ key: "general" as Tab, label: "General", icon: SlidersHorizontal }] : []),
+    { key: "offices", label: t("office_title"), icon: Building2 },
     { key: "branches", label: t("settings_branches"), icon: Globe },
     { key: "catalog", label: "Makes & models", icon: ListTree },
     { key: "ports", label: t("m_title"), icon: Anchor },
@@ -39,6 +41,21 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <div className="max-w-4xl">
         <SettingsForm settings={data as Settings} />
       </div>
+    );
+  } else if (tab === "offices") {
+    const [{ data: s }, { data: staff }] = await Promise.all([
+      supabase.from("settings").select("offices, shifts").single(),
+      supabase.from("profiles").select("office, shift").eq("active", true),
+    ]);
+    const tally = (k: "office" | "shift") =>
+      (staff ?? []).reduce<Record<string, number>>((m, p) => (p[k] ? { ...m, [p[k] as string]: (m[p[k] as string] ?? 0) + 1 } : m), {});
+    body = (
+      <OfficesManager
+        offices={(s?.offices ?? []) as string[]}
+        shifts={(s?.shifts ?? []) as string[]}
+        staff={{ office: tally("office"), shift: tally("shift") }}
+        canEdit={isAdmin}
+      />
     );
   } else if (tab === "branches") {
     const [{ data: branches }, { data: s }] = await Promise.all([supabase.from("branches").select("*"), supabase.from("settings").select("exchange_rates").single()]);

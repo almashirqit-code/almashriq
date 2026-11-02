@@ -5,9 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { CURRENCIES, type Currency } from "@/lib/types";
 
-const lines = (v: FormDataEntryValue | null) =>
-  [...new Set(String(v ?? "").split(/\r?\n|,/).map((s) => s.trim()).filter(Boolean))];
-
 export type SettingsState = { error?: string; ok?: boolean };
 
 export async function saveSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
@@ -50,8 +47,6 @@ export async function saveSettings(_prev: SettingsState, formData: FormData): Pr
       next_invoice_no: Number.isInteger(nextNo) && nextNo > 0 ? nextNo : 1,
       tax_rate: Math.max(0, Number(formData.get("tax_rate")) || 0),
       exchange_rates: rates,
-      offices: lines(formData.get("offices")),
-      shifts: lines(formData.get("shifts")),
       updated_at: new Date().toISOString(),
     })
     .eq("id", 1);
@@ -71,5 +66,56 @@ export async function saveBranch(b: { code: string; currency: string; default_ta
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
   revalidateTag("public-site"); // company details on the website
+  return {};
+}
+
+type Place = "office" | "shift";
+const column = (kind: Place) => (kind === "office" ? "offices" : "shifts");
+const placeName = (v: string) => v.trim().replace(/\s+/g, " ").slice(0, 60);
+
+function refreshPlaces() {
+  revalidatePath("/admin/settings");
+  revalidatePath("/admin", "layout");
+}
+
+/** Configuration → Offices: add an office or shift to the list staff, remittances and expenses use. */
+export async function addPlace(kind: Place, name: string): Promise<{ error?: string }> {
+  await assertRole(["admin"]);
+  if (kind !== "office" && kind !== "shift") return { error: "Unknown kind" };
+  const n = placeName(name);
+  if (!n) return { error: "Enter a name" };
+  const supabase = await createClient();
+  const { data } = await supabase.from("settings").select("offices, shifts").single();
+  const list = ((data?.[column(kind)] ?? []) as string[]);
+  if (list.some((x) => x.toLowerCase() === n.toLowerCase())) return { error: kind === "office" ? "That office already exists." : "That shift already exists." };
+  const { error } = await supabase.from("settings").update({ [column(kind)]: [...list, n], updated_at: new Date().toISOString() }).eq("id", 1);
+  if (error) return { error: error.message };
+  refreshPlaces();
+  return {};
+}
+
+/** Renames everywhere it is used (staff, remittances, expenses) in one database transaction. */
+export async function renamePlace(kind: Place, from: string, to: string): Promise<{ error?: string }> {
+  await assertRole(["admin"]);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("rename_place", { p_kind: kind, p_from: from, p_to: placeName(to) });
+  if (error) return { error: error.message };
+  refreshPlaces();
+  return {};
+}
+
+/** Removes an office or shift from the list; refused while active staff are still on it. */
+export async function removePlace(kind: Place, name: string): Promise<{ error?: string; inUse?: number }> {
+  await assertRole(["admin"]);
+  if (kind !== "office" && kind !== "shift") return { error: "Unknown kind" };
+  const supabase = await createClient();
+  const { count } = await supabase.from("profiles").select("id", { count: "exact", head: true }).eq(kind, name).eq("active", true);
+  if (count) return { inUse: count };
+  const { data } = await supabase.from("settings").select("offices, shifts").single();
+  const list = ((data?.[column(kind)] ?? []) as string[]).filter((x) => x !== name);
+  if (kind === "office" && !list.length) return { error: "Keep at least one office." };
+  const { error } = await supabase.from("settings").update({ [column(kind)]: list, updated_at: new Date().toISOString() }).eq("id", 1);
+  if (error) return { error: error.message };
+  refreshPlaces();
   return {};
 }
