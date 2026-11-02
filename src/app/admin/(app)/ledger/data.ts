@@ -67,7 +67,7 @@ export async function loadEntries(p: Period): Promise<Entry[]> {
       .limit(LIMIT),
     supabase
       .from("company_expenses")
-      .select("id, expense_date, category, description, paid_to, currency, amount, amount_jpy, vehicles(stock_no)")
+      .select("id, expense_date, category, description, paid_to, currency, amount, amount_jpy, vehicles!company_expenses_vehicle_id_fkey(stock_no)")
       .gte("expense_date", p.from)
       .lte("expense_date", p.to)
       .limit(LIMIT),

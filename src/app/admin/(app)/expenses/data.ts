@@ -24,7 +24,7 @@ export async function loadExpenses(f: ExpenseFilters, limit = 2000): Promise<Exp
   const supabase = await createClient();
   let q = supabase
     .from("company_expenses")
-    .select("*, vehicles(id, stock_no)")
+    .select("*, vehicles!company_expenses_vehicle_id_fkey(id, stock_no)")
     .gte("expense_date", f.from)
     .lte("expense_date", f.to)
     .order("expense_date", { ascending: false })

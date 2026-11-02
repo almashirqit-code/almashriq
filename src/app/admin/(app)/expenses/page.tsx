@@ -26,7 +26,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
     loadExpenses(f),
     loadRates(),
     supabase.from("settings").select("offices").single(),
-    editId ? supabase.from("company_expenses").select("*, vehicles(stock_no)").eq("id", editId).maybeSingle() : Promise.resolve({ data: null }),
+    editId ? supabase.from("company_expenses").select("*, vehicles!company_expenses_vehicle_id_fkey(stock_no)").eq("id", editId).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   const total = rows.reduce((s, r) => s + Number(r.amount_jpy), 0);
   const byCat = new Map<string, number>();
