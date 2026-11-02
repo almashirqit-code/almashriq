@@ -1,0 +1,49 @@
+# Daily full backup of the Supabase database (schema, data and auth) into the private
+# Cloudflare R2 bucket "almashriq-backups". The bucket deletes copies older than 30 days.
+# Restore: gunzip the file and run it with psql against an empty Postgres 17 database.
+#
+# Repository secrets (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL       Supabase → Connect → "Session pooler" connection string (with the password)
+#   R2_ACCESS_KEY_ID      R2 API token with Object Read & Write on almashriq-backups
+#   R2_SECRET_ACCESS_KEY  (same token)
+name: Database backup
+
+on:
+  schedule:
+    - cron: "0 20 * * *" # 20:00 UTC = 01:00 Pakistan time
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      R2_ENDPOINT: https://1d9bac1d07767e76297b4a215f1d154f.r2.cloudflarestorage.com
+      BUCKET: almashriq-backups
+    steps:
+      - name: Dump the database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          FILE="almashriq-$(date -u +%Y-%m-%d-%H%M).sql.gz"
+          # pg_dump must match the server's Postgres version (17).
+          docker run --rm -e PGURL="$SUPABASE_DB_URL" postgres:17 \
+            sh -c 'pg_dump "$PGURL" --no-owner --no-privileges --quote-all-identifiers' | gzip -9 > "$FILE"
+          # A real dump is several MB; a tiny file means it failed.
+          test "$(stat -c %s "$FILE")" -gt 100000
+          echo "FILE=$FILE" >> "$GITHUB_ENV"
+          ls -l "$FILE"
+
+      - name: Upload to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          # R2 doesn't need the extra checksums newer AWS CLIs send by default.
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+        run: aws s3 cp "$FILE" "s3://$BUCKET/daily/$FILE" --endpoint-url "$R2_ENDPOINT" --only-show-errors
