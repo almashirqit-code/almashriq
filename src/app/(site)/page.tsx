@@ -5,7 +5,7 @@ import { MARKETS } from "@/lib/markets";
 import { POPULAR_MODELS } from "@/lib/models";
 import { dicebear } from "@/lib/avatar";
 import Link from "next/link";
-import { Search, ShieldCheck, Ship, Banknote, ArrowRight, Send, Quote, FileCheck2, Globe, ChevronDown } from "lucide-react";
+import { Search, ShieldCheck, Ship, Banknote, ArrowRight, Send, Quote, FileCheck2, Globe, ChevronDown, UserRound, Fuel, Leaf, Zap, Cog } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
 import { getCompany, getFacets, getBodyPhotos, listCars, whatsapp, carTitle, priceLabel, getMakeTiles, getReviews, getPosts, assetUrl } from "@/lib/public-site";
 import { CarCard } from "./car-card";
@@ -169,6 +169,25 @@ export default async function PublicHome() {
         </div>
       </section>
 
+      {/* Customer account, phones only (desktop has "My account" in the menu bar) */}
+      <section className="mx-auto max-w-7xl px-4 pt-6 lg:hidden">
+        <div className="glass flex items-center gap-3 rounded-2xl p-4">
+          <UserRound className="h-9 w-9 shrink-0 rounded-full bg-brand-50 p-2 text-brand-700" />
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-black">Your customer account</h2>
+            <p className="text-xs text-white/70">Track your car, invoices and shipping.</p>
+          </div>
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <Link href="/account/signup" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--accent)] text-sm font-bold text-white hover:bg-brand-700">
+            Create account
+          </Link>
+          <Link href="/account/login" className="glass-lite inline-flex min-h-11 items-center justify-center rounded-xl text-sm font-bold">
+            Sign in
+          </Link>
+        </div>
+      </section>
+
       {/* Shop by make */}
       {makes.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">
@@ -194,7 +213,7 @@ export default async function PublicHome() {
 
       {/* Body types — real photos from stock */}
       <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">
-        <SectionHead title="Search by body type" href="/cars" link="All stock" />
+        <SectionHead title="Shop by shape" href="/cars" link="All stock" />
         <div className="hscroll hscroll-grid">
           {bodies.map(([b, n]) => {
             const path = bodyPhoto[b.toLowerCase()];
@@ -220,11 +239,43 @@ export default async function PublicHome() {
         </div>
       </section>
 
+      {/* Fuel and transmission: chip rows with live counts */}
+      {[
+        { title: "Shop by fuel", key: "fuel", items: facets.fuel },
+        { title: "Shop by transmission", key: "trans", items: facets.transmission },
+      ].map((g) =>
+        g.items.length > 0 ? (
+          <section key={g.key} className="mx-auto max-w-7xl px-4 pt-6 lg:px-6">
+            <h2 className="mb-2.5 flex items-center gap-2 text-base font-black">
+              <span className="h-5 w-1 rounded-full bg-gradient-to-b from-[var(--accent)] to-rose-300" />
+              {g.title}
+            </h2>
+            <div className="hscroll lg:flex-wrap lg:overflow-visible">
+              {g.items
+                .filter(([v]) => !/^others?$/i.test(v))
+                // same label twice (e.g. GASOLINE and PETROL): keep the bigger one, the list is sorted by count
+                .filter(([v], i, all) => all.findIndex(([w]) => chipLabel(w) === chipLabel(v)) === i)
+                .slice(0, 8)
+                .map(([v, n]) => {
+                const Icon = g.key === "trans" ? Cog : /hybrid/i.test(v) ? Leaf : /electric|ev/i.test(v) ? Zap : Fuel;
+                return (
+                  <Link key={v} href={`/cars?${g.key}=${encodeURIComponent(v)}`} className="glass-lite glass-hover inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-4 text-sm font-semibold">
+                    <Icon className="h-4 w-4 text-brand-700" />
+                    {chipLabel(v)}
+                    <span className="text-xs font-normal text-white/60">{n.toLocaleString()}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ) : null,
+      )}
+
       {/* Price bands */}
       <section className="mx-auto max-w-7xl px-4 pt-6 lg:px-6">
         <h2 className="mb-2.5 flex items-center gap-2 text-base font-black">
           <span className="h-5 w-1 rounded-full bg-gradient-to-b from-[var(--accent)] to-rose-300" />
-          Search by price
+          Shop by price
         </h2>
         <div className="hscroll lg:flex-wrap lg:overflow-visible">
           {PRICE_BANDS.map((p) => (
@@ -243,7 +294,7 @@ export default async function PublicHome() {
       <section className="mx-auto max-w-7xl px-4 pt-10 lg:px-6">
         <SectionHead title="New arrivals" href="/cars" link="View all stock" />
         {arrivals.length ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 max-sm:[&>*:nth-child(n+5)]:hidden sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {arrivals.map((c) => (
               <CarCard key={c.id} c={c} wa={whatsapp(company, `Hello, I'm interested in ${c.stock_no} ${carTitle(c)}.`)} />
             ))}
@@ -319,21 +370,21 @@ export default async function PublicHome() {
       {/* How to buy */}
       <section className="mx-auto max-w-7xl px-4 pt-12 lg:px-6">
         <SectionHead title="How to buy from Japan" href="/how-to-buy" link="Full guide" />
-        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ol className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {BUY_STEPS.map((s, i) => (
-            <li key={s.title} className="glass-lite flex gap-4 rounded-2xl p-4 sm:p-5">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-lg font-black text-white shadow-lg shadow-brand-900/40">{i + 1}</span>
+            <li key={s.title} className="glass-lite flex items-center gap-3 rounded-2xl p-3 sm:items-start sm:gap-4 sm:p-5">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-base font-black sm:h-10 sm:w-10 sm:text-lg text-white shadow-lg shadow-brand-900/40">{i + 1}</span>
               <div>
                 <h3 className="font-bold">{s.title}</h3>
-                <p className="mt-1 text-sm leading-6 text-white/70">{s.body}</p>
+                <p className="mt-1 hidden text-sm leading-6 text-white/70 sm:block">{s.body}</p>
               </div>
             </li>
           ))}
         </ol>
       </section>
 
-      {/* Destinations */}
-      <section className="mx-auto max-w-7xl px-4 pt-10 lg:px-6">
+      {/* Destinations (the footer lists the same countries on phones) */}
+      <section className="mx-auto hidden max-w-7xl px-4 pt-10 sm:block lg:px-6">
         <div className="glass-lite rounded-2xl p-5">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-black">
             <span className="h-5 w-1 rounded-full bg-gradient-to-b from-[var(--accent)] to-rose-300" />
@@ -406,6 +457,10 @@ export default async function PublicHome() {
     </>
   );
 }
+
+// Friendly names for the stock data's fuel / transmission codes on the home page chips
+const CHIP_LABEL: Record<string, string> = { GASOLINE: "Petrol", PETROL: "Petrol", AT: "Automatic", MT: "Manual", CVT: "CVT", EV: "Electric", ELECTRICITY: "Electric" };
+const chipLabel = (v: string) => CHIP_LABEL[v.toUpperCase()] ?? v.charAt(0).toUpperCase() + v.slice(1).toLowerCase();
 
 function SectionHead({ title, href, link }: { title: string; href: string; link: string }) {
   return (
