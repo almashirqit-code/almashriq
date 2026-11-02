@@ -13,9 +13,9 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
   return (
     // Phones: a compact row (photo left, details right) so several cars fit on one screen; a tall card from sm up.
     <article className="glass-lite glass-hover group flex flex-row overflow-hidden rounded-2xl sm:flex-col">
-      <Link href={href} className="relative block min-h-[8.5rem] w-[40%] shrink-0 overflow-hidden bg-black/20 sm:aspect-[4/3] sm:min-h-0 sm:w-auto" aria-label={`${carTitle(c)} — ${c.stock_no}`}>
+      <Link href={href} className="relative block min-h-[8.5rem] w-[42%] shrink-0 overflow-hidden bg-slate-200 sm:aspect-[4/3] sm:min-h-0 sm:w-auto" aria-label={`${carTitle(c)} — ${c.stock_no}`}>
         <CardPhotos images={imgs} alt={`${carTitle(c)} ${c.stock_no}`} />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a0a0c]/70 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#0a0a0c]/50 to-transparent" />
         <span className="absolute left-1.5 top-1.5 rounded-lg bg-black/55 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm sm:left-2.5 sm:top-2.5 sm:px-2 sm:text-xs">{c.stock_no}</span>
         {c.image_count > 1 && (
           <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-1.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm sm:bottom-auto sm:right-2.5 sm:top-2.5 sm:px-2 sm:text-xs">
