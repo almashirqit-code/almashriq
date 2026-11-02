@@ -11,6 +11,7 @@ import type { Currency } from "@/lib/types";
 import { RowsSelect } from "@/components/rows-select";
 import { PageHeader, Pagination, Stat } from "@/components/ui";
 import { PartsManager, type PartRow } from "./parts-manager";
+import { SearchSelect } from "@/components/search-select";
 
 export const metadata = { title: "Parts" };
 
@@ -77,30 +78,9 @@ export default async function PartsAdmin({ searchParams }: { searchParams: Promi
         <form className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3" action="/admin/parts">
           <RowsSelect value={size} />
           <input name="q" defaultValue={q} placeholder="Part no., name, make, model, OEM no.…" className="input max-w-xs" />
-          <select name="category" defaultValue={sp.category ?? ""} className="input w-auto">
-            <option value="">All categories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select name="status" defaultValue={sp.status ?? ""} className="input w-auto">
-            <option value="">Any status</option>
-            {PART_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <select name="branch" defaultValue={sp.branch ?? ""} className="input w-auto">
-            <option value="">Any branch</option>
-            {DEFAULT_BRANCHES.map((b) => (
-              <option key={b.code} value={b.code}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+          <SearchSelect name="category" label="Category" defaultValue={sp.category ?? ""} allLabel="All categories" options={categories.map((c) => ({ value: c, label: c }))} />
+          <SearchSelect name="status" label="Status" defaultValue={sp.status ?? ""} allLabel="Any status" options={PART_STATUSES.map((s) => ({ value: s, label: s }))} />
+          <SearchSelect name="branch" label="Branch" defaultValue={sp.branch ?? ""} allLabel="Any branch" options={DEFAULT_BRANCHES.map((b) => ({ value: b.code, label: b.name }))} />
           <button className="btn-secondary">Search</button>
           {(q || sp.category || sp.status || sp.branch) && (
             <Link href="/admin/parts" className="text-xs font-semibold text-brand-600 hover:underline">

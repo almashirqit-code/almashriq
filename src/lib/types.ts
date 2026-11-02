@@ -1,11 +1,11 @@
 export type Role = "admin" | "manager" | "sales";
 export type VehicleStatus = "in_stock" | "reserved" | "sold" | "shipped";
 export type InvoiceStatus = "draft" | "issued" | "partially_paid" | "paid" | "cancelled";
-export type Currency = "JPY" | "USD" | "EUR" | "GBP" | "SGD" | "TWD" | "THB";
+export type Currency = "JPY" | "USD" | "EUR" | "GBP" | "SGD" | "TWD" | "THB" | "PKR";
 
-export const CURRENCIES: Currency[] = ["JPY", "USD", "EUR", "GBP", "SGD", "TWD", "THB"];
+export const CURRENCIES: Currency[] = ["JPY", "USD", "EUR", "GBP", "SGD", "TWD", "THB", "PKR"];
 /** Fallback exchange rates (1 unit = N JPY) when Configuration has none. */
-export const DEFAULT_RATES: Record<Currency, number> = { JPY: 1, USD: 150, EUR: 163, GBP: 191, SGD: 112, TWD: 4.7, THB: 4.2 };
+export const DEFAULT_RATES: Record<Currency, number> = { JPY: 1, USD: 150, EUR: 163, GBP: 191, SGD: 112, TWD: 4.7, THB: 4.2, PKR: 0.54 };
 
 /** Source branch (country the stock is bought in and shipped from). */
 export type BranchCode = "JP" | "SG" | "TW" | "TH";

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "@/lib/i18n/server";
@@ -11,6 +12,7 @@ import { getMyNotifications } from "@/lib/notifications";
 import { NotificationBell } from "@/components/notification-bell";
 import { CurrencySwitch } from "@/components/currency-switch";
 import { getDisplayCurrency } from "@/lib/display-currency";
+import { NavProgress } from "@/components/nav-progress";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getProfile();
@@ -38,6 +40,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="app-bg min-h-screen">
+      <Suspense>
+        <NavProgress />
+      </Suspense>
       <Sidebar
         role={profile.role}
         name={profile.full_name || profile.email}

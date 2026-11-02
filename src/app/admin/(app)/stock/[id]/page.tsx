@@ -122,10 +122,12 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
                 {t("va_create_invoice")}
               </Link>
             )}
-            <Link href={`/admin/stock/${v.id}/shipping`} className="btn bg-gradient-to-r from-slate-800 to-slate-900 text-white hover:from-slate-700 hover:to-slate-800">
-              <Ship className="h-4 w-4" />
-              {t("sh_edit")}
-            </Link>
+            {(v.shipping_status !== "not_booked" || v.status !== "in_stock" || activeRes) && (
+              <Link href={`/admin/stock/${v.id}/shipping`} className="btn bg-gradient-to-r from-slate-800 to-slate-900 text-white hover:from-slate-700 hover:to-slate-800">
+                <Ship className="h-4 w-4" />
+                {v.shipping_status === "not_booked" && v.status !== "shipped" ? t("sh_book") : t("sh_edit")}
+              </Link>
+            )}
             {seeCost && Number(v.purchase_price) > 0 && (
               <a href={`/admin/print/auction?vehicle=${v.id}`} target="_blank" className="btn-secondary">
                 <Gavel className="h-4 w-4" />

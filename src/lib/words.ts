@@ -40,6 +40,7 @@ const NAMES: Record<Currency, { major: string; minor: string | null }> = {
   SGD: { major: "Singapore Dollars", minor: "Cents" },
   TWD: { major: "New Taiwan Dollars", minor: null },
   THB: { major: "Thai Baht", minor: "Satang" },
+  PKR: { major: "Pakistani Rupees", minor: "Paisa" },
 };
 
 /** e.g. 14200.5 USD → "US Dollars Fourteen Thousand Two Hundred and Fifty Cents Only" */

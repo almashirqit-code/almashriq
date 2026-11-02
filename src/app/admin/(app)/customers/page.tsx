@@ -7,12 +7,14 @@ import { getT } from "@/lib/i18n/server";
 import { num } from "@/lib/format";
 import type { Customer } from "@/lib/types";
 import { PageHeader, Empty, Pagination } from "@/components/ui";
+import { SearchSelect } from "@/components/search-select";
+import { fetchAll } from "@/lib/fetch-all";
 
 
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string; rows?: string }>;
+  searchParams: Promise<{ q?: string; staff?: string; country?: string; page?: string; rows?: string }>;
 }) {
   const sp = await searchParams;
   const { t, locale } = await getT();
@@ -32,7 +34,16 @@ export default async function CustomersPage({
       `name.ilike.%${s}%,company.ilike.%${s}%,country.ilike.%${s}%,email.ilike.%${s}%,phone.ilike.%${s}%${/^\d+$/.test(s.trim()) ? `,customer_no.eq.${s.trim()}` : ""}`
     );
   }
-  const [{ data, count }, { data: staff }] = await Promise.all([query, supabase.from("profiles").select("id, full_name, email")]);
+  if (sp.staff === "none") query = query.is("assigned_to", null);
+  else if (sp.staff && /^[0-9a-f-]{36}$/i.test(sp.staff)) query = query.eq("assigned_to", sp.staff);
+  if (sp.country) query = query.ilike("country", sp.country.replace(/[\\%_]/g, (c) => `\\${c}`));
+  const [{ data, count }, { data: staff }, countryRows] = await Promise.all([
+    query,
+    supabase.from("profiles").select("id, full_name, email, active").order("full_name"),
+    fetchAll<{ country: string | null }>((from, to) => supabase.from("customers").select("country").not("country", "is", null).order("country").order("id").range(from, to), 10000),
+  ]);
+  const countries = [...new Map(countryRows.map((r) => [(r.country ?? "").trim().toLowerCase(), (r.country ?? "").trim()])).values()].filter(Boolean);
+  const keep = { ...(q ? { q } : {}), ...(sp.staff ? { staff: sp.staff } : {}), ...(sp.country ? { country: sp.country } : {}), ...(sp.rows ? { rows: sp.rows } : {}) };
   const staffName = new Map((staff ?? []).map((s) => [s.id, s.full_name || s.email]));
   const customers = (data ?? []) as Customer[];
   const pages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
@@ -54,8 +65,24 @@ export default async function CustomersPage({
       <div className="card overflow-hidden">
         <form className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3" action="/admin/customers">
           <RowsSelect value={PAGE_SIZE} />
-          <input name="q" defaultValue={q} placeholder={t("search_placeholder")} className="input max-w-xs" />
+          <input name="q" defaultValue={q} placeholder={t("search_placeholder")} aria-label={t("search")} className="input max-w-xs" />
+          <SearchSelect
+            name="staff"
+            label={t("rem_tagged_with")}
+            defaultValue={sp.staff ?? ""}
+            allLabel={`${t("rem_tagged_with")}: ${t("all")}`}
+            options={[
+              { value: "none", label: "—" },
+              ...(staff ?? []).filter((p) => p.active || p.id === sp.staff).map((p) => ({ value: p.id as string, label: (p.full_name || p.email) as string })),
+            ]}
+          />
+          <SearchSelect name="country" label={t("c_country")} defaultValue={sp.country ?? ""} allLabel={`${t("c_country")}: ${t("all")}`} options={countries.map((c) => ({ value: c, label: c }))} />
           <button className="btn-secondary">{t("search")}</button>
+          {Object.keys(keep).some((k) => k !== "rows") && (
+            <Link href="/admin/customers" className="btn-ghost text-xs">
+              {t("clear")}
+            </Link>
+          )}
         </form>
         {customers.length === 0 ? (
           <Empty>{t("no_results")}</Empty>
@@ -140,7 +167,7 @@ export default async function CustomersPage({
         <Pagination
           page={page}
           pages={pages}
-          makeHref={(p) => `/admin/customers?${new URLSearchParams({ ...(q ? { q } : {}), ...(sp.rows ? { rows: sp.rows } : {}), page: String(p) })}`}
+          makeHref={(p) => `/admin/customers?${new URLSearchParams({ ...keep, page: String(p) })}`}
           labels={{ previous: t("previous"), next: t("next"), pageOf: t("page_of", { page, pages }) }}
         />
       </div>

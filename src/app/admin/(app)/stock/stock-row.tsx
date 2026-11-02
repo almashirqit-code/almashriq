@@ -223,10 +223,14 @@ export function StockRow({
             <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 xl:justify-end">
               {x.shipping?.shipment_type && <span className="font-semibold">{t(`ship_${x.shipping.shipment_type}` as DictKey)}</span>}
               {x.shipping?.container_no && (
-                <span className="inline-flex items-center gap-1 font-mono">
+                <Link
+                  href={`/admin/${v.ownership === "third_party" ? "third-party" : "stock"}?q=${encodeURIComponent(x.shipping.container_no)}`}
+                  title={t("sh_same_title")}
+                  className="inline-flex items-center gap-1 font-mono hover:text-blue-700 hover:underline"
+                >
                   <Container className="h-3 w-3" />
                   {x.shipping.container_no}
-                </span>
+                </Link>
               )}
             </div>
           )}
@@ -238,13 +242,16 @@ export function StockRow({
             </div>
           )}
           <div className="mt-auto flex flex-wrap gap-1.5 xl:justify-end">
-            <Link
-              href={`/admin/stock/${v.id}/shipping`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-slate-800 to-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-slate-700 hover:to-slate-800"
-            >
-              <Ship className="h-3.5 w-3.5" />
-              {t("sh_edit")}
-            </Link>
+            {/* Nothing to ship before the car is sold; a sold car without a booking is booked, not edited. */}
+            {(v.shipping_status !== "not_booked" || x.payment !== "available" || v.status !== "in_stock") && (
+              <Link
+                href={`/admin/stock/${v.id}/shipping`}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-slate-800 to-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-slate-700 hover:to-slate-800"
+              >
+                <Ship className="h-3.5 w-3.5" />
+                {v.shipping_status === "not_booked" ? t("sh_book") : t("sh_edit")}
+              </Link>
+            )}
             <VehicleRowActions
               id={v.id}
               stockNo={v.stock_no}

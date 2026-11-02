@@ -11,6 +11,7 @@ import { DEFAULT_RATES, type Currency } from "@/lib/types";
 import { RowsSelect } from "@/components/rows-select";
 import { PageHeader, Pagination, Stat } from "@/components/ui";
 import { MachineryManager, type MachineRow } from "./machinery-manager";
+import { SearchSelect } from "@/components/search-select";
 
 export const metadata = { title: "Machinery" };
 
@@ -80,30 +81,9 @@ export default async function MachineryAdmin({ searchParams }: { searchParams: P
         <form className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3" action="/admin/machinery">
           <RowsSelect value={size} />
           <input name="q" defaultValue={q} placeholder="Stock no., make, model, serial no.…" className="input max-w-xs" />
-          <select name="category" defaultValue={sp.category ?? ""} className="input w-auto">
-            <option value="">All types</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select name="status" defaultValue={sp.status ?? ""} className="input w-auto">
-            <option value="">Any status</option>
-            {MACHINE_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s.replace("_", " ")}
-              </option>
-            ))}
-          </select>
-          <select name="branch" defaultValue={sp.branch ?? ""} className="input w-auto">
-            <option value="">Any branch</option>
-            {DEFAULT_BRANCHES.map((b) => (
-              <option key={b.code} value={b.code}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+          <SearchSelect name="category" label="Category" defaultValue={sp.category ?? ""} allLabel="All types" options={categories.map((c) => ({ value: c, label: c }))} />
+          <SearchSelect name="status" label="Status" defaultValue={sp.status ?? ""} allLabel="Any status" options={MACHINE_STATUSES.map((s) => ({ value: s, label: s.replace("_", " ") }))} />
+          <SearchSelect name="branch" label="Branch" defaultValue={sp.branch ?? ""} allLabel="Any branch" options={DEFAULT_BRANCHES.map((b) => ({ value: b.code, label: b.name }))} />
           <button className="btn-secondary">Search</button>
           {(q || sp.category || sp.status || sp.branch) && (
             <Link href="/admin/machinery" className="text-xs font-semibold text-brand-600 hover:underline">

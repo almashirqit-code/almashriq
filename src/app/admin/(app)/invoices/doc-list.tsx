@@ -8,6 +8,7 @@ import { money, date, num } from "@/lib/format";
 import { DOC_LIST_PATH, DOC_TYPES, INVOICE_STATUSES, type DocType, type Invoice } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { PageHeader, InvoiceStatusBadge, Empty, Pagination } from "@/components/ui";
+import { SearchSelect } from "@/components/search-select";
 
 const ICON: Record<DocType, React.ReactNode> = { invoice: <FileText />, quotation: <FileSignature />, auction_deposit: <Gavel /> };
 const TONE = { invoice: "fuchsia", quotation: "sky", auction_deposit: "amber" } as const;
@@ -112,16 +113,13 @@ export async function DocList({ docType, sp }: { docType: DocType; sp: DocListPa
         <form className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3" action={path}>
           <RowsSelect value={PAGE_SIZE} />
           <input name="q" defaultValue={sp.q ?? ""} placeholder={t("search_placeholder")} className="input max-w-xs" />
-          <select name="status" defaultValue={sp.status ?? ""} className="input w-auto">
-            <option value="">
-              {t("status")}: {t("all")}
-            </option>
-            {statuses.map((s) => (
-              <option key={s} value={s}>
-                {t(`is_${s}` as DictKey)}
-              </option>
-            ))}
-          </select>
+          <SearchSelect
+            name="status"
+            label={t("status")}
+            defaultValue={sp.status ?? ""}
+            allLabel={`${t("status")}: ${t("all")}`}
+            options={statuses.map((s) => ({ value: s, label: t(`is_${s}` as DictKey) }))}
+          />
           <button className="btn-secondary">{t("search")}</button>
         </form>
         {invoices.length === 0 ? (

@@ -11,6 +11,7 @@ import { loadStaff } from "../customers/staff";
 import { AssignSelect } from "./inquiry-controls";
 import { INQ_LABEL, INQ_STYLE } from "./status";
 import { INQUIRY_STATUSES } from "./status";
+import { SearchSelect } from "@/components/search-select";
 
 export const metadata = { title: "Inquiries" };
 
@@ -77,20 +78,23 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
         <form action="/admin/inquiries" className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3">
           <RowsSelect value={SIZE} />
           <input name="q" defaultValue={sp.q ?? ""} placeholder={t("iq_search_ph")} className="input w-64" />
-          <select name="status" defaultValue={status} className="input w-auto">
-            <option value="open">{t("iq_open")}</option>
-            <option value="all">{t("all")}</option>
-            {INQUIRY_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {t(INQ_LABEL[s])}
-              </option>
-            ))}
-          </select>
-          <select name="who" defaultValue={sp.who ?? ""} className="input w-auto">
-            <option value="">{me.role === "sales" ? t("iq_mine") : t("iq_everyone")}</option>
-            <option value="me">{t("iq_assigned_me")}</option>
-            {me.role !== "sales" && <option value="none">{t("iq_unassigned")}</option>}
-          </select>
+          <SearchSelect
+            name="status"
+            label={t("status")}
+            defaultValue={status}
+            options={[
+              { value: "open", label: t("iq_open") },
+              { value: "all", label: t("all") },
+              ...INQUIRY_STATUSES.map((s) => ({ value: s, label: t(INQ_LABEL[s]) })),
+            ]}
+          />
+          <SearchSelect
+            name="who"
+            label={t("iq_everyone")}
+            defaultValue={sp.who ?? ""}
+            allLabel={me.role === "sales" ? t("iq_mine") : t("iq_everyone")}
+            options={[{ value: "me", label: t("iq_assigned_me") }, ...(me.role !== "sales" ? [{ value: "none", label: t("iq_unassigned") }] : [])]}
+          />
           <button className="btn-secondary">{t("iq_filter")}</button>
           <div className="ml-auto">
             <NumberedPagination page={page} pages={pages} makeHref={(p) => href({ page: String(p) })} />
