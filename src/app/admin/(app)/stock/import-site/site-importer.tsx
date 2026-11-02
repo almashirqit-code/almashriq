@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { pool, uploadThumb } from "@/lib/images";
 import { IconChip } from "@/components/ui";
 import { siteListPage, siteStatusTags, importSiteCar, finishSiteImport } from "./actions";
+import { photoStorage } from "@/lib/photo-upload";
 
 type Phase = "idle" | "scanning" | "importing" | "paused" | "done";
 type Counts = { created: number; updated: number; skipped: number; failed: number; photos: number; photoBytes: number };
@@ -85,14 +86,14 @@ export function SiteImporter() {
         const body = await compress(await r.blob());
         const ext = body.type === "image/webp" ? "webp" : "jpg";
         const path = `vehicles/${vehicleId}/site-${i}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-        const up = await supabase.storage.from("vehicle-images").upload(path, body, { contentType: body.type || "image/jpeg", cacheControl: "31536000" });
+        const up = await photoStorage.upload(path, body, { contentType: body.type || "image/jpeg", cacheControl: "31536000" });
         if (up.error) throw up.error;
         const ins = await supabase.from("vehicle_images").insert({ vehicle_id: vehicleId, path, sort_order: i });
         if (ins.error) {
-          await supabase.storage.from("vehicle-images").remove([path]);
+          await photoStorage.remove([path]);
           throw ins.error;
         }
-        await uploadThumb(supabase, path, body);
+        await uploadThumb(path, body);
         add("photos");
         add("photoBytes", body.size);
       } catch (e) {

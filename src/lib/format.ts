@@ -46,31 +46,30 @@ export function convert(
   return round((amount * fromRate) / toRate, to);
 }
 
-/** Public URL of a stock photo (vehicle-images bucket; "site-assets:…" paths live in site-assets). */
+/** Public base URL of the photo store (Cloudflare R2, see src/lib/photo-store.ts). */
+const PHOTO_BASE = `${process.env.NEXT_PUBLIC_PHOTO_URL}/`;
+
+/** Public URL of a stock photo (photo store; legacy "site-assets:…" paths live in Supabase site-assets). */
 export function publicImageUrl(path: string) {
-  const [bucket, p] = path.startsWith("site-assets:") ? ["site-assets", path.slice(12)] : ["vehicle-images", path];
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${p}`;
+  if (path.startsWith("site-assets:")) return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${path.slice(12)}`;
+  return PHOTO_BASE + path;
 }
 
 /*
- * Card thumbnails: every listing photo in the vehicle-images bucket gets a small WebP copy at
- * thumbs/<same path>.webp (made on upload; older photos by Admin → System → "Create missing thumbnails").
- * Cards show the thumbnail and fall back to the full photo if it isn't there yet.
- * Keep in sync with staff_photo_thumbs_missing() in migration 0032.
+ * Card thumbnails: every listing photo gets a small WebP copy at thumbs/<same path>.webp, made on upload.
+ * Cards show the thumbnail and fall back to the full photo if it isn't there.
  */
-const PUBLIC_BUCKET = "/storage/v1/object/public/vehicle-images/";
 
-/** Storage path of a photo's thumbnail (vehicle-images bucket). */
+/** Storage path of a photo's thumbnail. */
 export function thumbPath(path: string) {
   return `thumbs/${path.replace(/\.[^./]+$/, "")}.webp`;
 }
 
 /** Thumbnail URL for a full photo URL; other URLs (site-assets, external) are returned unchanged. */
 export function thumbUrl(url: string) {
-  const i = url.indexOf(PUBLIC_BUCKET);
-  if (i < 0) return url;
-  const path = url.slice(i + PUBLIC_BUCKET.length).split("?")[0];
-  return path.startsWith("thumbs/") ? url : url.slice(0, i + PUBLIC_BUCKET.length) + thumbPath(path);
+  if (!url.startsWith(PHOTO_BASE)) return url;
+  const path = url.slice(PHOTO_BASE.length).split("?")[0];
+  return path.startsWith("thumbs/") ? url : PHOTO_BASE + thumbPath(path);
 }
 
 /** Photo paths plus their thumbnails, for deleting both from the bucket. */

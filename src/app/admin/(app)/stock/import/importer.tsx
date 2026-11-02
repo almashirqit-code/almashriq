@@ -12,6 +12,7 @@ import { withThumbs } from "@/lib/format";
 import { groupZipImages, mimeFor, readZipImages, type ZipFile } from "@/lib/photo-zip";
 import type { Currency, VehicleField } from "@/lib/types";
 import { DEFAULT_BRANCHES, jpyRate } from "@/lib/branches";
+import { photoStorage } from "@/lib/photo-upload";
 
 type Row = { line: number; data: VehicleInput; errors: string[] };
 type DbVehicle = { id: string; stock_no: string; chassis_no: string | null };
@@ -236,7 +237,7 @@ export function Importer() {
       if (replace && existing.length) {
         await supabase.from("vehicle_images").delete().in("id", existing.map((e) => e.id));
         for (let j = 0; j < existing.length; j += 500) {
-          await supabase.storage.from("vehicle-images").remove(withThumbs(existing.slice(j, j + 500).map((e) => e.path)));
+          await photoStorage.remove(withThumbs(existing.slice(j, j + 500).map((e) => e.path)));
         }
       } else {
         for (const e of existing) startAt.set(e.vehicle_id, Math.max(startAt.get(e.vehicle_id) ?? 0, e.sort_order + 1));
@@ -256,11 +257,11 @@ export function Importer() {
         if (resize) body = await prepareListingPhoto(body);
         const ext = body.type === "image/png" ? "png" : body.type === "image/webp" ? "webp" : body.type === "image/gif" ? "gif" : "jpg";
         const path = `vehicles/${job.vehicleId}/${Date.now()}-${job.order}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-        const up = await supabase.storage.from("vehicle-images").upload(path, body, { contentType: body.type, cacheControl: "31536000" });
+        const up = await photoStorage.upload(path, body, { contentType: body.type, cacheControl: "31536000" });
         if (up.error) throw new Error(up.error.message);
         const ins = await supabase.from("vehicle_images").insert({ vehicle_id: job.vehicleId, path, sort_order: job.order });
         if (ins.error) throw new Error(ins.error.message);
-        await uploadThumb(supabase, path, body);
+        await uploadThumb(path, body);
         uploaded++;
       } catch (e) {
         errors.push(`${job.file.path}: ${(e as Error).message}`);

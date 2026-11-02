@@ -2,6 +2,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { thumbPath } from "./format";
+import { photoStorage } from "./photo-upload";
 
 export const IMAGE_EXT = /\.(jpe?g|png|webp|gif|heic)$/i;
 
@@ -142,11 +143,10 @@ export async function makeThumb(blob: Blob): Promise<Blob | null> {
 }
 
 /** Makes and stores the card thumbnail for a photo at `path`. Best effort: cards fall back to the full photo. */
-export async function uploadThumb(supabase: SupabaseClient, path: string, photo: Blob) {
+export async function uploadThumb(path: string, photo: Blob) {
   const thumb = await makeThumb(photo);
   if (!thumb) return false;
-  const { error } = await supabase.storage
-    .from("vehicle-images")
+  const { error } = await photoStorage
     .upload(thumbPath(path), thumb, { contentType: "image/webp", upsert: true, cacheControl: "31536000" });
   return !error;
 }
@@ -175,16 +175,15 @@ export async function uploadVehicleImage(
   const body = resize ? await prepareListingPhoto(file) : file;
   const ext = extFor(body, name);
   const path = `vehicles/${vehicleId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { error: upErr } = await supabase.storage
-    .from("vehicle-images")
+  const { error: upErr } = await photoStorage
     .upload(path, body, { contentType: body.type || mimeFor(ext), upsert: false, cacheControl: "31536000" });
   if (upErr) throw new Error(upErr.message);
   const { error: dbErr } = await supabase.from("vehicle_images").insert({ vehicle_id: vehicleId, path, sort_order: sortOrder });
   if (dbErr) {
-    await supabase.storage.from("vehicle-images").remove([path]);
+    await photoStorage.remove([path]);
     throw new Error(dbErr.message);
   }
-  await uploadThumb(supabase, path, body);
+  await uploadThumb(path, body);
   return path;
 }
 

@@ -8,6 +8,7 @@ import { parsePart, type PartInput, type PartStatus } from "@/lib/parts";
 import type { Currency } from "@/lib/types";
 import { pingIndexNow } from "@/lib/indexnow";
 import { withThumbs } from "@/lib/format";
+import { deletePhotos } from "@/lib/photo-store";
 
 function refresh() {
   revalidatePath("/admin/parts");
@@ -59,7 +60,7 @@ export async function deletePart(id: string) {
   const { data, error } = await supabase.from("parts").delete().eq("id", id).select("photo_path").maybeSingle();
   if (error) throw new Error(error.message);
   const photos = (imgs ?? []).map((i) => i.path as string).filter((p) => !p.startsWith("site-assets:"));
-  if (photos.length) await supabase.storage.from("vehicle-images").remove(withThumbs(photos));
+  if (photos.length) await deletePhotos(withThumbs(photos));
   if (data?.photo_path) await supabase.storage.from("site-assets").remove([data.photo_path]);
   refresh();
 }

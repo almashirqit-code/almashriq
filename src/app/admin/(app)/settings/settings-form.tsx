@@ -3,12 +3,13 @@
 import { useActionState, useRef, useState } from "react";
 import { ImagePlus, X } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
-import { createClient } from "@/lib/supabase/client";
 import { resizeImage } from "@/lib/images";
 import { CURRENCIES, type Settings } from "@/lib/types";
 import { SubmitButton } from "@/components/buttons";
 import { saveSettings, type SettingsState } from "./actions";
 import { LOGO_SRC } from "@/components/brand/logo";
+import { photoStorage } from "@/lib/photo-upload";
+import { publicImageUrl } from "@/lib/format";
 
 export function SettingsForm({ settings }: { settings: Settings }) {
   const { t } = useT();
@@ -23,13 +24,12 @@ export function SettingsForm({ settings }: { settings: Settings }) {
     if (!file) return;
     setUploading(true);
     try {
-      const supabase = createClient();
       const body = await resizeImage(file, 900, 0.92);
       const ext = body.type === "image/png" ? "png" : "jpg";
       const path = `company/stamp-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("vehicle-images").upload(path, body, { contentType: body.type || file.type });
+      const { error } = await photoStorage.upload(path, body, { contentType: body.type || file.type });
       if (error) throw error;
-      setStamp(supabase.storage.from("vehicle-images").getPublicUrl(path).data.publicUrl);
+      setStamp(publicImageUrl(path));
     } catch (e) {
       alert((e as Error).message);
     } finally {
@@ -41,13 +41,12 @@ export function SettingsForm({ settings }: { settings: Settings }) {
     if (!file) return;
     setUploading(true);
     try {
-      const supabase = createClient();
       const body = file.type === "image/svg+xml" ? file : await resizeImage(file, 600, 0.9);
       const ext = file.type === "image/svg+xml" ? "svg" : body.type === "image/png" ? "png" : "jpg";
       const path = `company/logo-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("vehicle-images").upload(path, body, { contentType: body.type || file.type });
+      const { error } = await photoStorage.upload(path, body, { contentType: body.type || file.type });
       if (error) throw error;
-      setLogo(supabase.storage.from("vehicle-images").getPublicUrl(path).data.publicUrl);
+      setLogo(publicImageUrl(path));
     } catch (e) {
       alert((e as Error).message);
     } finally {

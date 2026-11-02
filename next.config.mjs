@@ -50,7 +50,10 @@ const nextConfig = {
     ];
   },
   images: {
-    remotePatterns: [{ protocol: "https", hostname: supabaseHost }],
+    remotePatterns: [
+      { protocol: "https", hostname: supabaseHost },
+      { protocol: "https", hostname: "photos.almashriqtrading.site" },
+    ],
   },
   async redirects() {
     return [

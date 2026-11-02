@@ -3,6 +3,7 @@
 import type JSZipType from "jszip";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { IMAGE_EXT, prepareListingPhoto, uploadThumb } from "./images";
+import { photoStorage } from "./photo-upload";
 
 /**
  * Photos ZIP helpers shared by the vehicle, part and machinery bulk importers.
@@ -84,15 +85,15 @@ export async function uploadStockPhoto(supabase: SupabaseClient, t: PhotoTable, 
   if (resize) body = await prepareListingPhoto(body);
   const ext = body.type === "image/png" ? "png" : body.type === "image/webp" ? "webp" : body.type === "image/gif" ? "gif" : "jpg";
   const path = `${t.folder}/${ownerId}/${Date.now()}-${sortOrder}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-  const up = await supabase.storage.from("vehicle-images").upload(path, body, { contentType: body.type || mimeFor(name), cacheControl: "31536000" });
+  const up = await photoStorage.upload(path, body, { contentType: body.type || mimeFor(name), cacheControl: "31536000" });
   if (up.error) throw new Error(up.error.message);
   const ins = await supabase.from(t.table).insert({ [t.fk]: ownerId, path, sort_order: sortOrder });
   if (ins.error) {
-    await supabase.storage.from("vehicle-images").remove([path]);
+    await photoStorage.remove([path]);
     throw new Error(ins.error.message);
   }
   // Yard photos only appear in the car page gallery, never on cards.
-  if (t.folder !== "yard") await uploadThumb(supabase, path, body);
+  if (t.folder !== "yard") await uploadThumb(path, body);
   return path;
 }
 

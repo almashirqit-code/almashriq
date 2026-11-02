@@ -8,6 +8,7 @@ import { parseMachine, type MachineInput } from "@/lib/machinery";
 import type { Currency, VehicleStatus } from "@/lib/types";
 import { pingIndexNow } from "@/lib/indexnow";
 import { withThumbs } from "@/lib/format";
+import { deletePhotos } from "@/lib/photo-store";
 
 function refresh() {
   revalidatePath("/admin/machinery");
@@ -58,7 +59,7 @@ export async function deleteMachine(id: string) {
   const { error } = await supabase.from("machinery").delete().eq("id", id);
   if (error) throw new Error(error.message);
   const paths = (imgs ?? []).map((i) => i.path as string);
-  if (paths.length) await supabase.storage.from("vehicle-images").remove(withThumbs(paths));
+  if (paths.length) await deletePhotos(withThumbs(paths));
   refresh();
 }
 

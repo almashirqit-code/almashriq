@@ -5,7 +5,7 @@ import { checkDatabase, checkPage, timed, type Check } from "@/lib/health";
 import { SITE_URL } from "@/lib/public-site";
 import { PageHeader } from "@/components/ui";
 import { RefreshControls } from "./refresh";
-import { ThumbBackfill } from "./thumb-backfill";
+import { photoBucket } from "@/lib/photo-store";
 
 export const metadata = { title: "System monitor" };
 export const dynamic = "force-dynamic";
@@ -35,9 +35,8 @@ export default async function SystemPage() {
       return "Staff sign-in working";
     }),
     timed("Photo storage", async () => {
-      const { data, error } = await supabase.storage.from("vehicle-images").list("vehicles", { limit: 1 });
-      if (error) throw new Error(error.message);
-      return data ? "Photos bucket answering" : "No answer";
+      const { objects } = await (await photoBucket()).list({ prefix: "vehicles/", limit: 1 });
+      return objects.length ? "Photo store (R2) answering" : "Photo store is empty";
     }),
     checkPage("Home page", "/", /<h1/),
     checkPage("Car stock list", "/cars", /cars found/),
@@ -148,7 +147,6 @@ export default async function SystemPage() {
             are up and <b>503</b> when the database is down.
           </p>
         </section>
-        <ThumbBackfill />
       </div>
     </>
   );

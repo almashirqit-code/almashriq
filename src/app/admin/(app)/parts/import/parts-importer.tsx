@@ -12,6 +12,7 @@ import { normalizePartHeader, parsePart, PART_TEMPLATE_HEADERS, PART_TEMPLATE_SA
 import type { Currency } from "@/lib/types";
 import { partsImported } from "../actions";
 import { withThumbs } from "@/lib/format";
+import { photoStorage } from "@/lib/photo-upload";
 
 type Row = { line: number; data: PartInput; errors: string[] };
 type Result = { saved: number; skipped: number; photos: number; errors: string[] };
@@ -189,7 +190,7 @@ export function PartsImporter() {
         if (replace) {
           await supabase.from("part_images").delete().in("id", existing.map((e) => e.id));
           const paths = bucketPaths(existing.map((e) => e.path as string));
-          for (let j = 0; j < paths.length; j += 500) await supabase.storage.from("vehicle-images").remove(withThumbs(paths.slice(j, j + 500)));
+          for (let j = 0; j < paths.length; j += 500) await photoStorage.remove(withThumbs(paths.slice(j, j + 500)));
         } else for (const e of existing) startAt.set(e.part_id, Math.max(startAt.get(e.part_id) ?? 0, e.sort_order + 1));
       }
       const jobs = [...perPart].flatMap(([id, files]) => files.map((file, i) => ({ id, file, order: (startAt.get(id) ?? 0) + i })));
