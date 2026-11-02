@@ -148,7 +148,7 @@ export function PostEditor({ initial }: { initial?: PostInput }) {
             <div className="relative overflow-hidden rounded-xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={assetUrl(p.cover_path)} alt="" className="aspect-[16/9] w-full object-cover" />
-              <button type="button" onClick={() => set("cover_path", null)} className="absolute right-2 top-2 rounded-full bg-white/90 p-1 text-slate-700 shadow">
+              <button type="button" onClick={() => set("cover_path", null)} className="absolute right-2 top-2 rounded-full bg-white/90 p-1 text-slate-700 shadow" aria-label="Remove cover image" title="Remove cover image">
                 <X className="h-4 w-4" />
               </button>
             </div>

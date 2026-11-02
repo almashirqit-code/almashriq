@@ -170,7 +170,7 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
                           {d.file_name}
                         </div>
                       </a>
-                      <div className="absolute right-1.5 top-1.5 flex gap-1 opacity-0 transition group-hover:opacity-100">
+                      <div className="absolute right-1.5 top-1.5 flex gap-1 transition [@media(hover:hover)]:opacity-0 group-hover:opacity-100 focus-within:opacity-100">
                         <a
                           href={`/admin/remittances/docs/${d.id}?download=1`}
                           className="rounded bg-white/90 p-1 text-slate-700 shadow"

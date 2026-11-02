@@ -94,7 +94,7 @@ export function ImageManager({
                   </span>
                 )}
                 {canEdit && (
-                  <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition group-hover:opacity-100">
+                  <div className="absolute right-2 top-2 flex gap-1 transition [@media(hover:hover)]:opacity-0 group-hover:opacity-100 focus-within:opacity-100">
                     {i !== 0 && (
                       <button
                         title={t("stock_make_cover")}
