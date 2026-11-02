@@ -21,7 +21,7 @@ export function HeroSlider({ slides }: { slides: Slide[] }) {
 
   return (
     <div
-      className="glass-lite relative aspect-[4/3] w-full overflow-hidden rounded-3xl sm:aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[24rem]"
+      className="glass-lite relative aspect-[16/10] w-full overflow-hidden rounded-3xl sm:aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[24rem]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={(e) => {

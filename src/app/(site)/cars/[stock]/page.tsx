@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { MessageCircle, Mail, MapPin, Check, CalendarDays, Gauge, Cog, Fuel, Ship } from "lucide-react";
+import { MessageCircle, Mail, MapPin, Check, CalendarDays, Gauge, Cog, Fuel, Ship, Settings2, Navigation, ShieldCheck, Banknote, FileCheck2 } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
 import { carTitle, getCar, getCompany, getYardPhotos, listCars, makeSlug, priceLabel, whatsapp, SITE_URL } from "@/lib/public-site";
 import { Gallery } from "@/components/site/gallery";
@@ -82,6 +82,14 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
     ["Location", c.location],
     ["Ships from", branchName(c.branch ?? "JP")],
   ];
+  const facts = [
+    { icon: CalendarDays, label: "Year", value: c.year ? `${c.year}${c.month ? ` / ${c.month}` : ""}` : "—" },
+    { icon: Gauge, label: "Mileage", value: c.mileage != null ? `${c.mileage.toLocaleString()} km` : "—" },
+    { icon: Cog, label: "Engine", value: c.engine_cc ? `${c.engine_cc.toLocaleString()} cc` : "—" },
+    { icon: Settings2, label: "Gearbox", value: c.transmission ?? "—" },
+    { icon: Fuel, label: "Fuel", value: c.fuel ?? "—" },
+    { icon: Navigation, label: "Steering", value: c.steering ?? "—" },
+  ];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 lg:px-6">
@@ -132,26 +140,45 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
         <Link href="/" className="hover:text-brand-700">Home</Link> / <Link href={`/makes/${makeSlug(c.make)}`} className="hover:text-brand-700">{c.make}</Link> / {c.model} {c.stock_no}
       </nav>
 
+      {/*
+        Phones: gallery → summary → details → quote form (the sticky bar jumps to the form).
+        Desktop: gallery | summary, then details | quote form (sticky), so neither column leaves a gap.
+      */}
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Gallery images={images} alt={title} stockNo={c.stock_no} />
+        <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+          <Gallery images={images} alt={title} stockNo={c.stock_no} />
+        </div>
 
-        <div className="space-y-4">
+        <div className="lg:col-start-2 lg:row-start-1">
           <div className="glass-lite rounded-3xl p-5">
             <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex rounded-lg bg-white/10 px-2 py-0.5 text-xs font-bold text-white">Stock ID {c.stock_no}</span>
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-flex whitespace-nowrap rounded-lg bg-white/10 px-2 py-0.5 text-xs font-bold text-white">Stock ID {c.stock_no}</span>
+                <Status status={c.status} />
+              </span>
               <FavoriteButton variant="pill" item={{ kind: "vehicle", id: c.id, stock: c.stock_no, title, image: images[0] ?? null, price: price ?? null }} />
             </div>
             <h1 className="mt-2 text-2xl font-black tracking-tight text-navy-950 sm:text-3xl">{title}</h1>
             {c.grade && <p className="text-slate-500">{c.grade}</p>}
-            <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
-              {c.year && <Chip icon={CalendarDays}>{c.year}</Chip>}
-              {c.mileage != null && <Chip icon={Gauge}>{c.mileage.toLocaleString()} km</Chip>}
-              {(c.engine_cc || c.transmission) && <Chip icon={Cog}>{[c.engine_cc ? `${c.engine_cc}cc` : null, c.transmission].filter(Boolean).join(" · ")}</Chip>}
-              {c.fuel && <Chip icon={Fuel}>{c.fuel}</Chip>}
-              {c.location && <Chip icon={MapPin}>{c.location}</Chip>}
-              <span className="rounded-full bg-slate-100 px-2.5 py-1">
-                <ShipsFrom code={c.branch ?? "JP"} />
-              </span>
+            {/* Key facts buyers compare first, large enough to scan at a glance */}
+            <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {facts.map(({ icon: I, label, value }) => (
+                <div key={label} className="rounded-xl bg-white/5 px-2.5 py-2 ring-1 ring-white/10">
+                  <dt className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-white/55">
+                    <I aria-hidden className="h-3.5 w-3.5 text-brand-600" />
+                    {label}
+                  </dt>
+                  <dd className="mt-0.5 truncate text-sm font-extrabold text-white">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-white/70">
+              {c.location && (
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5 text-brand-600" /> {c.location}
+                </span>
+              )}
+              <ShipsFrom code={c.branch ?? "JP"} />
             </div>
             <div className="mt-4 flex items-end justify-between gap-3 rounded-lg bg-navy-50 p-4">
               <div>
@@ -177,9 +204,63 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
                 </a>
               )}
             </div>
+            <ul className="mt-4 grid gap-2 border-t border-white/10 pt-4 text-xs text-white/70 sm:grid-cols-3">
+              {[
+                { icon: ShieldCheck, t: "Real photos & honest specs" },
+                { icon: Banknote, t: "Secure bank transfer (TT)" },
+                { icon: FileCheck2, t: "Documents sent by DHL" },
+              ].map(({ icon: I, t }) => (
+                <li key={t} className="flex items-center gap-1.5">
+                  <I aria-hidden className="h-4 w-4 shrink-0 text-brand-600" /> {t}
+                </li>
+              ))}
+            </ul>
           </div>
+        </div>
 
-          <div id="quote" className="glass-lite scroll-mt-20 rounded-3xl p-5">
+        <div className="min-w-0 space-y-6 lg:col-start-1 lg:row-start-2">
+          {yard.length > 0 && (
+            <section aria-labelledby="yard-photos">
+              <h2 id="yard-photos" className="mb-1 flex items-center gap-2 text-lg font-extrabold">
+                <span className="h-5 w-1 rounded-full bg-[var(--accent)]" />
+                In-yard photos
+              </h2>
+              <p className="mb-3 text-sm text-white/65">Taken at our yard in Japan — the car as it is now, before shipping.</p>
+              <Gallery images={yard} alt={`${title} at our yard`} stockNo={`${c.stock_no}-yard`} />
+            </section>
+          )}
+
+          <section className="glass-lite overflow-hidden rounded-3xl">
+            <h2 className="border-b border-white/10 px-5 py-3.5 font-extrabold">Specifications</h2>
+            <dl className="grid sm:grid-cols-2">
+              {specs
+                .filter(([, v]) => v != null && v !== "")
+                .map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-4 border-b border-slate-100 px-5 py-2.5 text-sm sm:odd:border-r">
+                    <dt className="text-slate-500">{k}</dt>
+                    <dd className="text-right font-semibold text-slate-900">{v}</dd>
+                  </div>
+                ))}
+            </dl>
+          </section>
+
+          {c.features.length > 0 && (
+            <section className="glass-lite overflow-hidden rounded-3xl">
+              <h2 className="border-b border-white/10 px-5 py-3.5 font-extrabold">Features</h2>
+              <div className="flex flex-wrap gap-2 p-5">
+                {c.features.map((f) => (
+                  <span key={f} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200">
+                    <Check className="h-3.5 w-3.5" />
+                    {f}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+
+        <div className="lg:col-start-2 lg:row-start-2">
+          <div id="quote" className="glass-lite scroll-mt-20 rounded-3xl p-5 lg:sticky lg:top-24">
             <h2 className="mb-3 text-lg font-black text-navy-950">Get a quotation for this car</h2>
             <InquiryForm
               stockNo={c.stock_no}
@@ -195,46 +276,6 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
             </p>
           </div>
         </div>
-      </div>
-
-      {yard.length > 0 && (
-        <section className="mt-6 lg:w-[58%]" aria-labelledby="yard-photos">
-          <h2 id="yard-photos" className="mb-1 flex items-center gap-2 text-lg font-extrabold">
-            <span className="h-5 w-1 rounded-full bg-[var(--accent)]" />
-            In-yard photos
-          </h2>
-          <p className="mb-3 text-sm text-white/65">Taken at our yard in Japan — the car as it is now, before shipping.</p>
-          <Gallery images={yard} alt={`${title} at our yard`} stockNo={`${c.stock_no}-yard`} />
-        </section>
-      )}
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <section className="glass-lite overflow-hidden rounded-3xl">
-          <h2 className="border-b border-white/10 px-5 py-3.5 font-extrabold">Specifications</h2>
-          <dl className="grid sm:grid-cols-2">
-            {specs
-              .filter(([, v]) => v != null && v !== "")
-              .map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 border-b border-slate-100 px-5 py-2.5 text-sm sm:odd:border-r">
-                  <dt className="text-slate-500">{k}</dt>
-                  <dd className="text-right font-semibold text-slate-900">{v}</dd>
-                </div>
-              ))}
-          </dl>
-        </section>
-        {c.features.length > 0 && (
-          <section className="glass-lite overflow-hidden rounded-3xl">
-            <h2 className="border-b border-white/10 px-5 py-3.5 font-extrabold">Features</h2>
-            <div className="flex flex-wrap gap-2 p-5">
-              {c.features.map((f) => (
-                <span key={f} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200">
-                  <Check className="h-3.5 w-3.5" />
-                  {f}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
 
       <StickyContact price={price} wa={wa} />
@@ -261,11 +302,12 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
   );
 }
 
-function Chip({ icon: I, children }: { icon: React.ElementType; children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-lg bg-slate-50 px-2 py-1 ring-1 ring-slate-200">
-      <I className="h-3.5 w-3.5 text-brand-600" />
-      {children}
-    </span>
-  );
+function Status({ status }: { status: string }) {
+  const s =
+    status === "sold" || status === "shipped"
+      ? { t: "Sold", c: "bg-slate-200 text-slate-700" }
+      : status === "reserved"
+        ? { t: "Reserved", c: "bg-amber-100 text-amber-800" }
+        : { t: "Available", c: "bg-emerald-100 text-emerald-800" };
+  return <span className={`inline-flex rounded-lg px-2 py-0.5 text-xs font-bold ${s.c}`}>{s.t}</span>;
 }
