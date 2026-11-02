@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
-import { sendInquiry, type InquiryState } from "@/app/(site)/actions";
+import { sendInquiry, quotePrefill, type InquiryState, type QuotePrefill } from "@/app/(site)/actions";
+import { SignedInSend } from "./quote-form";
 import { Turnstile } from "@/components/turnstile";
 
 // Colours, 16px text on phones and focus ring come from the glass theme (site.css).
@@ -12,7 +13,11 @@ const F = "h-12 w-full rounded-xl px-3.5 text-sm";
 export function InquiryForm({ stockNo, defaultMessage = "", source = "website", compact = false }: { stockNo?: string; defaultMessage?: string; source?: string; compact?: boolean }) {
   const [state, action, pending] = useActionState<InquiryState, FormData>(sendInquiry, null);
   const [url, setUrl] = useState("");
-  useEffect(() => setUrl(window.location.href), []);
+  const [pre, setPre] = useState<QuotePrefill | null>(null);
+  useEffect(() => {
+    setUrl(window.location.href);
+    quotePrefill().then(setPre, () => {});
+  }, []);
 
   if (state?.ok)
     return (
@@ -21,6 +26,14 @@ export function InquiryForm({ stockNo, defaultMessage = "", source = "website", 
         <p className="font-bold">{state.message}</p>
         {state.no ? <p className="mt-1 text-sm">Your reference: <b>INQ-{state.no}</b></p> : null}
       </div>
+    );
+
+  if (pre?.signedIn)
+    return (
+      <SignedInSend action={action} pending={pending} state={state} pre={pre} label={stockNo ? "Get a C&F quotation" : "Send inquiry"} noteRequired={!stockNo}>
+        <input type="hidden" name="stock_no" value={stockNo ?? ""} />
+        <input type="hidden" name="message" value={defaultMessage} />
+      </SignedInSend>
     );
 
   return (
