@@ -61,7 +61,7 @@ export async function deletePart(id: string) {
   if (error) throw new Error(error.message);
   const photos = (imgs ?? []).map((i) => i.path as string).filter((p) => !p.startsWith("site-assets:"));
   if (photos.length) await deletePhotos(withThumbs(photos));
-  if (data?.photo_path) await supabase.storage.from("site-assets").remove([data.photo_path]);
+  if (data?.photo_path) await deletePhotos([`site-assets/${data.photo_path}`]);
   refresh();
 }
 

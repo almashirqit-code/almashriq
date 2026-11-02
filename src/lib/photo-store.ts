@@ -15,8 +15,16 @@ type R2Like = {
   list(opts?: { prefix?: string; limit?: number }): Promise<{ objects: { key: string }[] }>;
 };
 
-/** Top-level folders staff may write to; anything else is rejected. */
-const PHOTO_PATH = /^(?:thumbs\/)?(?:vehicles|yard|parts|machinery|company)\/[A-Za-z0-9._\-/]+$/;
+/** Top-level folders staff may write to; anything else is rejected. Site images (blog, reviews, make logos, avatars) live under site-assets/. */
+const PHOTO_PATH = /^(?:(?:thumbs\/)?(?:vehicles|yard|parts|machinery|company)|site-assets\/(?:blog|reviews|makes|avatars|portal-avatars))\/[A-Za-z0-9._\-/]+$/;
+
+/** A signed-in user's own avatar: site-assets/avatars/<user id>/… (staff) or site-assets/portal-avatars/<user id>/… (customers). */
+const AVATAR_PATH = /^site-assets\/(?:avatars|portal-avatars)\/([0-9a-f-]{36})\/[A-Za-z0-9._-]+$/;
+
+/** User id an avatar path belongs to, or null if it isn't an avatar path. */
+export function avatarOwner(path: string) {
+  return AVATAR_PATH.exec(path)?.[1] ?? null;
+}
 
 export function isPhotoPath(path: string) {
   return PHOTO_PATH.test(path) && !path.includes("..") && !path.includes("//");

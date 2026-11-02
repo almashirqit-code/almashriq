@@ -3,14 +3,15 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Star, Trash2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { photoStorage } from "@/lib/photo-upload";
+import { siteAssetUrl } from "@/lib/format";
 import { resizeImage } from "@/lib/images";
 import { saveMakeLogo, type MakeLogoInput } from "./make-actions";
 import { defaultMakeLogo } from "@/lib/brand-assets";
 
 export type MakeRow = { make: string; label: string; logo_path: string | null; n: number; featured: boolean; sort_order: number };
 
-const assetUrl = (p: string) => (p.startsWith("http") || p.startsWith("/") ? p : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`);
+const assetUrl = siteAssetUrl;
 
 /** Upload a logo per make (shown in "Shop by make" on the website). */
 export function MakeLogos({ makes, canEdit }: { makes: MakeRow[]; canEdit: boolean }) {
@@ -78,7 +79,7 @@ function MakeCard({ row, canEdit }: { row: MakeRow; canEdit: boolean }) {
               const body = file.type === "image/svg+xml" ? file : await resizeImage(file, 400, 0.9);
               const ext = file.type === "image/svg+xml" ? "svg" : body.type === "image/png" ? "png" : body.type === "image/webp" ? "webp" : "jpg";
               const path = `makes/${row.make.replace(/[^a-z0-9-]+/g, "-")}-${Date.now()}.${ext}`;
-              const up = await createClient().storage.from("site-assets").upload(path, body, { contentType: body.type || file.type, cacheControl: "31536000" });
+              const up = await photoStorage.upload(`site-assets/${path}`, body, { contentType: body.type || file.type, cacheControl: "31536000" });
               if (ref.current) ref.current.value = "";
               if (up.error) return alert(up.error.message);
               save({ ...v, logo_path: path });

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Upload, X, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { resizeImage } from "@/lib/images";
+import { photoStorage } from "@/lib/photo-upload";
 import { AVATAR_STYLES, avatarSrc, dicebear } from "@/lib/avatar";
 
 /**
@@ -49,7 +50,7 @@ export function AvatarPicker({
       try {
         const blob = await resizeImage(f, 256);
         const path = `${folder}/${userId}/${Date.now()}.jpg`;
-        const { error } = await createClient().storage.from("site-assets").upload(path, blob, { contentType: "image/jpeg", upsert: false });
+        const { error } = await photoStorage.upload(`site-assets/${path}`, blob, { contentType: "image/jpeg", upsert: false });
         if (error) throw error;
         const { error: e2 } = await createClient().rpc(rpc, { p_url: path });
         if (e2) throw e2;

@@ -6,7 +6,8 @@ import { dicebear } from "@/lib/avatar";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Plus, Pencil, Trash2, Eye, EyeOff, Download, Upload, Check } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { photoStorage } from "@/lib/photo-upload";
+import { siteAssetUrl } from "@/lib/format";
 import { resizeImage } from "@/lib/images";
 import { Badge, Empty, IconChip } from "@/components/ui";
 import { Modal } from "@/components/modal";
@@ -14,7 +15,7 @@ import { saveReview, setReviewStatus, deleteReview, importOldReviews, type Revie
 
 export type ReviewRow = ReviewInput & { id: string; source: string; created_at: string };
 
-const assetUrl = (p: string) => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`;
+const assetUrl = siteAssetUrl;
 const STATUS: Record<string, string> = {
   published: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
   pending: "bg-amber-50 text-amber-700 ring-amber-600/25",
@@ -214,7 +215,7 @@ export function ReviewsManager({ reviews }: { reviews: ReviewRow[] }) {
                   if (!f) return;
                   const body = await resizeImage(f, 600, 0.85);
                   const path = `reviews/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.jpg`;
-                  const up = await createClient().storage.from("site-assets").upload(path, body, { contentType: body.type || "image/jpeg" });
+                  const up = await photoStorage.upload(`site-assets/${path}`, body, { contentType: body.type || "image/jpeg" });
                   if (up.error) return alert(up.error.message);
                   setEdit({ ...edit, photo_path: path });
                 }}

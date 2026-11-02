@@ -1,3 +1,5 @@
+import { siteAssetUrl } from "./format";
+
 /**
  * Avatars from DiceBear (open-source avatar library, https://www.dicebear.com).
  * "initials" is CC0; the illustrated styles are free to use with attribution in the docs.
@@ -17,5 +19,5 @@ export function dicebear(seed: string, style: AvatarStyle = "initials") {
 export function avatarSrc(stored: string | null | undefined, name: string) {
   if (!stored) return dicebear(name);
   if (stored.startsWith("http")) return stored;
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${stored}`;
+  return siteAssetUrl(stored);
 }

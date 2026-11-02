@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import type { Currency, VehicleStatus } from "./types";
 import { defaultMakeLogo } from "./brand-assets";
+import { siteAssetUrl } from "./format";
 
 /** Public pages live at the site root (the ERP is under /admin). Kept as a helper so links stay in one place. */
 export async function siteBase() {
@@ -194,7 +195,7 @@ export const SUPPORT_EMAIL = "support@almashriqtrading.site";
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site").replace(/\/$/, "");
 
 export const assetUrl = (p: string | null | undefined) =>
-  p ? (p.startsWith("http") || p.startsWith("/") ? p : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`) : null;
+  p ? siteAssetUrl(p) : null;
 
 export type PublicMake = { make: string; label: string; logo_path: string | null; n: number; featured: boolean; sort_order: number };
 export const getMakes = unstable_cache(async (): Promise<PublicMake[]> => {

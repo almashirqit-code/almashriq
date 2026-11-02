@@ -49,10 +49,15 @@ export function convert(
 /** Public base URL of the photo store (Cloudflare R2, see src/lib/photo-store.ts). */
 const PHOTO_BASE = `${process.env.NEXT_PUBLIC_PHOTO_URL}/`;
 
-/** Public URL of a stock photo (photo store; legacy "site-assets:…" paths live in Supabase site-assets). */
+/** Public URL of a stock photo (photo store; legacy "site-assets:…" paths are site images). */
 export function publicImageUrl(path: string) {
-  if (path.startsWith("site-assets:")) return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${path.slice(12)}`;
+  if (path.startsWith("site-assets:")) return siteAssetUrl(path.slice(12));
   return PHOTO_BASE + path;
+}
+
+/** Public URL of a site image (blog, reviews, make logos, avatars), stored under site-assets/ in the photo store. Full URLs and site paths are returned unchanged. */
+export function siteAssetUrl(path: string) {
+  return path.startsWith("http") || path.startsWith("/") ? path : `${PHOTO_BASE}site-assets/${path}`;
 }
 
 /*

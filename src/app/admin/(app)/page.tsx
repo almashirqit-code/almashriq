@@ -26,15 +26,17 @@ export default async function DashboardPage() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
   const yearAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString().slice(0, 10);
 
-  const countStatus = (s: VehicleStatus) =>
-    supabase.from("vehicles").select("id", { count: "exact", head: true }).eq("status", s);
+  // Vehicle figures cover the company's own cars; third-party listings are only counted in a hint.
+  const countStatus = (s: VehicleStatus, ownership = "own") =>
+    supabase.from("vehicles").select("id", { count: "exact", head: true }).eq("status", s).eq("ownership", ownership);
 
-  const [inStock, reserved, stockRows, salesRows, openRows, soldItems, recentInv, recentVeh, custCount] =
+  const [inStock, reserved, thirdParty, stockRows, salesRows, openRows, soldItems, recentInv, recentVeh, custCount] =
     await Promise.all([
       countStatus("in_stock"),
       countStatus("reserved"),
-      fetchAll<{ make: string; purchase_price: number | null; purchase_tax: number | null; expenses: number | null; cost_fx_rate: number | null; ownership: string; status: string }>((from, to) =>
-        supabase.from("vehicles").select("make, purchase_price, purchase_tax, expenses, cost_fx_rate, ownership, status").in("status", ["in_stock", "reserved"]).order("id").range(from, to)
+      countStatus("in_stock", "third_party"),
+      fetchAll<{ make: string; purchase_price: number | null; purchase_tax: number | null; expenses: number | null; cost_fx_rate: number | null; status: string }>((from, to) =>
+        supabase.from("vehicles").select("make, purchase_price, purchase_tax, expenses, cost_fx_rate, status").in("status", ["in_stock", "reserved"]).eq("ownership", "own").order("id").range(from, to)
       ).then((data) => ({ data })),
       supabase
         .from("invoices")
@@ -46,8 +48,9 @@ export default async function DashboardPage() {
       supabase.from("invoices").select("total, amount_paid, currency").neq("doc_type", "quotation").in("status", ["issued", "partially_paid"]).limit(20000),
       supabase
         .from("invoice_items")
-        .select("vehicle_id, invoices!inner(issue_date, status)")
+        .select("vehicle_id, invoices!inner(issue_date, status), vehicles!inner(ownership)")
         .not("vehicle_id", "is", null)
+        .eq("vehicles.ownership", "own")
         .gte("invoices.issue_date", monthStart)
         .eq("invoices.doc_type", "invoice")
         .in("invoices.status", ACTIVE),
@@ -59,6 +62,7 @@ export default async function DashboardPage() {
       supabase
         .from("vehicles")
         .select("id, stock_no, make, model, grade, year, status, created_at")
+        .eq("ownership", "own")
         .order("created_at", { ascending: false })
         .limit(6),
       supabase.from("customers").select("id", { count: "exact", head: true }),
@@ -67,13 +71,9 @@ export default async function DashboardPage() {
   // Stock value + makes
   let stockValue = 0;
   const makes = new Map<string, number>();
-  let thirdPartyInStock = 0;
+  const thirdPartyInStock = thirdParty.count ?? 0;
   for (const v of stockRows.data ?? []) {
-    if (v.ownership === "third_party") {
-      if (v.status === "in_stock") thirdPartyInStock++;
-    } else {
-      stockValue += costJpy(v);
-    }
+    stockValue += costJpy(v);
     makes.set(v.make, (makes.get(v.make) ?? 0) + 1);
   }
   const topMakes = [...makes.entries()]

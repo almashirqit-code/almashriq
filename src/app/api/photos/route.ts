@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { assertRole } from "@/lib/auth";
-import { deletePhotos, isPhotoPath, putPhoto } from "@/lib/photo-store";
+import { createClient } from "@/lib/supabase/server";
+import { avatarOwner, deletePhotos, isPhotoPath, putPhoto } from "@/lib/photo-store";
 
 /** Largest listing photo we accept (browser-side resizing keeps them far smaller). */
 const MAX_BYTES = 15 * 1024 * 1024;
@@ -14,12 +15,25 @@ async function staffOnly() {
   }
 }
 
+/** Any signed-in user (staff or customer) may upload their own avatar. */
+async function ownAvatar(path: string) {
+  const owner = avatarOwner(path);
+  if (!owner) return false;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id === owner;
+}
+
 /** Upload one photo: PUT /api/photos?path=vehicles/<id>/<file>, body = the image bytes. */
 export async function PUT(req: NextRequest) {
-  const denied = await staffOnly();
-  if (denied) return denied;
   const path = req.nextUrl.searchParams.get("path") ?? "";
   if (!isPhotoPath(path)) return NextResponse.json({ error: "invalid photo path" }, { status: 400 });
+  if (!(await ownAvatar(path))) {
+    const denied = await staffOnly();
+    if (denied) return denied;
+  }
   const type = req.headers.get("content-type") ?? "";
   if (!type.startsWith("image/")) return NextResponse.json({ error: "not an image" }, { status: 400 });
   const body = await req.arrayBuffer();

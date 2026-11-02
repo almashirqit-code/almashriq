@@ -3,18 +3,19 @@
 import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Eye, PenLine, Check, Image as ImageIcon, X } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { photoStorage } from "@/lib/photo-upload";
+import { siteAssetUrl } from "@/lib/format";
 import { resizeImage } from "@/lib/images";
 import { plainText, renderMarkdown, slugify } from "@/lib/markdown";
 import { savePost, type PostInput } from "./actions";
 
-const assetUrl = (p: string) => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/site-assets/${p}`;
+const assetUrl = siteAssetUrl;
 
 async function uploadAsset(file: File, folder: string) {
   const body = await resizeImage(file, 1800, 0.85);
   const ext = body.type === "image/png" ? "png" : body.type === "image/webp" ? "webp" : "jpg";
   const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-  const up = await createClient().storage.from("site-assets").upload(path, body, { contentType: body.type || "image/jpeg", cacheControl: "31536000" });
+  const up = await photoStorage.upload(`site-assets/${path}`, body, { contentType: body.type || "image/jpeg", cacheControl: "31536000" });
   if (up.error) throw up.error;
   return path;
 }
