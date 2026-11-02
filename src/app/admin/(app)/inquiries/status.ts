@@ -1,3 +1,5 @@
+import type { DictKey } from "@/lib/i18n/dictionaries";
+
 export const INQUIRY_STATUSES = ["new", "contacted", "quoted", "won", "lost", "spam"] as const;
 export type InquiryStatus = (typeof INQUIRY_STATUSES)[number];
 
@@ -9,4 +11,5 @@ export const INQ_STYLE: Record<string, string> = {
   lost: "bg-slate-100 text-slate-500 ring-slate-400/20",
   spam: "bg-slate-100 text-slate-400 ring-slate-300/30",
 };
-export const INQ_LABEL: Record<string, string> = { new: "New", contacted: "Contacted", quoted: "Quoted", won: "Won", lost: "Lost", spam: "Spam" };
+/** Dictionary key for each status label (use with t()). */
+export const INQ_LABEL: Record<string, DictKey> = { new: "iq_st_new", contacted: "iq_st_contacted", quoted: "iq_st_quoted", won: "iq_st_won", lost: "iq_st_lost", spam: "iq_st_spam" };

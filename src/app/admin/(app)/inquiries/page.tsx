@@ -4,6 +4,7 @@ import { rowsParam } from "@/lib/rows";
 import { Inbox, Mail, Phone, Car } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
+import { getT } from "@/lib/i18n/server";
 import { num } from "@/lib/format";
 import { PageHeader, Badge, Empty, Stat, NumberedPagination } from "@/components/ui";
 import { loadStaff } from "../customers/staff";
@@ -34,6 +35,8 @@ type Row = {
 export default async function InquiriesPage({ searchParams }: { searchParams: Promise<{ status?: string; who?: string; q?: string; page?: string; rows?: string }> }) {
   const sp = await searchParams;
   const me = await getProfile();
+  const { t, locale } = await getT();
+  const dateLocale = locale === "ja" ? "ja-JP" : "en-GB";
   const supabase = await createClient();
   const page = Math.max(1, Number(sp.page) || 1);
   const status = sp.status ?? "open";
@@ -63,49 +66,49 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      <PageHeader icon={<Inbox />} tone="fuchsia" title="Inquiries" subtitle="Requests from the website — assign each one to a sales agent" />
+      <PageHeader icon={<Inbox />} tone="fuchsia" title={t("iq_title")} subtitle={t("iq_subtitle")} />
       <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-        <Stat tone="brand" label="New" value={num(newCount ?? 0)} />
-        {me.role !== "sales" && <Stat tone="amber" label="Open & unassigned" value={num(unassigned ?? 0)} />}
-        <Stat tone="violet" label="Showing" value={num(count ?? 0)} />
+        <Stat tone="brand" label={t("new")} value={num(newCount ?? 0, locale)} />
+        {me.role !== "sales" && <Stat tone="amber" label={t("iq_open_unassigned")} value={num(unassigned ?? 0, locale)} />}
+        <Stat tone="violet" label={t("iq_showing")} value={num(count ?? 0, locale)} />
       </div>
 
       <div className="card overflow-hidden">
         <form action="/admin/inquiries" className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-3">
           <RowsSelect value={SIZE} />
-          <input name="q" defaultValue={sp.q ?? ""} placeholder="Name, email, phone, country, stock no…" className="input w-64" />
+          <input name="q" defaultValue={sp.q ?? ""} placeholder={t("iq_search_ph")} className="input w-64" />
           <select name="status" defaultValue={status} className="input w-auto">
-            <option value="open">Open (new, contacted, quoted)</option>
-            <option value="all">All</option>
+            <option value="open">{t("iq_open")}</option>
+            <option value="all">{t("all")}</option>
             {INQUIRY_STATUSES.map((s) => (
               <option key={s} value={s}>
-                {INQ_LABEL[s]}
+                {t(INQ_LABEL[s])}
               </option>
             ))}
           </select>
           <select name="who" defaultValue={sp.who ?? ""} className="input w-auto">
-            <option value="">{me.role === "sales" ? "Mine" : "Everyone"}</option>
-            <option value="me">Assigned to me</option>
-            {me.role !== "sales" && <option value="none">Unassigned</option>}
+            <option value="">{me.role === "sales" ? t("iq_mine") : t("iq_everyone")}</option>
+            <option value="me">{t("iq_assigned_me")}</option>
+            {me.role !== "sales" && <option value="none">{t("iq_unassigned")}</option>}
           </select>
-          <button className="btn-secondary">Filter</button>
+          <button className="btn-secondary">{t("iq_filter")}</button>
           <div className="ml-auto">
             <NumberedPagination page={page} pages={pages} makeHref={(p) => href({ page: String(p) })} />
           </div>
         </form>
         {rows.length === 0 ? (
-          <Empty>No inquiries here.</Empty>
+          <Empty>{t("iq_none")}</Empty>
         ) : (
           <div className="overflow-x-auto">
             <table className="table">
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>From</th>
-                  <th>Car</th>
-                  <th>Message</th>
-                  <th>Assigned</th>
-                  <th>Status</th>
+                  <th>{t("iq_from")}</th>
+                  <th>{t("iq_car")}</th>
+                  <th>{t("iq_message")}</th>
+                  <th>{t("iq_assigned")}</th>
+                  <th>{t("status")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -115,15 +118,15 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
                       <Link href={`/admin/inquiries/${r.id}`} className="font-bold text-brand-700 hover:underline">
                         #{r.inquiry_no}
                       </Link>
-                      <div className="text-xs text-slate-500">{new Date(r.created_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</div>
+                      <div className="text-xs text-slate-500">{new Date(r.created_at).toLocaleString(dateLocale, { dateStyle: "medium", timeStyle: "short" })}</div>
                     </td>
                     <td className="max-w-[15rem]">
                       <Link href={`/admin/inquiries/${r.id}`} className="font-semibold text-slate-800 hover:text-brand-700">
                         {r.name}
                       </Link>
                       {r.source === "portal" && (
-                        <span className="ml-1.5 rounded-full bg-cerulean-50 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase text-cerulean-700 ring-1 ring-cerulean-200" title="Sent from the customer's account">
-                          Portal
+                        <span className="ml-1.5 rounded-full bg-cerulean-50 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase text-cerulean-700 ring-1 ring-cerulean-200" title={t("iq_portal_hint")}>
+                          {t("iq_portal")}
                         </span>
                       )}
                       <div className="truncate text-xs text-slate-500">{[r.country, r.port].filter(Boolean).join(" · ")}</div>
@@ -155,7 +158,7 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
                           )}
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-400">General</span>
+                        <span className="text-xs text-slate-400">{t("iq_general")}</span>
                       )}
                     </td>
                     <td className="max-w-[22rem]">
@@ -163,14 +166,14 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
                     </td>
                     <td>
                       {me.role === "sales" ? (
-                        <span className="text-xs text-slate-500">You</span>
+                        <span className="text-xs text-slate-500">{t("iq_you")}</span>
                       ) : (
                         <AssignSelect id={r.id} value={r.assigned_to} staff={staff} />
                       )}
-                      {r.assigned_to && !staffName.has(r.assigned_to) && me.role !== "sales" && <div className="text-[11px] text-slate-400">other office</div>}
+                      {r.assigned_to && !staffName.has(r.assigned_to) && me.role !== "sales" && <div className="text-[11px] text-slate-400">{t("iq_other_office")}</div>}
                     </td>
                     <td>
-                      <Badge className={INQ_STYLE[r.status]}>{INQ_LABEL[r.status]}</Badge>
+                      <Badge className={INQ_STYLE[r.status]}>{t(INQ_LABEL[r.status])}</Badge>
                     </td>
                   </tr>
                 ))}

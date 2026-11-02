@@ -2,12 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/client";
 import { updateInquiry } from "./actions";
 import { INQUIRY_STATUSES, type InquiryStatus } from "./status";
 import { INQ_LABEL, INQ_STYLE } from "./status";
 
 export function AssignSelect({ id, value, staff, disabled }: { id: string; value: string | null; staff: { id: string; name: string }[]; disabled?: boolean }) {
   const router = useRouter();
+  const { t } = useT();
   const [v, setV] = useState(value ?? "");
   const [pending, start] = useTransition();
   return (
@@ -25,7 +27,7 @@ export function AssignSelect({ id, value, staff, disabled }: { id: string; value
         });
       }}
     >
-      <option value="">— Unassigned —</option>
+      <option value="">{t("iq_unassigned_opt")}</option>
       {staff.map((s) => (
         <option key={s.id} value={s.id}>
           {s.name}
@@ -37,6 +39,7 @@ export function AssignSelect({ id, value, staff, disabled }: { id: string; value
 
 export function StatusButtons({ id, value }: { id: string; value: string }) {
   const router = useRouter();
+  const { t } = useT();
   const [pending, start] = useTransition();
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -56,7 +59,7 @@ export function StatusButtons({ id, value }: { id: string; value: string }) {
             value === s ? INQ_STYLE[s] + " shadow-sm" : "bg-white text-slate-500 ring-slate-200 hover:bg-slate-50"
           }`}
         >
-          {INQ_LABEL[s]}
+          {t(INQ_LABEL[s])}
         </button>
       ))}
     </div>
@@ -65,14 +68,15 @@ export function StatusButtons({ id, value }: { id: string; value: string }) {
 
 export function NotesBox({ id, value }: { id: string; value: string | null }) {
   const router = useRouter();
+  const { t } = useT();
   const [v, setV] = useState(value ?? "");
   const [saved, setSaved] = useState(false);
   const [pending, start] = useTransition();
   return (
     <div>
-      <textarea className="input" rows={4} value={v} onChange={(e) => (setV(e.target.value), setSaved(false))} placeholder="Follow-up notes, quoted price, next step…" />
+      <textarea className="input" rows={4} value={v} onChange={(e) => (setV(e.target.value), setSaved(false))} placeholder={t("iq_notes_ph")} />
       <div className="mt-2 flex items-center justify-end gap-2">
-        {saved && <span className="text-xs text-emerald-600">Saved</span>}
+        {saved && <span className="text-xs text-emerald-600">{t("saved")}</span>}
         <button
           type="button"
           className="btn-secondary py-1.5 text-xs"
@@ -86,7 +90,7 @@ export function NotesBox({ id, value }: { id: string; value: string | null }) {
             })
           }
         >
-          Save notes
+          {t("iq_save_notes")}
         </button>
       </div>
     </div>
