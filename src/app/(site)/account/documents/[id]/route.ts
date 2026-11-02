@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { signPrivateFile } from "@/lib/private-files";
 
 /**
  * Customer document download. Ownership is checked as the signed-in customer (portal_document_file only
@@ -16,7 +16,5 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const doc = ((data ?? []) as { path: string; file_name: string }[])[0];
   if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { data: signed, error } = await createAdminClient().storage.from("vehicle-docs").createSignedUrl(doc.path, 60, { download: doc.file_name });
-  if (error || !signed) return NextResponse.json({ error: "Unavailable" }, { status: 500 });
-  return NextResponse.redirect(signed.signedUrl);
+  return NextResponse.redirect(await signPrivateFile("vehicle-docs", doc.path, doc.file_name));
 }

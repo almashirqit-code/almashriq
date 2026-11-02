@@ -3,6 +3,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
+import { removePrivateFile } from "@/lib/private-files";
 import { CURRENCIES, SHIPMENT_TYPES, type Currency, type ShipmentType } from "@/lib/types";
 
 const TEXT = [
@@ -54,7 +55,7 @@ export async function deleteVehicleDoc(docId: string, vehicleId: string) {
   const { data: doc } = await supabase.from("vehicle_documents").select("path").eq("id", docId).single();
   const { error } = await supabase.from("vehicle_documents").delete().eq("id", docId);
   if (error) throw new Error(error.message);
-  if (doc) await supabase.storage.from("vehicle-docs").remove([doc.path]);
+  if (doc) await removePrivateFile("vehicle-docs", doc.path);
   refresh(vehicleId);
 }
 

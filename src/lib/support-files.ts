@@ -1,10 +1,10 @@
 import "server-only";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { removePrivateFile, signPrivateFile, storePrivateFile } from "@/lib/private-files";
 
 /**
- * Support chat attachments: private 'support-files' bucket, one folder per thread (migration 0030).
- * Only the server touches the bucket (service key); the send RPCs only accept paths in the
- * sender's own thread folder.
+ * Support chat attachments: private document store under 'support-files', one folder per thread
+ * (migration 0030). Only the server touches it; the send RPCs only accept paths in the sender's own
+ * thread folder.
  */
 const BUCKET = "support-files";
 const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "application/pdf": "pdf" };
@@ -19,22 +19,9 @@ export function readChatFile(formData: FormData): { file?: File; error?: string 
   return { file: f };
 }
 
-export async function storeChatFile(threadId: string, file: File): Promise<{ path?: string; error?: string }> {
-  const path = `${threadId}/${crypto.randomUUID()}.${EXT[file.type]}`;
-  const { error } = await createAdminClient().storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false });
-  return error ? { error: "The file couldn't be uploaded. Please try again." } : { path };
-}
-
-export async function removeChatFile(path: string) {
-  await createAdminClient().storage.from(BUCKET).remove([path]);
-}
-
-export async function signChatFile(path: string, downloadName?: string) {
-  const { data } = await createAdminClient()
-    .storage.from(BUCKET)
-    .createSignedUrl(path, 60, downloadName ? { download: downloadName } : undefined);
-  return data?.signedUrl ?? null;
-}
+export const storeChatFile = (threadId: string, file: File) => storePrivateFile(BUCKET, threadId, file);
+export const removeChatFile = (path: string) => removePrivateFile(BUCKET, path);
+export const signChatFile = (path: string, downloadName?: string) => signPrivateFile(BUCKET, path, downloadName);
 
 export const fileMeta = (file: File) => ({
   p_file_name: (file.name || "file").slice(0, 200),

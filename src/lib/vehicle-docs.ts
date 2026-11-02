@@ -2,6 +2,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { resizeImage } from "./images";
+import { docStorage } from "./photo-upload";
 import { DOC_MAX_BYTES, isAllowedDoc } from "./remittance-docs";
 import type { VehicleDocKind } from "./types";
 
@@ -24,7 +25,7 @@ export async function uploadVehicleDocs(supabase: SupabaseClient, vehicleId: str
       const safe = name.replace(/[^\w.\-]+/g, "_").slice(-80);
       const path = `vehicles/${vehicleId}/${kind}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${safe}`;
       const contentType = body.type || file.type || (/\.pdf$/i.test(name) ? "application/pdf" : "application/octet-stream");
-      const up = await supabase.storage.from("vehicle-docs").upload(path, body, { contentType });
+      const up = await docStorage.upload("vehicle-docs", path, body, contentType);
       if (up.error) throw up.error;
       const ins = await supabase.from("vehicle_documents").insert({
         vehicle_id: vehicleId,
@@ -35,7 +36,7 @@ export async function uploadVehicleDocs(supabase: SupabaseClient, vehicleId: str
         size_bytes: body.size,
       });
       if (ins.error) {
-        await supabase.storage.from("vehicle-docs").remove([path]);
+        await docStorage.remove("vehicle-docs", [path]);
         throw ins.error;
       }
     } catch {

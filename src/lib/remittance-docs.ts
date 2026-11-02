@@ -2,6 +2,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { resizeImage } from "./images";
+import { docStorage } from "./photo-upload";
 
 export const DOC_ACCEPT = "application/pdf,image/*,.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif";
 export const DOC_MAX_BYTES = 15 * 1024 * 1024;
@@ -33,7 +34,7 @@ export async function uploadRemittanceDocs(supabase: SupabaseClient, remittanceI
       const safe = name.replace(/[^\w.\-]+/g, "_").slice(-80);
       const path = `remittances/${remittanceId}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${safe}`;
       const contentType = body.type || file.type || (/\.pdf$/i.test(name) ? "application/pdf" : "application/octet-stream");
-      const up = await supabase.storage.from("remittance-docs").upload(path, body, { contentType });
+      const up = await docStorage.upload("remittance-docs", path, body, contentType);
       if (up.error) throw up.error;
       const ins = await supabase.from("remittance_documents").insert({
         remittance_id: remittanceId,
@@ -43,7 +44,7 @@ export async function uploadRemittanceDocs(supabase: SupabaseClient, remittanceI
         size_bytes: body.size,
       });
       if (ins.error) {
-        await supabase.storage.from("remittance-docs").remove([path]);
+        await docStorage.remove("remittance-docs", [path]);
         throw ins.error;
       }
     } catch {

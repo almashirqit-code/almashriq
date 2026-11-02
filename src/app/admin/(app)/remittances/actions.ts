@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
+import { removePrivateFile } from "@/lib/private-files";
 import { round } from "@/lib/format";
 import { CURRENCIES, type Currency } from "@/lib/types";
 
@@ -92,7 +93,7 @@ export async function deleteRemittance(id: number) {
   // Allocations cascade, which also removes the invoice payments they created.
   const { error } = await supabase.from("remittances").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  if (docs?.length) await supabase.storage.from("remittance-docs").remove(docs.map((d) => d.path));
+  if (docs?.length) await removePrivateFile("remittance-docs", docs.map((d) => d.path));
   refresh();
   revalidatePath("/admin/invoices");
   redirect("/admin/remittances");
@@ -104,7 +105,7 @@ export async function deleteDocument(docId: string, remittanceId: number) {
   const { data: doc } = await supabase.from("remittance_documents").select("path").eq("id", docId).single();
   const { error } = await supabase.from("remittance_documents").delete().eq("id", docId);
   if (error) throw new Error(error.message);
-  if (doc) await supabase.storage.from("remittance-docs").remove([doc.path]);
+  if (doc) await removePrivateFile("remittance-docs", doc.path);
   refresh(remittanceId);
 }
 

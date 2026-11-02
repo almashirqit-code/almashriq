@@ -30,3 +30,13 @@ export const photoStorage = {
     return call("/api/photos", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ paths }) });
   },
 };
+
+/** Staff documents in the private document store (remittance and vehicle documents, see src/app/api/docs). */
+export const docStorage = {
+  upload(bucket: "remittance-docs" | "vehicle-docs", path: string, body: Blob, contentType: string) {
+    return call(`/api/docs?bucket=${bucket}&path=${encodeURIComponent(path)}`, { method: "PUT", headers: { "content-type": contentType }, body });
+  },
+  remove(bucket: "remittance-docs" | "vehicle-docs", paths: string[]) {
+    return call("/api/docs", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ bucket, paths }) });
+  },
+};

@@ -4,6 +4,7 @@ import { Pencil, Split, Trash2, FileText, X, Download, Banknote } from "lucide-r
 import { AllocationRowControls, UnallocateAllButton } from "./allocation-controls";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
+import { signPrivateFile } from "@/lib/private-files";
 import { getT } from "@/lib/i18n/server";
 import { date, money, vehicleTitle } from "@/lib/format";
 import type { Remittance, RemittanceDocument } from "@/lib/types";
@@ -48,10 +49,7 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
   const documents = (docs ?? []) as RemittanceDocument[];
   const imagePaths = documents.filter((d) => d.mime_type?.startsWith("image/")).map((d) => d.path);
   const signed = new Map<string, string>();
-  if (imagePaths.length) {
-    const { data: urls } = await supabase.storage.from("remittance-docs").createSignedUrls(imagePaths, 300);
-    for (const u of urls ?? []) if (u.path && u.signedUrl) signed.set(u.path, u.signedUrl);
-  }
+  for (const p of imagePaths) signed.set(p, await signPrivateFile("remittance-docs", p, undefined, 300));
 
   const canEdit = can.editStock(profile.role);
   const cur = rem.currency;
