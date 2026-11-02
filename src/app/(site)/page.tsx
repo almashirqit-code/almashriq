@@ -7,7 +7,7 @@ import { dicebear } from "@/lib/avatar";
 import Link from "next/link";
 import { Search, ShieldCheck, Ship, Banknote, ArrowRight, Send, Quote, FileCheck2, Globe, ChevronDown } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
-import { getCompany, getFacets, getBodyPhotos, listCars, whatsapp, carTitle, priceLabel, getMakeTiles, getReviews, getPosts, assetUrl } from "@/lib/public-site";
+import { getCompany, getFacets, getBodyPhotos, listCars, whatsapp, carTitle, priceLabel, getMakeTiles, getReviews, getPosts, getOffers, assetUrl } from "@/lib/public-site";
 import { CarCard } from "./car-card";
 import { HeroSlider } from "@/components/site/hero-slider";
 import { BodyIcon } from "@/components/site/body-icon";
@@ -16,6 +16,7 @@ import { BUY_STEPS } from "@/components/site/buy-steps";
 import { HScrollRow } from "@/components/site/hscroll-row";
 import { HomeMoreStock } from "@/components/site/home-more-stock";
 import { TrustpilotWidget } from "@/components/site/trustpilot";
+import { OfferCard } from "@/components/site/offer-card";
 
 export const revalidate = 3600;
 
@@ -36,13 +37,14 @@ const PRICE_BANDS: { label: string; min?: number; max?: number }[] = [
 const SELECT = "h-12 w-full rounded-xl px-3 text-sm font-semibold";
 
 export default async function PublicHome() {
-  const [company, facets, latest, makes, reviews, posts] = await Promise.all([
+  const [company, facets, latest, makes, reviews, posts, offers] = await Promise.all([
     getCompany(),
     getFacets(),
     listCars({ sort: "new" }, 24),
     getMakeTiles(),
     getReviews(12),
     getPosts(3),
+    getOffers(6),
   ]);
 
   // A real photo for each body type (newest car of that type in stock; cached for 10 minutes).
@@ -168,6 +170,20 @@ export default async function PublicHome() {
           </div>
         </div>
       </section>
+
+      {/* Offers */}
+      {offers.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">
+          <SectionHead title="Current offers" href="/offers" link="All offers" />
+          <div className="hscroll md:grid md:grid-cols-3 md:overflow-visible">
+            {offers.slice(0, 3).map((o) => (
+              <Link key={o.id} href="/offers" className="glass-hover block w-72 rounded-2xl md:w-auto">
+                <OfferCard offer={o} compact />
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Shop by make */}
       {makes.length > 0 && (
