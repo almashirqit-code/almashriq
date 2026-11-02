@@ -34,8 +34,9 @@
   // ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET — are set in the Cloudflare dashboard, never in this file.
   "vars": {
     "NEXT_PUBLIC_SUPABASE_URL": "https://rhttfwrzhuaglcjpxuja.supabase.co",
-    // The anon key is public by design (it is in every browser); RLS protects the data.
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodHRmd3J6aHVhZ2xjanB4dWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MDM2ODksImV4cCI6MjEwODA3OTY4OX0.3jn_Txjc2L-XLwiMN9oyVfZl-qwkDiVB9ev1SLvI2bE",
+    // Supabase publishable key (replaces the legacy anon JWT): public by design, it is in every
+    // browser; RLS protects the data. The variable keeps its old name so no code had to change.
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_4ROQ6iHvu7iDYEPp5SPh7Q_MfTf6Yoh",
     "NEXT_PUBLIC_SITE_URL": "https://www.almashriqtrading.site",
     "NEXT_PUBLIC_PHOTO_URL": "https://photos.almashriqtrading.site",
     "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAFwNaxY7pBdG5KC3"
