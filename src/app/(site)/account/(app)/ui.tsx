@@ -32,7 +32,7 @@ export function Field({ label, children }: { label: string; children: React.Reac
   return (
     <div className="min-w-0">
       <dt className="text-[11px] font-semibold uppercase tracking-wide text-white/60">{label}</dt>
-      <dd className="truncate text-sm font-semibold">{children || "—"}</dd>
+      <dd className="break-words text-sm font-semibold">{children || "—"}</dd>
     </div>
   );
 }
