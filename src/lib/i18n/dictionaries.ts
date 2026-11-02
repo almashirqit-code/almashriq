@@ -47,6 +47,7 @@ export const en = {
   // common
   save: "Save",
   saving: "Saving…",
+  loading: "Loading…",
   cancel: "Cancel",
   delete: "Delete",
   edit: "Edit",
@@ -773,6 +774,7 @@ export const ja: Record<DictKey, string> = {
 
   save: "保存",
   saving: "保存中…",
+  loading: "読み込み中…",
   cancel: "キャンセル",
   delete: "削除",
   edit: "編集",
