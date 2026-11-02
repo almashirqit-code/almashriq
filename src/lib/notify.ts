@@ -4,10 +4,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE_URL, SUPPORT_EMAIL } from "@/lib/public-site";
 import { money } from "@/lib/format";
 import type { Currency } from "@/lib/types";
+import { sendPush, pushConfigured, type PushMessage } from "@/lib/web-push";
 
 /**
- * Notifications: an email through Resend (REST API, no SDK) and a row in `notifications` for the bell
- * (migration 0034). Both run after the response with after(), so a slow or failing delivery never blocks
+ * Notifications: an email through Resend (REST API, no SDK), a row in `notifications` for the bell
+ * (migration 0034) and a push to the person's subscribed phones (migration 0042). All run after the response with after(), so a slow or failing delivery never blocks
  * or breaks the action that triggered it. Without RESEND_API_KEY only the bell rows are written.
  *
  * Recipients are looked up with the service key (server only): customer-triggered events need staff
@@ -60,10 +61,42 @@ async function bell(ids: string[], n: Note) {
   else await db.rpc("prune_notifications");
 }
 
+type PushRow = { id: number; endpoint: string; p256dh: string; auth: string };
+
+/** Sends to each phone in small batches and removes subscriptions the push service says are gone. */
+async function pushTo(rows: PushRow[], msg: PushMessage) {
+  const gone: number[] = [];
+  for (let i = 0; i < rows.length; i += 50) {
+    const batch = rows.slice(i, i + 50);
+    const res = await Promise.all(batch.map((r) => sendPush(r, msg)));
+    res.forEach((r, j) => r === "gone" && gone.push(batch[j].id));
+  }
+  if (gone.length) await createAdminClient().from("push_subscriptions").delete().in("id", gone);
+}
+
+/** Account alerts: phones where one of these logins is signed in and wants account alerts. */
+async function push(ids: string[], n: Note) {
+  if (!ids.length || !pushConfigured()) return;
+  const { data } = await createAdminClient().from("push_subscriptions").select("id, endpoint, p256dh, auth").in("user_id", ids).contains("topics", ["account"]);
+  await pushTo((data ?? []) as PushRow[], { title: n.title.slice(0, 120), body: (n.lines[0] ?? "").slice(0, 240), url: n.path, tag: n.kind });
+}
+
+/** Every phone subscribed to a topic (newest 900, so one event stays within Workers' request limits). */
+async function broadcast(topic: "stock" | "offers", msg: PushMessage) {
+  if (!pushConfigured()) return;
+  const { data } = await createAdminClient()
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth")
+    .contains("topics", [topic])
+    .order("updated_at", { ascending: false })
+    .limit(900);
+  await pushTo((data ?? []) as PushRow[], msg);
+}
+
 async function deliver(people: Recipient[], n: Note) {
   const emails = [...new Set(people.map((p) => (p.email ?? "").trim().toLowerCase()).filter((e) => EMAIL.test(e)))];
   const ids = [...new Set(people.map((p) => p.id).filter(Boolean) as string[])];
-  const results = await Promise.allSettled([email(emails, n), bell(ids, n)]);
+  const results = await Promise.allSettled([email(emails, n), bell(ids, n), push(ids, n)]);
   for (const r of results) if (r.status === "rejected") console.error("[notify]", r.reason);
 }
 
@@ -253,4 +286,100 @@ export function notifyInvoiceIssued(invoiceId: string) {
       cta: `View ${label.toLowerCase()}`,
     });
   });
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Shipment updates (customer)
+// ---------------------------------------------------------------------------------------------------
+
+/**
+ * Tells the car's customer when its shipment moves on: booked on a vessel, shipped (B/L issued),
+ * released (waybill / surrender B/L), or original documents sent by courier. The step last told is
+ * kept on the car ("status|courier tracking"), so saving the shipping page again repeats nothing.
+ */
+const STEPS = ["not_booked", "booked", "shipped", "delivered"];
+
+export function notifyShipping(vehicleId: string) {
+  later(async () => {
+    const db = createAdminClient();
+    const [{ data: v }, { data: s }, { data: docs }] = await Promise.all([
+      db.from("vehicles").select("stock_no, make, model, year, shipping_status, notified_shipping").eq("id", vehicleId).maybeSingle(),
+      db.from("vehicle_shipments").select("vessel_name, voyage_no, etd, eta, port_of_loading, place_of_delivery, courier_service, courier_tracking").eq("vehicle_id", vehicleId).maybeSingle(),
+      db.from("vehicle_documents").select("kind").eq("vehicle_id", vehicleId).eq("kind", "surrender").limit(1),
+    ]);
+    if (!v) return;
+    const courier = String(s?.courier_tracking ?? "").trim();
+    const prev = (v.notified_shipping as string | null) ?? "not_booked|";
+    const state = `${v.shipping_status}|${courier}`;
+    if (state === prev) return;
+    // Claim the change first, so two quick saves can't both send it.
+    const claim = db.from("vehicles").update({ notified_shipping: state }).eq("id", vehicleId);
+    const { data: claimed } = await (v.notified_shipping == null ? claim.is("notified_shipping", null) : claim.eq("notified_shipping", prev)).select("id");
+    if (!claimed?.length) return;
+
+    const [prevStatus, prevCourier] = prev.split("|");
+    const status = v.shipping_status as string;
+    const car = `${v.stock_no} ${[v.year, v.make, v.model].filter(Boolean).join(" ")}`.trim();
+    const vessel = [s?.vessel_name, s?.voyage_no].filter(Boolean).join(" / ");
+    const released = docs?.length ? "Surrender B/L" : "Waybill";
+    let note: Omit<Note, "path" | "cta"> | null = null;
+    const forward = STEPS.indexOf(status) > STEPS.indexOf(prevStatus); // a removed document never re-sends an older step
+    if (forward && status === "booked")
+      note = {
+        kind: "ship_booked",
+        subject: `Shipment booked: ${car}`,
+        title: `${car} is booked for shipping`,
+        lines: [
+          `Your car is booked${vessel ? ` on ${vessel}` : ""}${s?.etd ? `, departing ${s.etd}` : ""}${s?.eta ? `, arriving ${s.eta}` : ""}.`,
+          ...(s?.port_of_loading || s?.place_of_delivery ? [`Route: ${s?.port_of_loading || "Japan"} → ${s?.place_of_delivery || "your port"}`] : []),
+        ],
+      };
+    else if (forward && status === "shipped")
+      note = {
+        kind: "ship_shipped",
+        subject: `Shipped: ${car}`,
+        title: `${car} has been shipped`,
+        lines: [`Your car is on its way${vessel ? ` on ${vessel}` : ""}${s?.eta ? `, arriving ${s.eta}` : ""}. The Bill of Lading is in your account.`],
+      };
+    else if (forward && status === "delivered")
+      note = {
+        kind: "ship_released",
+        subject: `${released} released: ${car}`,
+        title: `${released} released for ${car}`,
+        lines: [`The ${released.toLowerCase()} for your car is released, so it can be collected at the port. Download it from your account.`],
+      };
+    else if (courier && courier !== prevCourier)
+      note = {
+        kind: "ship_courier",
+        subject: `Documents sent: ${car}`,
+        title: `Original documents sent for ${car}`,
+        lines: [`We sent the original documents${s?.courier_service ? ` by ${s.courier_service}` : ""}. Tracking no.: ${courier}`],
+      };
+    if (!note) return;
+
+    const { data: owners } = await db.rpc("vehicle_customer_ids", { p_vehicle_id: vehicleId });
+    const people = (await Promise.all(((owners ?? []) as string[]).map((id) => customerPeople(id)))).flat();
+    if (people.length) await deliver(people, { ...note, path: "/account/cars", cta: "Track my car" });
+  });
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Broadcasts to subscribed phones (push only, no email)
+// ---------------------------------------------------------------------------------------------------
+
+export function notifyNewStock(v: { stock_no: string; make?: string | null; model?: string | null; year?: number | string | null }) {
+  later(() =>
+    broadcast("stock", {
+      title: "New in stock",
+      body: `${[v.year, v.make, v.model].filter(Boolean).join(" ") || "A new car"} (${v.stock_no}) just arrived. See photos and price.`,
+      url: `/cars/${encodeURIComponent(v.stock_no)}`,
+      tag: `stock-${v.stock_no}`,
+    })
+  );
+}
+
+export function notifyNewOffer(o: { title: string; summary?: string | null }) {
+  later(() =>
+    broadcast("offers", { title: `New offer: ${o.title}`.slice(0, 120), body: (o.summary || "See the deal before it ends.").slice(0, 240), url: "/offers", tag: "offers" })
+  );
 }

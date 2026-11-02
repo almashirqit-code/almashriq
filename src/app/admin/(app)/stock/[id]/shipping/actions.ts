@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { removePrivateFile } from "@/lib/private-files";
+import { notifyShipping } from "@/lib/notify";
 import { CURRENCIES, SHIPMENT_TYPES, type Currency, type ShipmentType } from "@/lib/types";
 
 const TEXT = [
@@ -46,6 +47,7 @@ export async function saveShipment(vehicleId: string, v: ShipmentInput): Promise
   const { error } = await supabase.from("vehicle_shipments").upsert(row, { onConflict: "vehicle_id" });
   if (error) return { error: error.message };
   refresh(vehicleId);
+  notifyShipping(vehicleId);
   return { ok: true };
 }
 
@@ -59,6 +61,9 @@ export async function deleteVehicleDoc(docId: string, vehicleId: string) {
   refresh(vehicleId);
 }
 
+/** Called after documents are uploaded from the browser (B/L, waybill, surrender change the status). */
 export async function refreshShipping(vehicleId: string) {
+  await assertRole(["admin", "manager"]);
   refresh(vehicleId);
+  notifyShipping(vehicleId);
 }

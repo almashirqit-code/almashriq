@@ -9,6 +9,7 @@ import { VEHICLE_FIELDS, VEHICLE_STATUSES, type VehicleStatus } from "@/lib/type
 import { pingIndexNow } from "@/lib/indexnow";
 import { withThumbs } from "@/lib/format";
 import { deletePhotos } from "@/lib/photo-store";
+import { notifyNewStock } from "@/lib/notify";
 
 export type FormState = { error?: string; ok?: boolean };
 
@@ -36,7 +37,10 @@ export async function createVehicle(_prev: FormState, formData: FormData): Promi
   const { data: row, error } = await supabase.from("vehicles").insert(data).select("id").single();
   if (error) return { error: error.code === "23505" ? "Stock no. or chassis no. already exists" : error.message };
 
-  if (data.show_on_website !== false) pingIndexNow([`/cars/${encodeURIComponent(String(data.stock_no))}`]);
+  if (data.show_on_website !== false) {
+    pingIndexNow([`/cars/${encodeURIComponent(String(data.stock_no))}`]);
+    if ((data.status ?? "in_stock") === "in_stock") notifyNewStock({ stock_no: String(data.stock_no), make: String(data.make ?? ""), model: String(data.model ?? ""), year: String(data.year ?? "") });
+  }
   revalidatePath("/admin/stock");
   revalidateTag("public-site"); // flush the public car/home data cache
   redirect(`/admin/stock/${row.id}`);

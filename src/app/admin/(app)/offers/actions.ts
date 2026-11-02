@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { assertRole } from "@/lib/auth";
 import { CURRENCIES, type Currency } from "@/lib/types";
+import { notifyNewOffer } from "@/lib/notify";
 
 export type OfferInput = {
   id?: string;
@@ -52,6 +53,9 @@ export async function saveOffer(o: OfferInput): Promise<{ error?: string; ok?: b
   const supabase = await createClient();
   const { error } = o.id ? await supabase.from("offers").update(row).eq("id", o.id) : await supabase.from("offers").insert(row);
   if (error) return { error: error.message };
+  // New live offer → tell subscribed phones (edits don't repeat it). Dates are Japan dates.
+  const today = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
+  if (!o.id && row.active && row.starts_on <= today) notifyNewOffer(row);
   refresh();
   return { ok: true };
 }

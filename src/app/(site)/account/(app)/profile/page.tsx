@@ -5,6 +5,7 @@ import { getPortalMe } from "@/lib/portal";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { ProfileForm, ChangePasswordForm } from "../../forms";
 import { Card, SectionTitle } from "../ui";
+import { PushSettings } from "@/components/site/push-settings";
 
 export const metadata: Metadata = { title: "My profile", robots: { index: false, follow: false } };
 
@@ -40,6 +41,11 @@ export default async function AccountProfile() {
       <Card>
         <p className="mb-3 text-sm text-white/70">Your sign-in email is {me.email}. To change the email, ask your agent in Support chat.</p>
         <ChangePasswordForm />
+      </Card>
+
+      <SectionTitle title="Notifications" />
+      <Card>
+        <PushSettings />
       </Card>
     </div>
   );
