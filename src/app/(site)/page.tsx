@@ -67,36 +67,31 @@ export default async function PublicHome() {
 
   return (
     <>
-      {/* Hero: slider + quick search */}
-      <section>
-        <div className="mx-auto grid max-w-7xl gap-3 px-4 pb-2 pt-4 lg:grid-cols-[1fr_22rem] lg:gap-4 lg:px-6 lg:pt-6">
-          {slides.length ? (
-            <HeroSlider slides={slides} />
-          ) : (
-            <div className="glass flex min-h-[14rem] flex-col justify-end rounded-3xl p-6 text-white lg:min-h-[18rem]">
-              <p className="text-3xl font-black">New stock arriving daily from Japanese auctions.</p>
-            </div>
-          )}
-          <SearchForm action="/cars" className="glass rounded-3xl p-4 sm:p-5" role="search">
-            <h1 className="text-2xl font-black leading-tight tracking-tight lg:text-[1.65rem]">
-              Japanese used cars <span className="text-gradient">shipped to your port</span>
+      {/* Hero: navy band. Promise + live counts + full search on the left, real stock photos on the right */}
+      <section className="on-dark home-hero">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 pb-6 pt-6 lg:grid-cols-[minmax(0,26rem)_1fr] lg:gap-10 lg:px-6 lg:pb-8 lg:pt-10">
+          <SearchForm action="/cars" className="flex flex-col" role="search">
+            <h1 className="text-[1.9rem] font-extrabold leading-[1.08] sm:text-[2.6rem]">
+              Japanese vehicles, exported <span className="text-[var(--gold)]">to your port</span>
             </h1>
-            <p className="mt-1.5 text-sm text-white/70">Direct from Japan with real photos, FOB prices and RoRo or container shipping worldwide.</p>
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/70">
+            <p className="mt-3 max-w-[34ch] text-[15px] leading-6 text-white/75">
+              Our own stock in Japan with real photos and FOB prices, shipped by RoRo or container with the export papers done for you.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-white/75">
               <span>
-                <b className="text-sm font-black text-white">{facets.available.toLocaleString()}</b> cars in stock
+                <b className="text-lg font-extrabold tabular-nums text-white">{facets.available.toLocaleString()}</b> cars available now
               </span>
               {reviews.count > 0 && (
-                <Link href="/reviews" className="inline-flex items-center gap-1.5 hover:underline">
+                <Link href="/reviews" className="inline-flex min-h-11 items-center gap-1.5 hover:underline">
                   <Stars value={reviews.avg} size="h-3.5 w-3.5" />
-                  <b className="text-sm font-black text-white">{reviews.avg.toFixed(1)}</b> ({reviews.count} reviews)
+                  <b className="font-extrabold text-white">{reviews.avg.toFixed(1)}</b> from {reviews.count} reviews
                 </Link>
               )}
             </div>
-            <div className="mt-3.5 space-y-2.5">
+            <div className="mt-4 space-y-2.5 rounded-2xl border border-white/15 bg-white/[0.06] p-3 sm:p-4">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-                <input name="q" placeholder="Model, stock ID or chassis" className={`${SELECT} pl-10`} aria-label="Keyword" enterKeyHint="search" />
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
+                <input name="q" placeholder="Make, model or stock ID" className={`${SELECT} pl-10`} aria-label="Keyword" enterKeyHint="search" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <select name="make" defaultValue="" className={SELECT} aria-label="Make">
@@ -140,37 +135,38 @@ export default async function PublicHome() {
                   </select>
                 </div>
               </details>
-              <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-sm font-bold text-white shadow-lg shadow-brand-900/40 hover:bg-brand-700">
+              <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--gold)] text-sm font-extrabold text-[#10243a] hover:bg-[#d4b273]">
                 <Search className="h-4 w-4" /> Search {facets.available.toLocaleString()} cars
               </button>
             </div>
           </SearchForm>
+          {slides.length ? (
+            <HeroSlider slides={slides} />
+          ) : (
+            <div className="flex min-h-[14rem] flex-col justify-end rounded-3xl border border-white/15 p-6 lg:min-h-[24rem]">
+              <p className="text-2xl font-extrabold">New stock is being added from Japanese auctions.</p>
+            </div>
+          )}
         </div>
 
-        {/* Trust badges: swipe row on phones */}
-        <div className="mx-auto max-w-7xl px-4 py-3 lg:px-6">
-          {/* 2×2 on phones so all four are visible without sideways scrolling */}
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
-            {[
-              { icon: ShieldCheck, t: "Inspected stock", d: "Real photos & honest specs" },
-              { icon: Ship, t: "RoRo & container", d: "To ports worldwide" },
-              { icon: Banknote, t: "Secure TT payment", d: "Invoice in your name" },
-              { icon: FileCheck2, t: "Export documents", d: "Sent by DHL / FedEx" },
-            ].map(({ icon: I, t, d }) => (
-              <div key={t} className="glass-lite flex items-center gap-2.5 rounded-2xl px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] shadow-lg shadow-brand-900/40 sm:h-10 sm:w-10">
-                  <I className="h-4 w-4 text-white sm:h-5 sm:w-5" />
-                </span>
-                <div className="min-w-0">
-                  <div className="text-[13px] font-bold leading-tight sm:text-sm">{t}</div>
-                  <div className="text-xs text-white/60">{d}</div>
-                </div>
+        {/* What we handle: one ruled strip, not four cards */}
+        <ul className="mx-auto grid max-w-7xl grid-cols-2 border-t border-white/15 px-4 lg:grid-cols-4 lg:px-6">
+          {[
+            { icon: ShieldCheck, t: "Real photos, honest specs", d: "Every car is our own stock" },
+            { icon: Ship, t: "RoRo & container", d: "To ports worldwide" },
+            { icon: Banknote, t: "Bank transfer (TT)", d: "Invoice in your name" },
+            { icon: FileCheck2, t: "Export documents", d: "Sent by DHL / FedEx" },
+          ].map(({ icon: I, t, d }) => (
+            <li key={t} className="flex items-center gap-3 py-3.5 pr-3 sm:py-4">
+              <I className="h-5 w-5 shrink-0 text-[var(--gold)]" />
+              <div className="min-w-0">
+                <div className="text-[13px] font-bold leading-tight sm:text-sm">{t}</div>
+                <div className="text-xs text-white/65">{d}</div>
               </div>
-            ))}
-          </div>
-        </div>
+            </li>
+          ))}
+        </ul>
       </section>
-
       {/* Offers */}
       {offers.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 pt-8 lg:px-6">

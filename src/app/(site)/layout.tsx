@@ -18,7 +18,11 @@ import { Logo, LOGO_SRC } from "@/components/brand/logo";
 import { SocialLinks } from "@/components/site/social-links";
 import { SAME_AS, SOCIAL } from "@/lib/social";
 import { MARKETS } from "@/lib/markets";
+import { Manrope } from "next/font/google";
 import "./site.css";
+
+// Public site face (the ERP keeps Plus Jakarta Sans); falls back to it and Noto Sans JP via site.css
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-site", display: "swap" });
 
 const OG_IMAGE = { url: "/brand/og.jpg?v=1", width: 1200, height: 630, alt: "Al Mashriq Trading — Japanese used cars, parts & machinery exported worldwide" };
 
@@ -32,7 +36,7 @@ export const metadata: Metadata = {
   // No site-wide canonical here: a page that forgot its own would point Google at the home page.
 };
 
-export const viewport: Viewport = { themeColor: "#2a3f58", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#10243a", width: "device-width", initialScale: 1 };
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [company, facets, makes, fx] = await Promise.all([getCompany(), getFacets(), getMakeTiles(), getUsdJpy()]);
@@ -67,7 +71,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <ConsentProvider>
-    <div className="site-glass pb-nav">
+    <div className={`site-glass pb-nav ${manrope.variable}`}>
       <JsonLd
         data={{
           "@context": "https://schema.org",

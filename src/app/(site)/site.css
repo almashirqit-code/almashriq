@@ -31,12 +31,15 @@ body:has(.site-glass) {
   --surface-hi: #fbfbfc;
   --line: rgb(10 10 12 / 0.1);
   --line-hi: rgb(10 10 12 / 0.2);
-  --accent: #d71920;
-  --accent-hi: #b5141a;
-  --accent-text: #b5141a;
-  --cerulean: #007ba7;
-  --cerulean-text: #00658a;
-  --focus: #007ba7;
+  /* Navy (primary actions, dark bars) · steel blue (links) · muted gold (rules, highlights; never text on white) */
+  --accent: #10243a;
+  --accent-hi: #1c3a5a;
+  --accent-text: #315a78;
+  --gold: #c5a15a;
+  --gold-text: #8a6a2c;
+  --cerulean: #315a78;
+  --cerulean-text: #315a78;
+  --focus: #315a78;
   color-scheme: light;
   color: var(--ink);
   background: #f5f6f8;
@@ -53,12 +56,48 @@ body:has(.site-glass) {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(40rem 28rem at 105% -5%, rgb(215 25 32 / 0.06), transparent 60%),
-    radial-gradient(38rem 30rem at -10% 28%, rgb(0 123 167 / 0.06), transparent 60%);
+    radial-gradient(40rem 28rem at 105% -5%, rgb(197 161 90 / 0.07), transparent 60%),
+    radial-gradient(38rem 30rem at -10% 28%, rgb(49 90 120 / 0.07), transparent 60%);
 }
 .site-glass ::selection {
-  background: rgb(215 25 32 / 0.2);
+  background: rgb(197 161 90 / 0.35);
   color: var(--ink);
+}
+.site-glass {
+  caret-color: var(--accent-text);
+  scrollbar-color: rgb(49 90 120 / 0.45) transparent;
+  font-family: var(--font-site), var(--font-sans), "Noto Sans JP", system-ui, sans-serif;
+}
+.site-glass :is(h1, h2, h3) {
+  letter-spacing: -0.02em;
+}
+.site-glass .tabular-nums,
+.site-glass [class*="price"] {
+  font-variant-numeric: tabular-nums;
+}
+/*
+ * The shared Tailwind "brand" scale is logo red (the ERP and invoices keep it). On the public site
+ * it maps to the navy / steel / gold palette, so existing markup follows the new identity.
+ */
+.site-glass .hover\:bg-brand-700:hover {
+  background-color: var(--accent-hi);
+}
+.site-glass .text-brand-700,
+.site-glass .text-brand-600 {
+  color: var(--accent-text);
+}
+.site-glass .bg-brand-50 {
+  background-color: #eef2f6;
+}
+.site-glass .shadow-brand-900\/40 {
+  --tw-shadow-color: rgb(16 36 58 / 0.3);
+}
+.site-glass .to-rose-300 {
+  --tw-gradient-from: var(--gold) !important;
+  --tw-gradient-to: var(--gold) !important;
+}
+.site-glass .text-rose-300 {
+  color: var(--gold);
 }
 .site-glass :focus-visible {
   outline: 2px solid var(--focus);
@@ -142,22 +181,30 @@ body:has(.site-glass) {
   --surface-hi: rgb(255 255 255 / 0.12);
   --line: rgb(255 255 255 / 0.14);
   --line-hi: rgb(255 255 255 / 0.28);
-  --accent-text: #ff6b70;
-  --cerulean-text: #5cc3ee;
-  --focus: #5cc3ee;
+  --accent-text: #dcc28e;
+  --cerulean-text: #a9c4da;
+  --focus: #dcc28e;
   color-scheme: dark;
   color: var(--ink);
 }
 /* The dark bars themselves: deep navy-slate (tinted toward the cerulean accent), not flat black */
 .site-glass .on-dark-bar {
-  background: #2a3f58;
+  background: #10243a;
 }
 /* The thin utility strip above the header sits a step deeper so the two rows read apart */
 .site-glass div.on-dark-bar {
-  background: #22354b;
+  background: #0b1a2b;
 }
 .site-glass footer.on-dark-bar {
-  background: linear-gradient(180deg, #2a3f58, #22354b);
+  background: linear-gradient(180deg, #10243a, #0b1a2b);
+}
+
+/* Home hero band: deep navy, a faint steel lift top-right, a gold hairline where it meets the page */
+.site-glass .home-hero {
+  background:
+    radial-gradient(48rem 26rem at 85% 0%, rgb(49 90 120 / 0.45), transparent 70%),
+    #10243a;
+  border-bottom: 1px solid rgb(197 161 90 / 0.55);
 }
 
 /* ---------- 3. surfaces ---------- */
@@ -197,7 +244,7 @@ body:has(.site-glass) {
 }
 .site-glass .on-dark.glass-strong,
 .site-glass .on-dark .glass-strong {
-  background: rgb(42 63 88 / 0.92);
+  background: rgb(16 36 58 / 0.92);
   border-color: var(--line);
   box-shadow: 0 10px 40px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
@@ -217,7 +264,7 @@ body:has(.site-glass) {
     --fg: 10 10 12;
     --ink: #0a0a0c;
     --line: rgb(10 10 12 / 0.1);
-    --focus: #007ba7;
+    --focus: #315a78;
     color-scheme: light;
     color: var(--ink);
     background: rgb(255 255 255 / 0.94);
@@ -253,7 +300,7 @@ body:has(.site-glass) {
 .site-glass select:focus,
 .site-glass textarea:focus {
   border-color: var(--focus);
-  box-shadow: 0 0 0 3px rgb(0 123 167 / 0.2);
+  box-shadow: 0 0 0 3px rgb(49 90 120 / 0.22);
   outline: none;
 }
 .site-glass select option,
@@ -262,7 +309,7 @@ body:has(.site-glass) {
   color: #0a0a0c;
 }
 .site-glass .on-dark select option {
-  background: #2a3f58;
+  background: #10243a;
   color: #f4f6f8;
 }
 .site-glass input:-webkit-autofill {
@@ -378,7 +425,7 @@ body:has(.site-glass) {
   }
   .site-glass .on-dark .glass-strong,
   .site-glass .on-dark.glass-strong {
-    background: rgb(42 63 88 / 0.98);
+    background: rgb(16 36 58 / 0.98);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
@@ -389,7 +436,7 @@ body:has(.site-glass) {
   }
   .site-glass .on-dark .glass-strong,
   .site-glass .on-dark.glass-strong {
-    background: #2a3f58;
+    background: #10243a;
   }
 }
 @media (prefers-reduced-motion: reduce) {
