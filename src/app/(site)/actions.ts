@@ -24,6 +24,7 @@ export async function sendInquiry(_prev: InquiryState, fd: FormData): Promise<In
     stock_no: s(fd, "stock_no", 60),
     page_url: s(fd, "page_url", 500),
     source: s(fd, "source", 30) || "website",
+    marketing: fd.get("marketing") === "on",
   };
   if (!v.name) return { ok: false, message: "Please enter your name." };
   // The car-page quote sheet asks only for name, WhatsApp/phone and destination (email optional).

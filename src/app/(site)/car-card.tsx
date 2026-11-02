@@ -72,7 +72,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
           <div className="flex shrink-0 gap-1.5 sm:gap-2">
             <FavoriteButton item={{ kind: "vehicle", id: c.id, stock: c.stock_no, title: carTitle(c), image: imgs[0] ?? null, price }} />
             {wa && (
-              <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${c.stock_no}`}>
+              <a href={wa} target="_blank" rel="noopener" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${c.stock_no}`}>
                 <MessageCircle className="h-5 w-5" />
               </a>
             )}

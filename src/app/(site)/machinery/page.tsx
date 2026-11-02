@@ -156,7 +156,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                 const price = priceLabel(m);
                 const detail = `/machinery/${encodeURIComponent(m.stock_no)}`;
                 const imgs = (m.images?.length ? m.images : m.cover ? [m.cover] : []).map(publicImageUrl);
-                const wa = whatsapp(company, `Hello Al Mashriq, please send me a C&F quotation for ${m.stock_no} ${machineTitle(m)}. My destination port is: `);
+                const wa = whatsapp(company, `Hello Al Mashriq, please send me a C&F quotation for ${m.stock_no} ${machineTitle(m)}. My destination port is: `, m.stock_no);
                 return (
                   <article key={m.id} className="glass-lite glass-hover group flex flex-col overflow-hidden rounded-2xl">
                     <Link href={detail} className="relative block aspect-[4/3] overflow-hidden bg-black/20" aria-label={`${machineTitle(m)} — ${m.stock_no}`}>
@@ -220,7 +220,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                         <div className="flex gap-2">
                           <FavoriteButton item={{ kind: "machine", id: m.id, stock: m.stock_no, title: machineTitle(m), image: imgs[0] ?? null, price: price ?? null }} />
                           {wa && (
-                            <a href={wa} target="_blank" rel="noreferrer" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${m.stock_no}`}>
+                            <a href={wa} target="_blank" rel="noopener" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${m.stock_no}`}>
                               <MessageCircle className="h-5 w-5" />
                             </a>
                           )}

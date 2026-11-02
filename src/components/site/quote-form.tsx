@@ -34,7 +34,7 @@ export function QuoteForm({ stockNo, title, wa, source = "car_page" }: { stockNo
         </p>
         {state.no ? <p className="mt-2 text-sm">Your reference: <b>INQ-{state.no}</b></p> : null}
         {wa && (
-          <a href={wa} target="_blank" rel="noreferrer" className="mt-4 inline-flex h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 hover:brightness-110">
+          <a href={wa} target="_blank" rel="noopener" className="mt-4 inline-flex h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 hover:brightness-110">
             <MessageCircle className="h-4 w-4" /> Can&apos;t wait? Chat now
           </a>
         )}
@@ -83,7 +83,7 @@ export function QuoteForm({ stockNo, title, wa, source = "car_page" }: { stockNo
         <Send className="h-4 w-4" /> {pending ? "Sending…" : "Get my C&F quote"}
       </button>
       {wa && (
-        <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] text-sm font-bold text-jet-950 hover:brightness-110">
+        <a href={wa} target="_blank" rel="noopener" className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] text-sm font-bold text-jet-950 hover:brightness-110">
           <MessageCircle className="h-4 w-4" /> Or ask on WhatsApp
         </a>
       )}
