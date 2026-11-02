@@ -36,7 +36,28 @@ export type MailSummary = {
 };
 export type Folder = { folderId: string; folderName: string; folderType: string };
 
-const ZOHO_HOST = /^https:\/\/accounts\.zoho\.(com|eu|in|com\.au|jp|com\.cn|sa|ca|uk)$/;
+const ZOHO_HOST = /^https:\/\/accounts\.zoho\.(com|eu|in|com\.au|jp|com\.cn|sa|ca|uk|ae)$/;
+
+/**
+ * Cloudflare Workers can't reach accounts.zoho.com / mail.zoho.com (Cloudflare error 1016), so every
+ * Zoho request goes through the Supabase Edge Function "zoho-relay", which only accepts the service key
+ * and only forwards to Zoho hosts. Returns Zoho's own response (status and body).
+ */
+async function zohoFetch(url: string, init: { method?: string; headers?: Record<string, string>; body?: string | URLSearchParams; cache?: RequestCache } = {}) {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const form = init.body instanceof URLSearchParams;
+  return fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/zoho-relay`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, apikey: key, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      url,
+      method: init.method ?? "GET",
+      headers: { ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}), ...init.headers },
+      body: init.body?.toString(),
+    }),
+    cache: "no-store",
+  });
+}
 
 /** JSON with 15+ digit numbers kept as strings (message, folder and account ids). */
 const parse = (text: string) => JSON.parse(text.replace(/([:,[]\s*)(-?\d{15,})(?=\s*[,}\]])/g, '$1"$2"'));
@@ -75,7 +96,7 @@ export function authorizeUrl(state: string) {
 /** Exchanges the callback code, finds the mailbox address and stores (or refreshes) the connection. */
 export async function connectMailbox(code: string, accountsServer: string, adminId: string): Promise<{ email?: string; error?: string }> {
   const server = ZOHO_HOST.test(accountsServer) ? accountsServer : "https://accounts.zoho.com";
-  const tokenRes = await fetch(`${server}/oauth/v2/token`, {
+  const tokenRes = await zohoFetch(`${server}/oauth/v2/token`, {
     method: "POST",
     body: new URLSearchParams({
       code,
@@ -89,7 +110,7 @@ export async function connectMailbox(code: string, accountsServer: string, admin
   if (!tok.access_token || !tok.refresh_token) return { error: `Zoho didn't return a token (${tok.error ?? tokenRes.status}).` };
 
   const mailDomain = server.replace("://accounts.", "://mail.");
-  const accRes = await fetch(`${mailDomain}/api/accounts`, { headers: { Authorization: `Zoho-oauthtoken ${tok.access_token}` } });
+  const accRes = await zohoFetch(`${mailDomain}/api/accounts`, { headers: { Authorization: `Zoho-oauthtoken ${tok.access_token}` } });
   const acc = parse(await accRes.text()) as { data?: { accountId: string; primaryEmailAddress?: string; mailboxAddress?: string; displayName?: string }[] };
   const a = acc.data?.[0];
   const email = (a?.primaryEmailAddress ?? a?.mailboxAddress ?? "").toLowerCase();
@@ -133,7 +154,7 @@ const tokens = new Map<string, { token: string; until: number }>();
 async function accessToken(a: Account) {
   const hit = tokens.get(a.id);
   if (hit && hit.until > Date.now()) return hit.token;
-  const res = await fetch(`${a.accounts_server}/oauth/v2/token`, {
+  const res = await zohoFetch(`${a.accounts_server}/oauth/v2/token`, {
     method: "POST",
     body: new URLSearchParams({ refresh_token: a.refresh_token, grant_type: "refresh_token", client_id: process.env.ZOHO_CLIENT_ID!, client_secret: process.env.ZOHO_CLIENT_SECRET! }),
   });
@@ -144,7 +165,7 @@ async function accessToken(a: Account) {
 }
 
 async function zoho<T>(a: Account, path: string, init?: { method?: string; body?: unknown }): Promise<T> {
-  const res = await fetch(`${a.mail_domain}/api/accounts/${a.zoho_account_id}${path}`, {
+  const res = await zohoFetch(`${a.mail_domain}/api/accounts/${a.zoho_account_id}${path}`, {
     method: init?.method ?? "GET",
     headers: { Authorization: `Zoho-oauthtoken ${await accessToken(a)}`, ...(init?.body ? { "Content-Type": "application/json" } : {}) },
     body: init?.body ? JSON.stringify(init.body) : undefined,
@@ -217,7 +238,7 @@ export async function getMessage(mailboxId: string, folderId: string, messageId:
 export async function markRead(mailboxId: string, messageIds: string[]) {
   const a = await account(mailboxId);
   // Ids go as raw 64-bit numbers: build that part of the JSON by hand.
-  const res = await fetch(`${a.mail_domain}/api/accounts/${a.zoho_account_id}/updatemessage`, {
+  const res = await zohoFetch(`${a.mail_domain}/api/accounts/${a.zoho_account_id}/updatemessage`, {
     method: "PUT",
     headers: { Authorization: `Zoho-oauthtoken ${await accessToken(a)}`, "Content-Type": "application/json" },
     body: `{"mode":"markAsRead","messageId":[${messageIds.filter((x) => /^\d+$/.test(x)).join(",")}]}`,
