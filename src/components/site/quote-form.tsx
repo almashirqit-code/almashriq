@@ -43,6 +43,13 @@ export function QuoteForm({ stockNo, title, wa, source = "car_page" }: { stockNo
 
   // Wait for the prefill so the inputs mount with their defaults (they are uncontrolled).
   if (!pre) return <div className="h-64 animate-pulse rounded-2xl bg-white/5" aria-busy="true" aria-label="Loading form" />;
+  if (pre.signedIn)
+    return (
+      <SignedInSend action={action} pending={pending} state={state} pre={pre} label="Get my C&F quote">
+        <input type="hidden" name="stock_no" value={stockNo} />
+        <input type="hidden" name="message" value={`Please send me a C&F quotation for ${stockNo} ${title}.`} />
+      </SignedInSend>
+    );
 
   return (
     <form action={action} onSubmit={(e) => setTyped(Object.fromEntries(new FormData(e.currentTarget)) as Partial<QuotePrefill>)} className="space-y-2.5">
@@ -91,6 +98,58 @@ export function QuoteForm({ stockNo, title, wa, source = "car_page" }: { stockNo
         Free, no obligation. Reply within 24 hours.{" "}
         <Link href="/privacy" className="underline">
           Privacy
+        </Link>
+      </p>
+    </form>
+  );
+}
+
+/**
+ * Inquiry form for a signed-in customer: no contact fields — the account's saved details are used
+ * and the inquiry goes to their agent (sendInquiry → portal_create_inquiry). Only an optional note.
+ */
+export function SignedInSend({
+  action,
+  pending,
+  state,
+  pre,
+  label,
+  noteRequired = false,
+  children,
+}: {
+  action: (fd: FormData) => void;
+  pending: boolean;
+  state: InquiryState;
+  pre: QuotePrefill;
+  label: string;
+  noteRequired?: boolean;
+  children?: React.ReactNode;
+}) {
+  return (
+    <form action={action} className="space-y-2.5">
+      {children}
+      <div className="rounded-xl bg-white/5 px-3.5 py-3 text-sm ring-1 ring-white/10">
+        <p>
+          Sending as <b>{pre.name || pre.email}</b>
+        </p>
+        <p className="text-white/70">{pre.agent ? `Goes straight to your agent, ${pre.agent}.` : "Goes to our sales team with your account details."}</p>
+      </div>
+      <label className="block text-sm font-semibold">
+        {noteRequired ? "Your message" : <>Note <span className="font-normal opacity-70">(optional)</span></>}
+        <textarea name="note" rows={3} maxLength={4000} required={noteRequired} placeholder="e.g. destination port, budget, questions" className="mt-1 w-full rounded-xl px-3.5 py-3 text-sm leading-relaxed" />
+      </label>
+      {state && !state.ok && (
+        <p role="alert" className="flex items-center gap-1.5 text-sm font-semibold text-brand-700">
+          <AlertCircle className="h-4 w-4 shrink-0" /> {state.message}
+        </p>
+      )}
+      <button disabled={pending} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-sm font-bold text-white shadow-lg shadow-brand-900/40 hover:bg-brand-700 disabled:opacity-60">
+        <Send className="h-4 w-4" /> {pending ? "Sending…" : label}
+      </button>
+      <p className="text-center text-xs opacity-70">
+        Not you?{" "}
+        <Link href="/account/profile" className="underline">
+          Update your details
         </Link>
       </p>
     </form>

@@ -6,6 +6,7 @@ import { passedTurnstile, TURNSTILE_FAILED } from "@/lib/turnstile";
 import { notifyInquiry } from "@/lib/notify";
 import { headers } from "next/headers";
 import { getPortalMe } from "@/lib/portal";
+import { sendPortalInquiry } from "./account/(app)/inquiries/actions";
 
 export type InquiryState = { ok: boolean; message: string; no?: number | null } | null;
 
@@ -14,6 +15,19 @@ const s = (fd: FormData, k: string, max = 200) => String(fd.get(k) ?? "").trim()
 export async function sendInquiry(_prev: InquiryState, fd: FormData): Promise<InquiryState> {
   // Honeypot: real visitors never fill this hidden field.
   if (s(fd, "website")) return { ok: true, message: "Thank you — we'll be in touch shortly." };
+  // Signed-in customers: their saved details are used and the inquiry goes to their agent.
+  const me = await getPortalMe().catch(() => null);
+  if (me && me.status !== "rejected") {
+    const stock = s(fd, "stock_no", 40);
+    const note = s(fd, "note", 4000);
+    const base = s(fd, "message", 4000) || (stock ? `Inquiry about ${stock}.` : "");
+    const p = new FormData();
+    p.set("message", [base, note].filter(Boolean).join("\n\n"));
+    p.set("stock_no", stock);
+    const r = await sendPortalInquiry({}, p);
+    if (!r.ok) return { ok: false, message: r.error ?? "We couldn't send your inquiry. Please try again." };
+    return { ok: true, no: r.no, message: me.agent ? `Sent to your agent, ${me.agent.name}. They'll reply within 24 hours.` : "Thank you! Your inquiry has been received. Our sales team will reply within 24 hours." };
+  }
   const v = {
     name: s(fd, "name", 120),
     email: s(fd, "email", 160),
@@ -47,7 +61,8 @@ export async function sendInquiry(_prev: InquiryState, fd: FormData): Promise<In
   return { ok: true, no: res.no, message: "Thank you! Your inquiry has been received. Our sales team will reply within 24 hours." };
 }
 
-export type QuotePrefill = { name: string; email: string; phone: string; port: string; country: string };
+/** signedIn: a customer account that sends through its account (no contact fields needed). */
+export type QuotePrefill = { name: string; email: string; phone: string; port: string; country: string; signedIn?: boolean; agent?: string | null };
 
 /**
  * Prefill for the quote sheet. Car pages are cached for everyone, so this runs per visitor on open:
@@ -68,5 +83,7 @@ export async function quotePrefill(): Promise<QuotePrefill> {
     phone: me?.whatsapp ?? me?.phone ?? "",
     port: me?.port ?? me?.customer?.port ?? "",
     country: me?.country ?? me?.customer?.country ?? country,
+    signedIn: !!me && me.status !== "rejected",
+    agent: me?.agent?.name ?? null,
   };
 }
