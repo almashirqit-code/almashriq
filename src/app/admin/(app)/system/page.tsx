@@ -121,7 +121,7 @@ export default async function SystemPage() {
               </a>
             </dd>
             <dt className="text-slate-500">Environment</dt>
-            <dd className="font-semibold">{process.env.VERCEL_ENV ?? "local"}</dd>
+            <dd className="font-semibold">{process.env.NODE_ENV === "production" ? "Production (Cloudflare Workers)" : "local"}</dd>
             {commit && (
               <>
                 <dt className="text-slate-500">Version</dt>

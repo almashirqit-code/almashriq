@@ -12,6 +12,8 @@
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   // Logs keep the path but not the ?query (it can carry tokens, emails or search terms).
   "observability": { "enabled": true, "redact_query_string": true },
+  // Run the Worker near the database (Supabase, Mumbai) when that is faster: most pages make several queries.
+  "placement": { "mode": "smart" },
   // The live site. Cloudflare creates the DNS records and certificates for these.
   "routes": [
     { "pattern": "www.almashriqtrading.site", "custom_domain": true },

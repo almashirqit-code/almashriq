@@ -12,7 +12,7 @@ const INDEXNOW_KEY = "3f051c154d86840f175fbf20a8966e19";
 
 /** Queues an IndexNow ping for these site paths after the response is sent (production only). */
 export function pingIndexNow(paths: string[]) {
-  if (process.env.VERCEL_ENV !== "production" || !paths.length) return;
+  if (process.env.NODE_ENV !== "production" || !paths.length) return;
   const host = new URL(SITE_URL).host;
   after(async () => {
     try {
