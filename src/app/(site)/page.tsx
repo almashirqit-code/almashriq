@@ -71,23 +71,29 @@ export default async function PublicHome() {
             <HeroSlider slides={slides} />
           ) : (
             <div className="glass flex min-h-[14rem] flex-col justify-end rounded-3xl p-6 text-white lg:min-h-[18rem]">
-              <h1 className="text-3xl font-black">Japanese used cars, shipped to your port.</h1>
+              <p className="text-3xl font-black">New stock arriving daily from Japanese auctions.</p>
             </div>
           )}
           <form action="/cars" className="glass rounded-3xl p-4 sm:p-5" role="search">
-            <h1 className="text-lg font-black leading-tight">
-              Japanese used cars <span className="text-gradient">exported worldwide</span>
+            <h1 className="text-2xl font-black leading-tight tracking-tight lg:text-[1.65rem]">
+              Japanese used cars <span className="text-gradient">shipped to your port</span>
             </h1>
-            <p className="mt-1 text-xs text-white/60">{facets.available.toLocaleString()} cars ready to ship — search our stock</p>
+            <p className="mt-1.5 text-sm text-white/70">Direct from Japan with real photos, FOB prices and RoRo or container shipping worldwide.</p>
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/70">
+              <span>
+                <b className="text-sm font-black text-white">{facets.available.toLocaleString()}</b> cars in stock
+              </span>
+              {reviews.count > 0 && (
+                <Link href="/reviews" className="inline-flex items-center gap-1.5 hover:underline">
+                  <Stars value={reviews.avg} size="h-3.5 w-3.5" />
+                  <b className="text-sm font-black text-white">{reviews.avg.toFixed(1)}</b> ({reviews.count} reviews)
+                </Link>
+              )}
+            </div>
             <div className="mt-3.5 space-y-2.5">
-              <div className="flex gap-2">
-                <div className="relative min-w-0 flex-1">
-                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-                  <input name="q" placeholder="Model, stock ID or chassis" className={`${SELECT} pl-10`} aria-label="Keyword" enterKeyHint="search" />
-                </div>
-                <button className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-white shadow-lg shadow-brand-900/40 hover:bg-brand-700" aria-label="Search cars">
-                  <Search className="h-5 w-5" />
-                </button>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+                <input name="q" placeholder="Model, stock ID or chassis" className={`${SELECT} pl-10`} aria-label="Keyword" enterKeyHint="search" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <select name="make" defaultValue="" className={SELECT} aria-label="Make">
@@ -140,19 +146,20 @@ export default async function PublicHome() {
 
         {/* Trust badges: swipe row on phones */}
         <div className="mx-auto max-w-7xl px-4 py-3 lg:px-6">
-          <div className="hscroll lg:grid lg:grid-cols-4 lg:overflow-visible">
+          {/* 2×2 on phones so all four are visible without sideways scrolling */}
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
             {[
               { icon: ShieldCheck, t: "Inspected stock", d: "Real photos & honest specs" },
               { icon: Ship, t: "RoRo & container", d: "To ports worldwide" },
               { icon: Banknote, t: "Secure TT payment", d: "Invoice in your name" },
               { icon: FileCheck2, t: "Export documents", d: "Sent by DHL / FedEx" },
             ].map(({ icon: I, t, d }) => (
-              <div key={t} className="glass-lite flex w-60 items-center gap-3 rounded-2xl px-4 py-3 lg:w-auto">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] shadow-lg shadow-brand-900/40">
-                  <I className="h-5 w-5 text-white" />
+              <div key={t} className="glass-lite flex items-center gap-2.5 rounded-2xl px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] shadow-lg shadow-brand-900/40 sm:h-10 sm:w-10">
+                  <I className="h-4 w-4 text-white sm:h-5 sm:w-5" />
                 </span>
-                <div>
-                  <div className="text-sm font-bold">{t}</div>
+                <div className="min-w-0">
+                  <div className="text-[13px] font-bold leading-tight sm:text-sm">{t}</div>
                   <div className="text-xs text-white/60">{d}</div>
                 </div>
               </div>
