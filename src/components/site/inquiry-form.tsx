@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { sendInquiry, type InquiryState } from "@/app/(site)/actions";
+import { Turnstile } from "@/components/turnstile";
 
 // Colours, 16px text on phones and focus ring come from the glass theme (site.css).
 const F = "h-12 w-full rounded-xl px-3.5 text-sm";
@@ -40,6 +41,7 @@ export function InquiryForm({ stockNo, defaultMessage = "", source = "website", 
       </div>
       <input name="port" placeholder="Destination port (e.g. Mombasa, Durban)" className={F} aria-label="Destination port" />
       <textarea name="message" rows={compact ? 3 : 5} defaultValue={defaultMessage} placeholder="Your message" className="w-full rounded-xl px-3.5 py-3 text-sm" aria-label="Message" />
+      <Turnstile resetKey={state} />
       {state && !state.ok && (
         <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-700">
           <AlertCircle className="h-4 w-4" /> {state.message}

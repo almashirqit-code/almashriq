@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { passedTurnstile, TURNSTILE_FAILED } from "@/lib/turnstile";
 import { SITE_URL } from "@/lib/public-site";
 import { notifySignup } from "@/lib/notify";
 
@@ -46,6 +47,7 @@ export async function customerSignIn(_prev: AuthState, formData: FormData): Prom
 /** Self sign-up. The database trigger turns it into a pending portal account (never a staff profile). */
 export async function customerSignUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
   if (formData.get("website")) return { ok: true }; // honeypot: bots fill hidden fields
+  if (!(await passedTurnstile(formData))) return { error: TURNSTILE_FAILED };
   if (!(await rateLimit("cust-signup", 5, 3600))) return { error: "Too many sign-ups from your network. Please try again later." };
 
   const email = clean(formData.get("email"), 200).toLowerCase();
@@ -89,6 +91,7 @@ export async function customerSignUp(_prev: AuthState, formData: FormData): Prom
 export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = clean(formData.get("email"), 200).toLowerCase();
   if (!EMAIL.test(email)) return { error: "Please enter a valid email address." };
+  if (!(await passedTurnstile(formData))) return { error: TURNSTILE_FAILED };
   const [perEmail, perIp] = await Promise.all([rateLimit("cust-reset", 3, 3600, email), rateLimit("cust-reset-ip", 10, 3600)]);
   if (perEmail && perIp) {
     const supabase = await createClient();

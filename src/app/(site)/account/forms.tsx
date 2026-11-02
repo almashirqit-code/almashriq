@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { PasswordInput } from "@/components/password-input";
+import { Turnstile } from "@/components/turnstile";
 import { customerSignIn, customerSignUp, requestPasswordReset, updatePassword, updateProfile, changePassword, type AuthState } from "./actions";
 
 const F = "h-12 w-full rounded-xl px-3.5 text-sm";
@@ -139,6 +140,7 @@ export function SignUpForm() {
           .
         </span>
       </label>
+      <Turnstile resetKey={state} />
       <ErrorLine state={state} />
       <Submit pending={pending}>Create account</Submit>
     </form>
@@ -159,6 +161,7 @@ export function ForgotForm() {
         <label htmlFor="email" className={LABEL}>Email</label>
         <input id="email" name="email" type="email" inputMode="email" required autoComplete="email" className={F} />
       </div>
+      <Turnstile resetKey={state} />
       <ErrorLine state={state} />
       <Submit pending={pending}>Send reset link</Submit>
     </form>

@@ -3,10 +3,13 @@ import { createHash } from "crypto";
 import { headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
-/** Visitor IP as seen by Vercel. */
+/**
+ * Visitor IP. Cloudflare sets CF-Connecting-IP itself (a visitor can't fake it); X-Forwarded-For is
+ * passed through from the visitor, so it is only a fallback for local development.
+ */
 export async function clientIp() {
   const h = await headers();
-  return (h.get("x-forwarded-for")?.split(",")[0] || h.get("x-real-ip") || "unknown").trim();
+  return (h.get("cf-connecting-ip") || h.get("x-real-ip") || h.get("x-forwarded-for")?.split(",")[0] || "unknown").trim();
 }
 
 /**

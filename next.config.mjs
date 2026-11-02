@@ -9,13 +9,13 @@ const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.en
 const csp = [
   "default-src 'self'",
   // Next.js inlines small bootstrap scripts. Third parties on the public site: Tawk.to chat, Trustpilot, Google Analytics, Cloudflare Web Analytics.
-  `script-src 'self' 'unsafe-inline' https://*.tawk.to https://widget.trustpilot.com https://www.googletagmanager.com https://static.cloudflareinsights.com${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://*.tawk.to https://widget.trustpilot.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://challenges.cloudflare.com${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline' https://*.tawk.to https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://*.tawk.to https://fonts.gstatic.com",
   `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace("https://", "wss://")} https://*.tawk.to wss://*.tawk.to https://*.trustpilot.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://*.doubleclick.net https://cloudflareinsights.com`,
   // Google Maps embed on /contact (loaded only with "Chat, reviews & map" consent).
-  "frame-src 'self' https://*.tawk.to https://*.trustpilot.com https://www.google.com https://maps.google.com",
+  "frame-src 'self' https://challenges.cloudflare.com https://*.tawk.to https://*.trustpilot.com https://www.google.com https://maps.google.com",
   "media-src 'self' https:",
   "object-src 'none'",
   "base-uri 'self'",
