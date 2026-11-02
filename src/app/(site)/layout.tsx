@@ -12,7 +12,6 @@ import { TawkChat } from "@/components/site/tawk-chat";
 import { GoogleAnalytics } from "@/components/site/google-analytics";
 import { ConsentProvider, CookieSettingsLink } from "@/components/site/consent";
 import { FavoritesLink, FavoritesSync } from "@/components/site/favorite-button";
-import { BodyIcon } from "@/components/site/body-icon";
 import { JsonLd } from "@/components/site/json-ld";
 import { Logo, LOGO_SRC } from "@/components/brand/logo";
 import { SocialLinks } from "@/components/site/social-links";
@@ -22,8 +21,8 @@ import { Manrope } from "next/font/google";
 import "./site.css";
 
 // Public site face (the ERP keeps Plus Jakarta Sans); falls back to it and Noto Sans JP via site.css
-// Desktop bar: these sit under "More"
-const MORE = ["/payment", "/blog"];
+// Desktop bar: these sit under "More". Makes, body types, offers and reviews are already on the home page and in the stock filters
+const MORE = ["/offers", "/reviews", "/payment", "/blog"];
 const FOOT_HEAD = "text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-site", display: "swap" });
@@ -45,7 +44,6 @@ export const viewport: Viewport = { themeColor: "#10243a", width: "device-width"
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [company, facets, makes, fx] = await Promise.all([getCompany(), getFacets(), getMakeTiles(), getUsdJpy()]);
   const wa = whatsapp(company, "Hello Al Mashriq, I'd like to know about your cars.");
-  const bodies = facets.body.map(([b]) => b).filter((b) => !/^others?$/i.test(b)).slice(0, 14);
   const topMakes = makes.slice(0, 24);
 
   const links = [
@@ -178,36 +176,6 @@ export default async function PublicLayout({ children }: { children: React.React
                 </Link>
               </li>
             ))}
-            <li className="group relative">
-              <span className={`${navLink} flex cursor-default items-center gap-1`}>
-                Makes <ChevronDown className="h-3.5 w-3.5" />
-              </span>
-              <div className="glass-strong invisible absolute left-0 top-full w-[34rem] rounded-b-2xl p-4 opacity-0 transition group-hover:visible group-hover:opacity-100">
-                <div className="grid grid-cols-3 gap-1">
-                  {topMakes.map((m) => (
-                    <Link key={m.slug} href={`/makes/${m.slug}`} className="flex items-center justify-between rounded-lg px-3 py-1.5 text-sm text-white/85 hover:bg-white/10 hover:text-white">
-                      {m.label}
-                      <span className="text-xs text-white/40">{m.n}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </li>
-            {bodies.length > 0 && (
-              <li className="group relative">
-                <span className={`${navLink} flex cursor-default items-center gap-1`}>
-                  Body type <ChevronDown className="h-3.5 w-3.5" />
-                </span>
-                <div className="glass-strong invisible absolute left-0 top-full w-64 rounded-b-2xl p-2 opacity-0 transition group-hover:visible group-hover:opacity-100">
-                  {bodies.map((b) => (
-                    <Link key={b} href={`/cars?body=${encodeURIComponent(b)}`} className="flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm text-white/85 hover:bg-white/10 hover:text-white">
-                      <BodyIcon type={b} className="h-5 w-10 shrink-0 text-white/80" />
-                      {b}
-                    </Link>
-                  ))}
-                </div>
-              </li>
-            )}
             {links.slice(4).filter((l) => !MORE.includes(l.href)).map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className={navLink}>
