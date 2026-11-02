@@ -45,6 +45,8 @@ const nextConfig = {
       // Bundled logos/flags/brand images rarely change.
       { source: "/brand/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }] },
       { source: "/flags/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=2592000, immutable" }] },
+      // Phones must pick up a new service worker straight away.
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }] },
       // The ERP is private — never cache it in shared caches.
       { source: "/admin/:path*", headers: [{ key: "Cache-Control", value: "private, no-store" }, { key: "X-Robots-Tag", value: "noindex, nofollow" }] },
     ];

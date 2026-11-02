@@ -8,6 +8,7 @@ import { getUsdJpy } from "@/lib/fx";
 import { MobileMenu } from "@/components/site/mobile-menu";
 import { MobileSearch } from "@/components/site/mobile-search";
 import { BottomNav } from "@/components/site/bottom-nav";
+import { SwRegister } from "@/components/site/sw-register";
 import { TawkChat } from "@/components/site/tawk-chat";
 import { GoogleAnalytics } from "@/components/site/google-analytics";
 import { ConsentProvider, CookieSettingsLink } from "@/components/site/consent";
@@ -305,6 +306,7 @@ export default async function PublicLayout({ children }: { children: React.React
       </footer>
 
       <BottomNav wa={wa} />
+      <SwRegister />
       <TawkChat />
       <GoogleAnalytics />
       <FavoritesSync />

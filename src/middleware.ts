@@ -131,5 +131,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // Everything except static files (Next.js assets, logos, flags, icons).
-  matcher: ["/((?!_next/static|_next/image|brand/|flags/|favicon.ico|icon.png|robots.txt|sitemap.xml).*)"],
+  matcher: ["/((?!_next/static|_next/image|brand/|flags/|app-icons/|favicon.ico|icon.png|robots.txt|sitemap.xml|manifest.webmanifest|sw.js).*)"],
 };
