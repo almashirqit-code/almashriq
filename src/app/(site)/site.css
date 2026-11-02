@@ -68,12 +68,14 @@ body:has(.site-glass) {
 .site-glass button {
   touch-action: manipulation;
 }
-/* No single orphaned word on the last line of paragraphs and headings */
-.site-glass p,
+/* No single orphaned word on the last line of paragraphs; headings split into even lines */
+.site-glass p {
+  text-wrap: pretty;
+}
 .site-glass h1,
 .site-glass h2,
 .site-glass h3 {
-  text-wrap: pretty;
+  text-wrap: balance;
 }
 /* Faint text: lift to ≥ 4.5:1 on the light page, tinted panels and the dark areas alike */
 .site-glass .text-white\/40,
