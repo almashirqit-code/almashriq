@@ -382,13 +382,14 @@ export default async function PublicHome() {
       {/* How to buy */}
       <section className="mx-auto max-w-7xl px-4 pt-12 lg:px-6">
         <SectionHead title="How to buy from Japan" href="/how-to-buy" link="Full guide" />
-        <ol className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* One route from Japan to your port: a gold line joins the steps (down the side on phones, across on desktop) */}
+        <ol className="journey relative grid gap-5 lg:grid-cols-6 lg:gap-4">
           {BUY_STEPS.map((s, i) => (
-            <li key={s.title} className="glass-lite flex items-center gap-3 rounded-2xl p-3 sm:items-start sm:gap-4 sm:p-5">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-base font-black sm:h-10 sm:w-10 sm:text-lg text-white shadow-lg shadow-brand-900/40">{i + 1}</span>
-              <div>
+            <li key={s.title} className="relative flex gap-4 lg:flex-col lg:gap-3">
+              <span className="on-dark relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--gold)] bg-[#10243a] text-base font-extrabold tabular-nums text-white">{i + 1}</span>
+              <div className="min-w-0 pt-1.5 lg:pt-0">
                 <h3 className="font-bold">{s.title}</h3>
-                <p className="mt-1 hidden text-sm leading-6 text-white/70 sm:block">{s.body}</p>
+                <p className="mt-1 text-sm leading-6 text-white/70">{s.body}</p>
               </div>
             </li>
           ))}
@@ -452,17 +453,16 @@ export default async function PublicHome() {
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-4 pt-12 lg:px-6">
-        <div className="glass relative flex flex-col items-start justify-between gap-5 overflow-hidden rounded-3xl p-6 sm:p-8 md:flex-row md:items-center">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[var(--accent)]/25 blur-3xl" />
+        <div className="on-dark home-hero relative flex flex-col items-start justify-between gap-5 overflow-hidden rounded-3xl p-6 sm:p-8 md:flex-row md:items-center">
           <div className="relative flex gap-4">
-            <Globe className="hidden h-12 w-12 shrink-0 text-brand-600 sm:block" />
+            <Globe className="hidden h-12 w-12 shrink-0 text-[var(--gold)] sm:block" />
             <div>
-              <h2 className="text-xl font-black sm:text-2xl">Can&apos;t find the car you want?</h2>
-              <p className="mt-1 text-white/75">Tell us the model, year and budget — we buy daily at Japanese auctions and ship to your port.</p>
+              <h2 className="text-xl font-extrabold sm:text-2xl">Can&apos;t find the car you want?</h2>
+              <p className="mt-1 max-w-[52ch] text-white/75">Tell us the model, year, budget and your port. We buy daily at Japanese auctions and can source it for you.</p>
             </div>
           </div>
-          <Link href="/contact" className="relative inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 font-bold text-white shadow-lg shadow-brand-900/40 hover:bg-brand-700 md:w-auto">
-            <Send className="h-4 w-4" /> Send an inquiry
+          <Link href="/contact" className="relative inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-6 font-extrabold text-[#10243a] hover:bg-[#d4b273] md:w-auto">
+            <Send className="h-4 w-4" /> Request a vehicle
           </Link>
         </div>
       </section>

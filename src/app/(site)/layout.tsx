@@ -22,6 +22,9 @@ import { Manrope } from "next/font/google";
 import "./site.css";
 
 // Public site face (the ERP keeps Plus Jakarta Sans); falls back to it and Noto Sans JP via site.css
+// Desktop bar: these sit under "More"
+const MORE = ["/payment", "/blog"];
+
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-site", display: "swap" });
 
 const OG_IMAGE = { url: "/brand/og.jpg?v=1", width: 1200, height: 630, alt: "Al Mashriq Trading — Japanese used cars, parts & machinery exported worldwide" };
@@ -204,13 +207,26 @@ export default async function PublicLayout({ children }: { children: React.React
                 </div>
               </li>
             )}
-            {links.slice(4).map((l) => (
+            {links.slice(4).filter((l) => !MORE.includes(l.href)).map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className={navLink}>
                   {l.label}
                 </Link>
               </li>
             ))}
+            {/* Secondary pages folded into one menu so the bar stays short (phones list them all in the drawer) */}
+            <li className="group relative">
+              <button type="button" aria-haspopup="true" className={`${navLink} flex items-center gap-1`}>
+                More <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+              <div className="glass-strong invisible absolute right-0 top-full w-48 rounded-b-2xl p-2 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                {links.filter((l) => MORE.includes(l.href)).map((l) => (
+                  <Link key={l.href} href={l.href} className="block rounded-lg px-3 py-2 text-sm text-white/85 hover:bg-white/10 hover:text-white">
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+            </li>
           </ul>
           <MobileSearch />
           {/* Phones: one tap to sign in / the customer account (signed-out visitors are sent to /account/login) */}

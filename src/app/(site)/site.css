@@ -207,6 +207,31 @@ body:has(.site-glass) {
   border-bottom: 1px solid rgb(197 161 90 / 0.55);
 }
 
+/* Home "How to buy" journey: the gold route line behind the step numbers */
+.site-glass .journey::before {
+  content: "";
+  position: absolute;
+  left: 1.25rem;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  width: 2px;
+  background: linear-gradient(var(--gold), rgb(197 161 90 / 0.25));
+}
+@media (min-width: 1024px) {
+  .site-glass .journey::before {
+    left: 1.25rem;
+    right: 1.25rem;
+    top: 1.25rem;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), rgb(197 161 90 / 0.25));
+  }
+}
+.site-glass .home-hero.rounded-3xl {
+  border-bottom: 0;
+}
+
 /* ---------- 3. surfaces ---------- */
 /* Light: white cards with a hairline border and a soft shadow */
 .site-glass .glass,
