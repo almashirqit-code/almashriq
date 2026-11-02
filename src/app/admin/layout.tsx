@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { Noto_Sans_JP } from "next/font/google";
 import { getLocale } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/client";
 
-const notoJp = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "500", "700"], display: "swap", variable: "--font-jp" });
+// Noto Sans JP is loaded from Google Fonts at runtime (Japanese UI only) rather than through
+// next/font: Google sometimes serves the build machine font URLs next/font can't parse, which
+// fails the Cloudflare build. The CSP already allows fonts.googleapis.com / fonts.gstatic.com.
+const NOTO_JP = "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap";
 
 // The ERP is private: keep it out of search results.
 export const metadata: Metadata = {
@@ -16,7 +18,8 @@ export const metadata: Metadata = {
 export default async function AdminRoot({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   return (
-    <div lang={locale} className={`${notoJp.variable} ${locale === "ja" ? "font-[family-name:var(--font-jp)]" : ""}`}>
+    <div lang={locale} className={locale === "ja" ? "font-[family-name:'Noto_Sans_JP',sans-serif]" : undefined}>
+      {locale === "ja" && <link rel="stylesheet" href={NOTO_JP} precedence="default" />}
       <I18nProvider locale={locale}>{children}</I18nProvider>
     </div>
   );
