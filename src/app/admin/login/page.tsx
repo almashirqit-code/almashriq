@@ -30,7 +30,7 @@ export default async function LoginPage({
         <div className="relative w-full max-w-sm">
           <div className="mb-6 flex flex-col items-center">
             <Logo tone="light" size="lg" />
-            <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">ERP · Staff sign-in</div>
+            <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-600">ERP · Staff sign-in</div>
           </div>
           <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04),0_16px_40px_-16px_rgb(15_23_42/0.25)]">
             <div className="h-1 bg-brand-600" />
@@ -40,7 +40,7 @@ export default async function LoginPage({
               <LoginForm />
             </div>
           </div>
-          <p className="mt-6 text-center text-xs text-slate-500">AL MASHRIQ TRADING CO., LTD. · Japan</p>
+          <p className="mt-6 text-center text-xs text-slate-600">AL MASHRIQ TRADING CO., LTD. · Japan</p>
         </div>
       </div>
     </main>

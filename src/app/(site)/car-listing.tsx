@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/site/json-ld";
 import { CarCard } from "./car-card";
 import { SortSelect } from "./sort-select";
 import { FilterPanel, FilterSubmit, FilterToolbar } from "@/components/site/filter-sheet";
+import { SearchForm } from "@/components/site/search-form";
 
 const FIELD = "h-12 w-full rounded-xl px-3 text-sm font-semibold";
 const FLABEL = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/60";
@@ -48,7 +49,7 @@ export async function CarListing({
   const sel = (name: keyof Filters, label: string, opts: [string, number][]) => (
     <div>
       <label className={FLABEL}>{label}</label>
-      <select name={name} defaultValue={f[name] ?? ""} className={FIELD}>
+      <select name={name} defaultValue={f[name] ?? ""} className={FIELD} aria-label={label}>
         <option value="">Any</option>
         {opts.map(([v, n]) => (
           <option key={v} value={v}>
@@ -131,12 +132,12 @@ export async function CarListing({
       <div className="grid gap-5 lg:grid-cols-[16rem_1fr]">
         <aside>
           <FilterPanel sticky>
-            <form action={path} className="space-y-3">
-              {!lockQ && <input name="q" defaultValue={f.q ?? ""} placeholder="Model, stock ID…" className={FIELD} aria-label="Keyword" enterKeyHint="search" />}
+            <SearchForm action={path} className="space-y-3" role="search">
+              {!lockQ && <input name="q" defaultValue={f.q ?? ""} type="search" placeholder="Make, model, year or stock ID" className={FIELD} aria-label="Keyword" enterKeyHint="search" />}
               {stocked.length > 1 && (
                 <div>
                   <label className={FLABEL}>Ships from</label>
-                  <select name="branch" defaultValue={f.branch?.toUpperCase() ?? ""} className={FIELD}>
+                  <select name="branch" defaultValue={f.branch?.toUpperCase() ?? ""} className={FIELD} aria-label="Ships from">
                     <option value="">Any country</option>
                     {stocked.map((b) => (
                       <option key={b.code} value={b.code}>
@@ -172,7 +173,7 @@ export async function CarListing({
                   Clear all filters
                 </Link>
               )}
-            </form>
+            </SearchForm>
           </FilterPanel>
         </aside>
 

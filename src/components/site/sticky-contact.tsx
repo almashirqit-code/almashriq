@@ -16,7 +16,7 @@ export function StickyContact({ price, wa }: { price: string | null; wa: string 
           <MessageCircle className="h-6 w-6" />
         </a>
       )}
-      <a href="#quote" className="inline-flex h-12 shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-5 text-sm font-bold text-white shadow-lg shadow-brand-900/40">
+      <a href="#quote" className="inline-flex h-12 shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-5 text-sm font-bold text-white shadow-lg shadow-black/30">
         <Send className="h-4 w-4" /> Get quote
       </a>
     </div>

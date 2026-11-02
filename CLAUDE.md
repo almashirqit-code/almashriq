@@ -49,6 +49,10 @@ Prefer reuse over addition. The best change is the smallest one that does the jo
 - `npm run build` — production build; run it before opening a PR
 - `npm run cf:build` / `cf:preview` / `cf:deploy` — OpenNext build for Cloudflare, local
   Workers preview, and manual deploy
+- `npm run design:scan` — Impeccable design audit of `src/` (regex rules). For the full check,
+  scan the running dev server too: `npx impeccable@4.8.0 detect http://localhost:3000/<page>`
+  (add `--viewport 390x844` for phones; on Windows set `IMPECCABLE_BROWSER` to Edge's `msedge.exe`).
+  Reviewed exceptions live in `.impeccable/config.json`, each with a reason.
 
 ## Cloudflare Workers runtime
 
@@ -61,6 +65,8 @@ Prefer reuse over addition. The best change is the smallest one that does the jo
 
 - Branch per task (`claude/<short-name>`), commit, open a PR, and deploy only on the
   user's go-ahead. `main` auto-deploys to production on Cloudflare.
+- Before opening a PR that touches UI, run the Impeccable scan (code + the changed pages at desktop
+  and phone width) and fix new findings, or record a reviewed exception with its reason.
 - After a code change that renders in the browser, verify it in the preview rather than
   asking the user to check by hand. Admin pages behind the login can't be clicked through
   without credentials — say so instead of claiming they were tested.

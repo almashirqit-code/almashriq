@@ -158,12 +158,12 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
               </span>
               <FavoriteButton variant="pill" item={{ kind: "vehicle", id: c.id, stock: c.stock_no, title, image: images[0] ?? null, price: price ?? null }} />
             </div>
-            <h1 className="mt-2 text-2xl font-black tracking-tight text-navy-950 sm:text-3xl">{title}</h1>
+            <h1 className="mt-2 text-2xl font-black leading-snug tracking-tight text-navy-950 sm:text-3xl">{title}</h1>
             {c.grade && <p className="text-slate-500">{c.grade}</p>}
             {/* Key facts buyers compare first, large enough to scan at a glance */}
-            <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <dl className="mt-4 grid grid-cols-2 gap-x-4 border-y border-white/10 py-1 sm:grid-cols-3">
               {facts.map(({ icon: I, label, value }) => (
-                <div key={label} className="rounded-xl bg-white/5 px-2.5 py-2 ring-1 ring-white/10">
+                <div key={label} className="py-2">
                   <dt className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-white/55">
                     <I aria-hidden className="h-3.5 w-3.5 text-brand-600" />
                     {label}

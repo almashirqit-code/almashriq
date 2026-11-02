@@ -16,9 +16,9 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
       <Link href={href} className="relative block min-h-[8.5rem] w-[40%] shrink-0 overflow-hidden bg-black/20 sm:aspect-[4/3] sm:min-h-0 sm:w-auto" aria-label={`${carTitle(c)} — ${c.stock_no}`}>
         <CardPhotos images={imgs} alt={`${carTitle(c)} ${c.stock_no}`} />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a0a0c]/70 to-transparent" />
-        <span className="absolute left-1.5 top-1.5 rounded-lg bg-black/55 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm sm:left-2.5 sm:top-2.5 sm:px-2 sm:text-xs">{c.stock_no}</span>
+        <span className="absolute left-1.5 top-1.5 rounded-lg bg-black/55 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm sm:left-2.5 sm:top-2.5 sm:px-2 sm:text-xs">{c.stock_no}</span>
         {c.image_count > 1 && (
-          <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm sm:bottom-auto sm:right-2.5 sm:top-2.5 sm:px-2 sm:text-xs">
+          <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-1.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm sm:bottom-auto sm:right-2.5 sm:top-2.5 sm:px-2 sm:text-xs">
             <Camera className="h-3 w-3" />
             {c.image_count}
           </span>
@@ -66,7 +66,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
         </dl>
         <div className="mt-auto flex items-end justify-between gap-2 border-t border-white/10 pt-2 sm:mt-3 sm:pt-3">
           <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-white/60 sm:text-xs">FOB price</div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-white/60 sm:text-xs">FOB price</div>
             {price ? <div className="text-lg font-black leading-tight text-white sm:text-xl">{price}</div> : <div className="text-sm font-bold leading-tight text-white/85">Ask for price</div>}
           </div>
           <div className="flex shrink-0 gap-1.5 sm:gap-2">

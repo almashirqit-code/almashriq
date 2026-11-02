@@ -154,7 +154,10 @@ export const getBodyPhotos = unstable_cache(
 export type Facets = { make: [string, number][]; body: [string, number][]; fuel: [string, number][]; transmission: [string, number][]; steering: [string, number][]; total: number; available: number };
 
 export const getFacets = unstable_cache(async (): Promise<Facets> => {
-  const { data } = await anon().rpc("public_facets");
+  const { data, error } = await anon().rpc("public_facets");
+  // Throw rather than return empty facets: unstable_cache would keep an empty make list for an hour
+  // (every /makes page a 404). On error Next keeps serving the last good copy instead.
+  if (error) throw new Error(`public_facets: ${error.message}`);
   const out: Facets = { make: [], body: [], fuel: [], transmission: [], steering: [], total: 0, available: 0 };
   for (const r of (data ?? []) as { kind: string; value: string | null; n: number }[]) {
     if (r.kind === "total") out.total = Number(r.n);
@@ -199,7 +202,8 @@ export const assetUrl = (p: string | null | undefined) =>
 
 export type PublicMake = { make: string; label: string; logo_path: string | null; n: number; featured: boolean; sort_order: number };
 export const getMakes = unstable_cache(async (): Promise<PublicMake[]> => {
-  const { data } = await anon().rpc("public_makes");
+  const { data, error } = await anon().rpc("public_makes");
+  if (error) throw new Error(`public_makes: ${error.message}`); // see getFacets
   return ((data ?? []) as PublicMake[]).map((m) => ({ ...m, n: Number(m.n) }));
 }, ["makes"], { revalidate: 3600, tags: ["public-site"] });
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SearchForm } from "@/components/site/search-form";
 import { flagFor } from "@/lib/brand-assets";
 import { MARKETS } from "@/lib/markets";
 import { POPULAR_MODELS } from "@/lib/models";
@@ -74,7 +75,7 @@ export default async function PublicHome() {
               <p className="text-3xl font-black">New stock arriving daily from Japanese auctions.</p>
             </div>
           )}
-          <form action="/cars" className="glass rounded-3xl p-4 sm:p-5" role="search">
+          <SearchForm action="/cars" className="glass rounded-3xl p-4 sm:p-5" role="search">
             <h1 className="text-2xl font-black leading-tight tracking-tight lg:text-[1.65rem]">
               Japanese used cars <span className="text-gradient">shipped to your port</span>
             </h1>
@@ -141,7 +142,7 @@ export default async function PublicHome() {
                 <Search className="h-4 w-4" /> Search {facets.available.toLocaleString()} cars
               </button>
             </div>
-          </form>
+          </SearchForm>
         </div>
 
         {/* Trust badges: swipe row on phones */}

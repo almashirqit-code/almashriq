@@ -40,7 +40,7 @@ export default async function MakePage({ params, searchParams }: { params: Promi
             // eslint-disable-next-line @next/next/no-img-element
             <img src={m.logo} alt={`${m.label} logo`} className="mb-2 h-10 w-auto object-contain" />
           )}
-          <p>
+          <p className="max-w-prose">
             Browse {m.n.toLocaleString()} used {m.label} cars in stock in Japan, each with full photos, honest mileage and an FOB price. We
             export {m.label} vehicles worldwide by RoRo or container and send a C&amp;F quotation to your port before you pay.
           </p>
