@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SearchForm } from "@/components/site/search-form";
 import Link from "next/link";
 import { Camera, Clock, Gauge, MessageCircle, Tractor, Weight, X } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
@@ -71,12 +72,12 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
       <div className="grid gap-5 lg:grid-cols-[16rem_1fr]">
         <aside>
           <FilterPanel>
-            <form action="/machinery" className="space-y-3" role="search">
-              <input name="q" defaultValue={f.q ?? ""} placeholder="Model, stock ID, type…" className={FIELD} aria-label="Keyword" enterKeyHint="search" />
+            <SearchForm action="/machinery" className="space-y-3" role="search">
+              <input name="q" type="search" defaultValue={f.q ?? ""} placeholder="Model, stock ID, type…" className={FIELD} aria-label="Keyword" enterKeyHint="search" />
               {stocked.length > 1 && (
                 <div>
                   <label className={FLABEL}>Ships from</label>
-                  <select name="branch" defaultValue={f.branch?.toUpperCase() ?? ""} className={FIELD}>
+                  <select name="branch" defaultValue={f.branch?.toUpperCase() ?? ""} className={FIELD} aria-label="Ships from">
                     <option value="">Any country</option>
                     {stocked.map((b) => (
                       <option key={b.code} value={b.code}>
@@ -92,7 +93,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
               ].map(([name, label, opts]) => (
                 <div key={name as string}>
                   <label className={FLABEL}>{label as string}</label>
-                  <select name={name as string} defaultValue={f[name as "category" | "make"] ?? ""} className={FIELD}>
+                  <select name={name as string} defaultValue={f[name as "category" | "make"] ?? ""} className={FIELD} aria-label={label as string}>
                     <option value="">Any</option>
                     {(opts as [string, number][]).map(([v, c]) => (
                       <option key={v} value={v}>
@@ -123,7 +124,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                   Clear all filters
                 </Link>
               )}
-            </form>
+            </SearchForm>
           </FilterPanel>
         </aside>
 

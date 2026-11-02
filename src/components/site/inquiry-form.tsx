@@ -40,7 +40,7 @@ export function InquiryForm({ stockNo, defaultMessage = "", source = "website", 
         <input name="country" placeholder="Country" autoComplete="country-name" className={F} aria-label="Country" />
       </div>
       <input name="port" placeholder="Destination port (e.g. Mombasa, Durban)" className={F} aria-label="Destination port" />
-      <textarea name="message" rows={compact ? 3 : 5} defaultValue={defaultMessage} placeholder="Your message" className="w-full rounded-xl px-3.5 py-3 text-sm" aria-label="Message" />
+      <textarea name="message" rows={compact ? 3 : 5} defaultValue={defaultMessage} placeholder="Your message" className="w-full rounded-xl px-3.5 py-3 text-sm leading-relaxed" aria-label="Message" />
       <Turnstile resetKey={state} />
       {state && !state.ok && (
         <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-700">

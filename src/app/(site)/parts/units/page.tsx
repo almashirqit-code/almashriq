@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SearchForm } from "@/components/site/search-form";
 import Link from "next/link";
 import { Camera, Car, MessageCircle } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
@@ -68,8 +69,8 @@ export default async function PartUnitsPage({ searchParams }: { searchParams: Pr
       <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
         <aside className="order-2 space-y-5 lg:order-1 lg:self-start">
           <FilterPanel>
-            <form action="/parts/units" className="space-y-3" role="search">
-              <input name="q" defaultValue={f.q ?? ""} placeholder="Model, model code, stock ID…" aria-label="Search complete units" className={FIELD} enterKeyHint="search" />
+            <SearchForm action="/parts/units" className="space-y-3" role="search">
+              <input name="q" type="search" defaultValue={f.q ?? ""} placeholder="Model, model code, stock ID…" aria-label="Search complete units" className={FIELD} enterKeyHint="search" />
               <div>
                 <label className={FLABEL}>Make</label>
                 <select name="make" defaultValue={f.make ?? ""} className={FIELD} aria-label="Make">
@@ -98,7 +99,7 @@ export default async function PartUnitsPage({ searchParams }: { searchParams: Pr
                   Clear all filters
                 </Link>
               )}
-            </form>
+            </SearchForm>
           </FilterPanel>
           <div className="glass-lite rounded-2xl p-5">
             <h2 className="mb-1 font-black">Need a cut or part?</h2>

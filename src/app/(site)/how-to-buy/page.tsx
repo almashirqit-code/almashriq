@@ -77,7 +77,7 @@ export default async function HowToBuy() {
                   <b className="font-black">{t.code}</b> <span className="text-white/60">· {t.name}</span>
                 </div>
                 <div className="mt-1 h-8 overflow-hidden rounded-lg bg-white/5 ring-1 ring-white/10">
-                  <div className={`on-dark flex h-full items-center rounded-lg bg-gradient-to-r from-[var(--accent)] to-rose-400 px-2.5 text-xs font-bold text-white ${t.w}`}>
+                  <div className={`on-dark flex h-full items-center rounded-lg bg-gradient-to-r from-[var(--accent-hi)] to-[var(--accent)] px-2.5 text-xs font-bold text-white ${t.w}`}>
                     <span className="truncate">{t.adds}</span>
                   </div>
                 </div>
