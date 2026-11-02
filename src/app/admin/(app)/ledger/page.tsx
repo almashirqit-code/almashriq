@@ -6,14 +6,16 @@ import type { Currency } from "@/lib/types";
 import { PageHeader, Stat, Empty } from "@/components/ui";
 import { PrintButton } from "@/components/buttons";
 import { getDisplayCurrency } from "@/lib/display-currency";
+import { PieBreakdown } from "../dashboard-charts";
 import { loadStaff } from "../customers/staff";
 import { loadCustomerOptions, loadCustomerSoa, loadAgentSoa } from "./soa";
-import { readPeriod, loadEntries, totals, loadProfit, loadReceivables, ENTRY_LABEL, AGE_BUCKETS, type EntryKind, type Period } from "./data";
+import { readPeriod, loadEntries, totals, loadProfit, loadReceivables, ENTRY_LABEL, AGE_BUCKETS, type Entry, type EntryKind, type Period } from "./data";
 
 export const metadata = { title: "Ledger" };
 
 const TABS = [
   { key: "entries", label: "All entries" },
+  { key: "office", label: "By office & shift" },
   { key: "profit", label: "Profit" },
   { key: "receivables", label: "Receivables" },
   { key: "customer", label: "Customer SOA" },
@@ -36,7 +38,7 @@ async function money2() {
 }
 
 /** Business ledger: every money movement the ERP records, profit per car, and what customers owe. */
-export default async function LedgerPage({ searchParams }: { searchParams: Promise<{ from?: string; to?: string; tab?: string; kind?: string; c?: string; a?: string }> }) {
+export default async function LedgerPage({ searchParams }: { searchParams: Promise<{ from?: string; to?: string; tab?: string; kind?: string; c?: string; a?: string; office?: string; shift?: string }> }) {
   await requireRole(["admin", "manager"]);
   const display = await getDisplayCurrency();
   const sp = await searchParams;
@@ -48,6 +50,8 @@ export default async function LedgerPage({ searchParams }: { searchParams: Promi
   const customerId = tab === "customer" && UUID.test(sp.c ?? "") ? sp.c! : null;
   const agentId = tab === "agent" && UUID.test(sp.a ?? "") ? sp.a! : null;
   const keep: Record<string, string> = customerId ? { c: customerId } : agentId ? { a: agentId } : {};
+  // Office / shift filter for "All entries" ("_none" = entries with no office or shift).
+  const where = { office: (sp.office ?? "").slice(0, 80), shift: (sp.shift ?? "").slice(0, 80) };
 
   return (
     <>
@@ -59,11 +63,11 @@ export default async function LedgerPage({ searchParams }: { searchParams: Promi
         actions={
           (tab === "customer" && !customerId) || (tab === "agent" && !agentId) ? undefined : (
             <div className="no-print flex flex-wrap gap-2">
-              <a href={`/admin/ledger/export?${q({ tab, format: "xlsx", ...keep, ...(tab === "entries" && kind ? { kind } : {}) })}`} className="btn-secondary">
+              <a href={`/admin/ledger/export?${q({ tab, format: "xlsx", ...keep, ...(tab === "entries" && kind ? { kind } : {}), ...(tab === "entries" && where.office ? { office: where.office } : {}), ...(tab === "entries" && where.shift ? { shift: where.shift } : {}) })}`} className="btn-secondary">
                 <FileSpreadsheet className="h-4 w-4" /> Excel
               </a>
               {(tab === "entries" || tab === "customer") && (
-                <a href={`/admin/ledger/export?${q({ tab, ...keep, ...(tab === "entries" && kind ? { kind } : {}) })}`} className="btn-ghost">
+                <a href={`/admin/ledger/export?${q({ tab, ...keep, ...(tab === "entries" && kind ? { kind } : {}), ...(tab === "entries" && where.office ? { office: where.office } : {}), ...(tab === "entries" && where.shift ? { shift: where.shift } : {}) })}`} className="btn-ghost">
                   <Download className="h-4 w-4" /> CSV
                 </a>
               )}
@@ -90,10 +94,17 @@ export default async function LedgerPage({ searchParams }: { searchParams: Promi
             </Link>
           ))}
         </nav>
-        {tab !== "receivables" && <PeriodForm p={p} tab={tab} keep={keep} />}
+        {tab !== "receivables" && (
+          <PeriodForm
+            p={p}
+            tab={tab}
+            keep={tab === "entries" ? { ...keep, ...(where.office ? { office: where.office } : {}), ...(where.shift ? { shift: where.shift } : {}) } : keep}
+          />
+        )}
       </div>
 
-      {tab === "entries" && <Entries p={p} kind={kind} q={q} />}
+      {tab === "entries" && <Entries p={p} kind={kind} where={where} />}
+      {tab === "office" && <ByOffice p={p} />}
       {tab === "profit" && <Profit p={p} />}
       {tab === "receivables" && <Receivables />}
       {tab === "customer" && <CustomerSoaView p={p} customerId={customerId} />}
@@ -130,18 +141,64 @@ function PeriodForm({ p, tab, keep }: { p: Period; tab: Tab; keep: Record<string
   );
 }
 
-async function Entries({ p, kind, q }: { p: Period; kind: EntryKind | null; q: (x: Record<string, string>) => string }) {
+const NONE = "_none";
+const officeOf = (e: Entry) => e.office ?? NONE;
+const shiftOf = (e: Entry) => e.shift ?? NONE;
+const matches = (e: Entry, w: { office: string; shift: string }) => (!w.office || officeOf(e) === w.office) && (!w.shift || shiftOf(e) === w.shift);
+const placeName = (v: string, none: string) => (v === NONE ? none : v);
+
+async function Entries({ p, kind, where }: { p: Period; kind: EntryKind | null; where: { office: string; shift: string } }) {
   const { fmt: yen, cur, note } = await money2();
   const all = await loadEntries(p);
-  const t = totals(all);
-  const rows = kind ? all.filter((e) => e.kind === kind) : all;
+  const offices = [...new Set(all.map(officeOf))].sort();
+  const shifts = [...new Set(all.map(shiftOf))].sort();
+  const scoped = all.filter((e) => matches(e, where));
+  const t = totals(scoped);
+  const rows = kind ? scoped.filter((e) => e.kind === kind) : scoped;
+  const link = (extra: Record<string, string>) => {
+    const u = new URLSearchParams({ from: p.from, to: p.to, ...(where.office ? { office: where.office } : {}), ...(where.shift ? { shift: where.shift } : {}), ...extra });
+    return `/admin/ledger?${u}`;
+  };
   const card = (k: EntryKind, tone: "sky" | "emerald" | "cyan" | "amber" | "fuchsia" | "violet") => (
-    <Link href={`/admin/ledger?${q(kind === k ? {} : { kind: k })}`} className={`block rounded-2xl ${kind === k ? "ring-2 ring-slate-900" : ""}`}>
+    <Link href={link(kind === k ? {} : { kind: k })} className={`block rounded-2xl ${kind === k ? "ring-2 ring-slate-900" : ""}`}>
       <Stat tone={tone} label={ENTRY_LABEL[k]} value={yen(t[k])} />
     </Link>
   );
   return (
     <>
+      <form action="/admin/ledger" className="no-print card mb-4 flex flex-wrap items-end gap-2 p-3">
+        <input type="hidden" name="from" value={p.from} />
+        <input type="hidden" name="to" value={p.to} />
+        {kind && <input type="hidden" name="kind" value={kind} />}
+        <label className="text-xs">
+          <span className="label">Office</span>
+          <select name="office" defaultValue={where.office} className="input w-auto">
+            <option value="">All offices</option>
+            {offices.map((o) => (
+              <option key={o} value={o}>
+                {placeName(o, "No office (company)")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-xs">
+          <span className="label">Shift</span>
+          <select name="shift" defaultValue={where.shift} className="input w-auto">
+            <option value="">All shifts</option>
+            {shifts.map((o) => (
+              <option key={o} value={o}>
+                {placeName(o, "No shift")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button className="btn-secondary">Show</button>
+        {(where.office || where.shift) && (
+          <Link href={`/admin/ledger?${new URLSearchParams({ from: p.from, to: p.to, ...(kind ? { kind } : {}) })}`} className="btn-ghost text-xs">
+            Clear
+          </Link>
+        )}
+      </form>
       <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         {card("sale", "sky")}
         {card("payment", "emerald")}
@@ -165,6 +222,7 @@ async function Entries({ p, kind, q }: { p: Period; kind: EntryKind | null; q: (
                   <th>Type</th>
                   <th>Ref.</th>
                   <th>Party / detail</th>
+                  <th>Office · Shift</th>
                   <th className="text-right">Amount</th>
                   <th className="text-right">{cur}</th>
                 </tr>
@@ -189,6 +247,7 @@ async function Entries({ p, kind, q }: { p: Period; kind: EntryKind | null; q: (
                       <div className="truncate text-slate-800">{e.party || "—"}</div>
                       <div className="truncate text-xs text-slate-500">{e.detail}</div>
                     </td>
+                    <td className="whitespace-nowrap text-xs text-slate-600">{[e.office, e.shift].filter(Boolean).join(" · ") || "—"}</td>
                     <td className="whitespace-nowrap text-right tabular-nums">{money(e.amount, e.currency)}</td>
                     <td className="whitespace-nowrap text-right font-semibold tabular-nums">{yen(e.jpy)}</td>
                   </tr>
@@ -199,6 +258,90 @@ async function Entries({ p, kind, q }: { p: Period; kind: EntryKind | null; q: (
         )}
       </div>
     </>
+  );
+}
+
+/** Office-wise and shift-wise totals for the period, as pies plus a comparison table. */
+async function ByOffice({ p }: { p: Period }) {
+  const { fmt: yen, fromJpy, cur, note } = await money2();
+  const all = await loadEntries(p);
+  const group = (key: (e: Entry) => string) => {
+    const m = new Map<string, Record<EntryKind, number>>();
+    for (const e of all) {
+      const k = key(e);
+      if (!m.has(k)) m.set(k, { sale: 0, payment: 0, tt: 0, purchase: 0, car_expense: 0, expense: 0 });
+      m.get(k)![e.kind] += e.jpy;
+    }
+    return [...m.entries()].sort((a, b) => (a[0] === NONE ? 1 : b[0] === NONE ? -1 : b[1].sale - a[1].sale));
+  };
+  const byOffice = group(officeOf);
+  const byShift = group(shiftOf);
+  const pie = (rows: [string, Record<EntryKind, number>][], k: EntryKind, none: string) => rows.map(([name, t]) => ({ label: placeName(name, none), value: fromJpy(t[k]) }));
+  const cols: { k: EntryKind; label: string }[] = [
+    { k: "sale", label: "Sales" },
+    { k: "payment", label: "Payments" },
+    { k: "tt", label: "TTs" },
+    { k: "expense", label: "Expenses" },
+  ];
+  const panel = (title: string, rows: [string, Record<EntryKind, number>][], param: "office" | "shift", none: string) => (
+    <section className="card overflow-hidden">
+      <h2 className="card-head">
+        <span className="card-title">{title}</span>
+      </h2>
+      <div className="grid gap-6 p-5 lg:grid-cols-2">
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Sales</div>
+          <PieBreakdown data={pie(rows, "sale", none)} locale="en" currency={cur} centerLabel="Sales" emptyLabel="No sales in this period" />
+        </div>
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">TTs received</div>
+          <PieBreakdown data={pie(rows, "tt", none)} locale="en" currency={cur} centerLabel="TTs" emptyLabel="No TTs in this period" />
+        </div>
+      </div>
+      {rows.length === 0 ? (
+        <Empty>Nothing recorded in this period.</Empty>
+      ) : (
+        <div className="overflow-x-auto border-t border-slate-100">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{param === "office" ? "Office" : "Shift"}</th>
+                {cols.map((c) => (
+                  <th key={c.k} className="text-right">
+                    {c.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(([name, t]) => (
+                <tr key={name}>
+                  <td className="whitespace-nowrap font-semibold">
+                    <Link href={`/admin/ledger?${new URLSearchParams({ from: p.from, to: p.to, [param]: name })}`} className="text-brand-700 hover:underline">
+                      {placeName(name, none)}
+                    </Link>
+                  </td>
+                  {cols.map((c) => (
+                    <td key={c.k} className="whitespace-nowrap text-right tabular-nums">
+                      {t[c.k] ? yen(t[c.k]) : "—"}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+  return (
+    <div className="space-y-5">
+      <p className="text-xs text-slate-500">
+        {note ? `${note} ` : ""}TTs use their own office and shift. Sales and payments count for the office and shift of the customer&apos;s agent (or whoever registered the customer). Expenses have an office but no shift; car purchases are company-wide. Tap a row to see its entries.
+      </p>
+      {panel("By office", byOffice, "office", "No office (company)")}
+      {panel("By shift", byShift, "shift", "No shift")}
+    </div>
   );
 }
 

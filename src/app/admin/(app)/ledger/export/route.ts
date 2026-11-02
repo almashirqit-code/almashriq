@@ -99,19 +99,24 @@ export async function GET(req: NextRequest) {
   }
 
   const kind = sp.kind && sp.kind in ENTRY_LABEL ? (sp.kind as EntryKind) : null;
-  const rows = (await loadEntries(p)).filter((e) => !kind || e.kind === kind);
+  // Same office / shift filter as the page ("_none" = no office / no shift).
+  const office = sp.office ?? "";
+  const shift = sp.shift ?? "";
+  const rows = (await loadEntries(p)).filter(
+    (e) => (!kind || e.kind === kind) && (!office || (e.office ?? "_none") === office) && (!shift || (e.shift ?? "_none") === shift)
+  );
   const file = `ledger-${stamp}${kind ? `-${kind}` : ""}`;
   if (!xlsx)
     return csvResponse(
       `${file}.csv`,
-      ["date", "type", "ref", "party", "detail", "currency", "amount", "amount_jpy"],
-      rows.map((e) => [e.date, ENTRY_LABEL[e.kind], e.ref, e.party, e.detail, e.currency, e.amount, e.jpy])
+      ["date", "type", "ref", "party", "detail", "office", "shift", "currency", "amount", "amount_jpy"],
+      rows.map((e) => [e.date, ENTRY_LABEL[e.kind], e.ref, e.party, e.detail, e.office ?? "", e.shift ?? "", e.currency, e.amount, e.jpy])
     );
   return xlsxResponse(`${file}.xlsx`, [
     {
       name: "Ledger",
-      header: ["Date", "Type", "Ref.", "Party", "Detail", "Currency", "Amount", "JPY", ...(extra ? [d.cur] : [])],
-      rows: rows.map((e) => [e.date, ENTRY_LABEL[e.kind], e.ref, e.party, e.detail, e.currency, e.amount, e.jpy, ...inCur(e.jpy)]),
+      header: ["Date", "Type", "Ref.", "Party", "Detail", "Office", "Shift", "Currency", "Amount", "JPY", ...(extra ? [d.cur] : [])],
+      rows: rows.map((e) => [e.date, ENTRY_LABEL[e.kind], e.ref, e.party, e.detail, e.office ?? "", e.shift ?? "", e.currency, e.amount, e.jpy, ...inCur(e.jpy)]),
     },
   ]);
 }
