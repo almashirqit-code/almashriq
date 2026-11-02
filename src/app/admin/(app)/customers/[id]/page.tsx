@@ -198,6 +198,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
           {list.length === 0 ? (
             <Empty>{t("no_results")}</Empty>
           ) : (
+            <div className="overflow-x-auto">
             <table className="table">
               <tbody>
                 {list.map((inv) => (
@@ -216,6 +217,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </section>
       </div>

@@ -224,6 +224,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
           {recentInv.data?.length ? (
+            <div className="overflow-x-auto">
             <table className="table">
               <tbody>
                 {recentInv.data.map((inv) => {
@@ -246,6 +247,7 @@ export default async function DashboardPage() {
                 })}
               </tbody>
             </table>
+            </div>
           ) : (
             <Empty>{t("no_results")}</Empty>
           )}
@@ -263,6 +265,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
           {recentVeh.data?.length ? (
+            <div className="overflow-x-auto">
             <table className="table">
               <tbody>
                 {recentVeh.data.map((v) => (
@@ -280,6 +283,7 @@ export default async function DashboardPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <Empty>{t("no_results")}</Empty>
           )}

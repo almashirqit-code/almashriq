@@ -201,6 +201,7 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
             {allocations.length === 0 ? (
               <Empty>{t("no_results")}</Empty>
             ) : (
+              <div className="overflow-x-auto">
               <table className="table">
                 <thead>
                   <tr>
@@ -248,6 +249,7 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
                   })}
                 </tbody>
               </table>
+              </div>
             )}
           </section>
         </div>
