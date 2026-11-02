@@ -15,7 +15,7 @@ const RES_STATUS: Record<string, { label: string; cls: string }> = {
 export default async function AccountReservations() {
   await requireActivePortal();
   const list = await getPortalReservations();
-  if (!list.length) return <EmptyNote>No reservations yet. Ask your agent to reserve a car for you.</EmptyNote>;
+  if (!list.length) return <EmptyNote href="/cars" cta="Browse stock">No reservations yet. Pick a car and ask your agent to reserve it for you.</EmptyNote>;
 
   return (
     <div className="grid gap-3 md:grid-cols-2">

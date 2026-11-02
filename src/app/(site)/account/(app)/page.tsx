@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Clock3, ShieldAlert, MessageCircle, Car, Mail, Ship, Send, MessagesSquare } from "lucide-react";
+import { Clock3, ShieldAlert, MessageCircle, Car, Mail, Send, MessagesSquare, Upload, FileText, Ship, CheckCircle2, ChevronRight, Wallet } from "lucide-react";
 import { getCompany, whatsapp } from "@/lib/public-site";
-import { money } from "@/lib/format";
+import { money, publicImageUrl } from "@/lib/format";
 import {
   getPortalMe,
   getPortalStatement,
@@ -10,15 +10,15 @@ import {
   getPortalVehicles,
   getPortalReservations,
   getPortalTTs,
+  getPortalSlips,
   closingBalances,
-  DOC_TYPE_LABEL,
-  INVOICE_STATUS,
-  SHIPPING_STATUS,
   fmtDate,
 } from "@/lib/portal";
-import { Card, Pill, SectionTitle, EmptyNote } from "./ui";
+import { Card, Pill, SectionTitle, carJourney, currentStep, paidDates } from "./ui";
 
 export const metadata: Metadata = { title: "My account", robots: { index: false, follow: false } };
+
+const BTN = "inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold";
 
 export default async function AccountHome() {
   const [me, company] = await Promise.all([getPortalMe(), getCompany()]);
@@ -69,88 +69,146 @@ export default async function AccountHome() {
     );
   }
 
-  const [statement, invoices, vehicles, reservations, tts] = await Promise.all([
+  const [statement, invoices, vehicles, reservations, tts, slips] = await Promise.all([
     getPortalStatement(),
     getPortalInvoices(),
     getPortalVehicles(),
     getPortalReservations(),
     getPortalTTs(),
+    getPortalSlips(),
   ]);
-  const balances = [...closingBalances(statement).entries()].filter(([, v]) => Math.abs(v) >= 0.005);
-  const moving = vehicles.filter((v) => v.shipping_status === "booked" || v.shipping_status === "shipped");
-  const activeRes = reservations.filter((r) => r.status === "active").length;
+  const balances = [...closingBalances(statement).entries()].filter(([, v]) => v >= 0.005);
+  const paid = paidDates(tts);
+  const activeRes = reservations.filter((r) => r.status === "active");
+  // Unpaid invoices, the one due soonest first.
+  const unpaid = invoices
+    .filter((i) => i.doc_type !== "quotation" && (i.status === "issued" || i.status === "partially_paid") && Number(i.total) - Number(i.amount_paid) > 0.005)
+    .sort((a, b) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999"));
+  const checking = slips.filter((s) => s.status === "submitted");
+  const onWay = vehicles.find((v) => v.shipping_status === "shipped");
+
+  // The one thing to do or know next.
+  const next = unpaid[0]
+    ? {
+        tone: "pay" as const,
+        title: `Pay ${unpaid[0].invoice_no}: ${money(Number(unpaid[0].total) - Number(unpaid[0].amount_paid), unpaid[0].currency)}`,
+        text: `${unpaid[0].due_date ? `Due ${fmtDate(unpaid[0].due_date)}. ` : ""}Pay only into the bank account printed on the invoice, then upload your slip so we can match it.`,
+        actions: (
+          <>
+            <Link href="/account/payments" className={`${BTN} bg-white text-[var(--accent)] hover:brightness-95`}>
+              <Upload className="h-4 w-4" /> Upload payment slip
+            </Link>
+            <Link href={`/account/invoices/${unpaid[0].id}`} className={`${BTN} ring-1 ring-white/40 hover:bg-white/10`}>
+              <FileText className="h-4 w-4" /> View invoice
+            </Link>
+          </>
+        ),
+      }
+    : checking.length
+      ? { tone: "wait" as const, title: "We're checking your payment slip", text: "We match it with our bank, usually within 1–2 working days. It moves to Payments received once confirmed.", actions: null }
+      : onWay
+        ? {
+            tone: "ship" as const,
+            title: `Your ${[onWay.make, onWay.model].filter(Boolean).join(" ")} is on the way`,
+            text: `${onWay.vessel_name ? `On ${onWay.vessel_name}. ` : ""}${onWay.eta ? `Arriving around ${fmtDate(onWay.eta)}.` : "We'll add the arrival date as soon as the shipping line confirms it."}`,
+            actions: (
+              <Link href="/account/cars" className={`${BTN} bg-white text-[var(--accent)] hover:brightness-95`}>
+                <Ship className="h-4 w-4" /> Track and documents
+              </Link>
+            ),
+          }
+        : vehicles.length || activeRes.length
+          ? { tone: "ok" as const, title: "Nothing needed from you right now", text: "We'll update this page at every step, and notify you if anything is needed.", actions: null }
+          : {
+              tone: "ok" as const,
+              title: "Find your next car",
+              text: "Reserve a car with your agent and you can follow payment, shipping and documents here.",
+              actions: (
+                <Link href="/cars" className={`${BTN} bg-white text-[var(--accent)] hover:brightness-95`}>
+                  <Car className="h-4 w-4" /> Browse stock
+                </Link>
+              ),
+            };
+  const NextIcon = { pay: Wallet, wait: Clock3, ship: Ship, ok: CheckCircle2 }[next.tone];
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card className="col-span-2 lg:col-span-1">
-          <div className="text-xs font-semibold uppercase tracking-wide text-white/60">Balance due</div>
-          {balances.length ? (
-            balances.map(([cur, v]) => (
-              <div key={cur} className={`text-2xl font-black tabular-nums ${v > 0 ? "text-brand-700" : "text-emerald-700"}`}>
-                {money(v, cur)}
-              </div>
-            ))
-          ) : (
-            <div className="text-2xl font-black text-emerald-700">Nothing due</div>
-          )}
-          <Link href="/account/statement" className="mt-1 inline-block text-xs font-bold text-brand-700 hover:underline">
-            View statement →
-          </Link>
-        </Card>
-        <Card>
-          <div className="text-xs font-semibold uppercase tracking-wide text-white/60">My cars</div>
-          <div className="text-2xl font-black">{vehicles.length}</div>
-        </Card>
-        <Card>
-          <div className="text-xs font-semibold uppercase tracking-wide text-white/60">Active reservations</div>
-          <div className="text-2xl font-black">{activeRes}</div>
-        </Card>
-        <Card>
-          <div className="text-xs font-semibold uppercase tracking-wide text-white/60">TT payments</div>
-          <div className="text-2xl font-black">{tts.length}</div>
-        </Card>
-      </div>
-
-      {moving.length > 0 && (
-        <>
-          <SectionTitle title="On the way" href="/account/cars" link="All my cars" />
-          <div className="grid gap-3 md:grid-cols-2">
-            {moving.map((v) => (
-              <Card key={v.id} className="flex items-center gap-4">
-                <Ship className="h-8 w-8 shrink-0 text-cerulean-600" />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-bold">
-                    {[v.year, v.make, v.model].filter(Boolean).join(" ")} · {v.stock_no}
-                  </div>
-                  <div className="truncate text-sm text-white/70">
-                    {v.vessel_name ? `${v.vessel_name}${v.voyage_no ? ` ${v.voyage_no}` : ""}` : "Vessel to be confirmed"}
-                    {v.eta ? ` · ETA ${fmtDate(v.eta)}` : ""}
-                  </div>
-                </div>
-                {v.shipping_status && <Pill cls={SHIPPING_STATUS[v.shipping_status].cls}>{SHIPPING_STATUS[v.shipping_status].label}</Pill>}
-              </Card>
-            ))}
+      <section aria-labelledby="next-title" className="on-dark rounded-2xl bg-[var(--accent)] p-5 text-white sm:p-6">
+        <div className="flex items-start gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10">
+            <NextIcon className="h-5 w-5" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 id="next-title" className="text-xl font-black tabular-nums">
+              {next.title}
+            </h2>
+            <p className="mt-1 max-w-prose text-sm text-white/80">{next.text}</p>
+            {next.actions && <div className="mt-4 flex flex-wrap gap-2">{next.actions}</div>}
           </div>
+        </div>
+        {(balances.length > 0 || unpaid.length > 1) && (
+          <p className="mt-4 border-t border-white/15 pt-3 text-sm text-white/80">
+            {balances.length > 0 && <>Total balance due: <b className="tabular-nums text-white">{balances.map(([c, v]) => money(v, c)).join(" · ")}</b>. </>}
+            {unpaid.length > 1 && `${unpaid.length} invoices are open. `}
+            <Link href="/account/statement" className="font-bold underline">
+              View statement
+            </Link>
+          </p>
+        )}
+      </section>
+
+      {vehicles.length > 0 && (
+        <>
+          <SectionTitle title="My cars" href="/account/cars" link="Track all" />
+          <ul className="grid gap-3 md:grid-cols-2">
+            {vehicles.slice(0, 6).map((v) => {
+              const steps = carJourney(v, paid.get(v.stock_no));
+              const cur = currentStep(steps);
+              const doneCount = steps.filter((s) => s.done).length;
+              return (
+                <li key={v.id}>
+                  <Link href={`/account/cars#car-${v.id}`} className="glass flex items-center gap-4 rounded-2xl p-3 hover:brightness-105">
+                    <span className="h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-black/5">
+                      {v.cover ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={publicImageUrl(v.cover)} alt="" className="h-full w-full object-cover" loading="lazy" />
+                      ) : (
+                        <Car className="m-auto h-full w-7 opacity-40" />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-bold">{[v.year, v.make, v.model].filter(Boolean).join(" ")}</span>
+                      <span className="block text-sm text-white/70">{cur ? `Now: ${cur.label}` : "Arrived at your port"}</span>
+                      <span className="mt-1.5 flex gap-1" aria-label={`Step ${doneCount} of ${steps.length}`}>
+                        {steps.map((s) => (
+                          <span key={s.label} className={`h-1.5 flex-1 rounded-full ${s.done ? "bg-[var(--accent)]" : "bg-black/10"}`} />
+                        ))}
+                      </span>
+                    </span>
+                    <ChevronRight className="h-5 w-5 shrink-0 opacity-50" aria-hidden />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </>
       )}
 
-      <SectionTitle title="Recent invoices" href="/account/invoices" link="All invoices" />
-      {invoices.length === 0 ? (
-        <EmptyNote>No invoices yet.</EmptyNote>
-      ) : (
-        <div className="grid gap-2">
-          {invoices.slice(0, 5).map((i) => (
-            <Link key={i.id} href={`/account/invoices/${i.id}`} className="glass flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl px-5 py-3 hover:brightness-105">
-              <span className="font-bold">{i.invoice_no}</span>
-              <span className="text-sm text-white/70">
-                {DOC_TYPE_LABEL[i.doc_type]} · {fmtDate(i.issue_date)}
-              </span>
-              <span className="ml-auto font-bold tabular-nums">{money(i.total, i.currency)}</span>
-              {i.doc_type !== "quotation" && <Pill cls={INVOICE_STATUS[i.status].cls}>{INVOICE_STATUS[i.status].label}</Pill>}
-            </Link>
-          ))}
-        </div>
+      {activeRes.length > 0 && (
+        <>
+          <SectionTitle title="Reserved for you" href="/account/reservations" link="Reservations" />
+          <ul className="grid gap-2">
+            {activeRes.slice(0, 3).map((r) => (
+              <li key={r.id} className="glass flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl px-5 py-3">
+                <span className="font-bold">{[r.year, r.make, r.model].filter(Boolean).join(" ") || "Vehicle"}</span>
+                <span className="text-sm text-white/70">{r.reserved_until ? `Held until ${fmtDate(r.reserved_until)}` : `Reservation #${r.reservation_no}`}</span>
+                <span className="ml-auto">
+                  <Pill cls="bg-amber-100 text-amber-900">Reserved</Pill>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       {me.agent && (
@@ -161,7 +219,10 @@ export default async function AccountHome() {
               <div className="font-bold">{me.agent.name}</div>
               <div className="text-sm text-white/70">Ask about prices, shipping or documents.</div>
             </div>
-            <a href={`mailto:${me.agent.email}`} className="inline-flex h-11 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 text-sm font-bold text-white hover:bg-brand-700">
+            <Link href="/account/support" className={`${BTN} bg-[var(--accent)] text-white hover:bg-brand-700`}>
+              <MessagesSquare className="h-4 w-4" /> Message
+            </Link>
+            <a href={`mailto:${me.agent.email}`} className={`${BTN} glass hover:brightness-105`}>
               <Mail className="h-4 w-4" /> Email
             </a>
           </Card>

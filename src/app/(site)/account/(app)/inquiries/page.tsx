@@ -26,7 +26,7 @@ export default async function AccountInquiries({ searchParams }: { searchParams:
 
       <SectionTitle title="My inquiries" />
       {list.length === 0 ? (
-        <EmptyNote>You haven&apos;t sent any inquiries yet.</EmptyNote>
+        <EmptyNote>You haven&apos;t sent any inquiries yet. Use the form above, or tap Get quote on any car.</EmptyNote>
       ) : (
         <div className="grid gap-2">
           {list.map((i) => {

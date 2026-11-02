@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Printer, ArrowLeft } from "lucide-react";
+import { Printer, ArrowLeft, Upload } from "lucide-react";
 import { money } from "@/lib/format";
 import { requireActivePortal, getPortalInvoiceDoc, DOC_TYPE_LABEL, INVOICE_STATUS, fmtDate } from "@/lib/portal";
 import { Card, Pill, Field } from "../../ui";
@@ -34,6 +34,17 @@ export default async function AccountInvoice({ params }: { params: Promise<{ id:
           <Printer className="h-4 w-4" /> Print / save as PDF
         </a>
       </div>
+
+      {!quote && inv.status !== "cancelled" && balance > 0.005 && (
+        <div className="on-dark mb-3 flex flex-wrap items-center gap-3 rounded-2xl bg-[var(--accent)] p-4 text-white">
+          <p className="min-w-0 flex-1 text-sm">
+            <b className="text-base tabular-nums">{money(balance, inv.currency)}</b> left to pay{inv.due_date ? `, due ${fmtDate(inv.due_date)}` : ""}. Pay only into the bank account printed on this invoice.
+          </p>
+          <Link href="/account/payments" className="inline-flex h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[var(--accent)] hover:brightness-95">
+            <Upload className="h-4 w-4" /> Upload payment slip
+          </Link>
+        </div>
+      )}
 
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">

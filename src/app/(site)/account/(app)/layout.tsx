@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { LogOut } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 import { avatarSrc } from "@/lib/avatar";
 import { createClient } from "@/lib/supabase/server";
 import { getPortalMe } from "@/lib/portal";
@@ -48,6 +48,11 @@ export default async function AccountLayout({ children }: { children: React.Reac
         </div>
         <div className="flex items-center gap-2">
           {me && me.status !== "rejected" && <NotificationBell userId={user.id} initial={bell.items} unread={bell.unread} tone="site" />}
+          {me && me.status !== "rejected" && (
+            <Link href="/account/profile" className="glass inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold hover:brightness-105">
+              <UserRound className="h-4 w-4" /> Profile
+            </Link>
+          )}
           <form action={customerSignOut}>
             <button className="glass inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold hover:brightness-105">
               <LogOut className="h-4 w-4" /> Sign out
