@@ -240,6 +240,24 @@ export const getReviews = cache(async (limit = 50) => {
   return { reviews: rows, avg: rows[0] ? Number(rows[0].avg_rating) : 0, count: rows[0] ? Number(rows[0].review_count) : 0 };
 });
 
+export type PublicOffer = {
+  id: string;
+  title: string;
+  summary: string | null;
+  discount_pct: number | null;
+  special_price: number | null;
+  price_currency: Currency;
+  starts_on: string;
+  ends_on: string | null;
+  banner_path: string | null;
+  cars: { stock_no: string; make: string; model: string; year: number | null }[];
+};
+/** Live offers only — the RPC drops switched-off, not-yet-started and expired ones. */
+export const getOffers = cache(async (limit = 20) => {
+  const { data } = await anon().rpc("public_offers", { p_limit: limit });
+  return (data ?? []) as PublicOffer[];
+});
+
 export type PublicPostCard = { slug: string; title: string; excerpt: string | null; cover_path: string | null; tags: string[]; published_at: string; updated_at: string; total_count: number };
 export const getPosts = cache(async (limit = 12, offset = 0) => {
   const { data } = await anon().rpc("public_posts", { p_limit: limit, p_offset: offset });

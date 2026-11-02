@@ -45,6 +45,7 @@ export default async function PublicLayout({ children }: { children: React.React
     { href: "/cars", label: "Stock list" },
     { href: "/parts", label: "Parts" },
     { href: "/machinery", label: "Machinery" },
+    { href: "/offers", label: "Offers" },
     { href: "/how-to-buy", label: "How to buy" },
     { href: "/payment", label: "Payment" },
     { href: "/reviews", label: "Reviews" },
@@ -52,7 +53,7 @@ export default async function PublicLayout({ children }: { children: React.React
     { href: "/contact", label: "Contact" },
     { href: "/account", label: "My account" },
   ];
-  const navLink = "block px-4 py-3 text-sm font-bold text-white/90 transition hover:bg-white/10 hover:text-white";
+  const navLink = "block whitespace-nowrap px-2 py-3 text-[13px] xl:px-4 xl:text-sm font-bold text-white/90 transition hover:bg-white/10 hover:text-white";
   // A logo uploaded in Settings wins; otherwise the built-in Al Mashriq mark + wordmark (crisp SVG, light text on the dark site).
   const custom = company.logo_url;
   // The original-colour logo (as on the login page), straight on the dark bars

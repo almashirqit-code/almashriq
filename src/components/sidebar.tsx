@@ -17,6 +17,7 @@ import {
   Store,
   Inbox,
   Newspaper,
+  Tag,
   Star,
   Banknote,
   ExternalLink,
@@ -102,6 +103,7 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
     label: "grp_website",
     items: [
       { href: "/admin/blog", label: "nav_blog", icon: Newspaper, roles: ["admin", "manager"] },
+      { href: "/admin/offers", label: "nav_offers", icon: Tag, roles: ["admin", "manager"] },
       { href: "/admin/reviews", label: "nav_reviews", icon: Star, roles: ["admin", "manager"] },
       { href: "/", label: "nav_showroom", icon: Store, newTab: true },
     ],
