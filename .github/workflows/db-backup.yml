@@ -43,10 +43,17 @@ jobs:
 
       - name: Upload to Cloudflare R2
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: auto
           # R2 doesn't need the extra checksums newer AWS CLIs send by default.
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-        run: aws s3 cp "$FILE" "s3://$BUCKET/daily/$FILE" --endpoint-url "$R2_ENDPOINT" --only-show-errors
+        run: |
+          set -euo pipefail
+          # A pasted secret can carry a trailing space or newline, which breaks the request headers.
+          export AWS_ACCESS_KEY_ID="$(printf '%s' "$R2_KEY_ID" | tr -d '[:space:]')"
+          export AWS_SECRET_ACCESS_KEY="$(printf '%s' "$R2_SECRET" | tr -d '[:space:]')"
+          echo "key id length=${#AWS_ACCESS_KEY_ID} (expect 32), secret length=${#AWS_SECRET_ACCESS_KEY} (expect 64)"
+          aws s3 cp "$FILE" "s3://$BUCKET/daily/$FILE" --endpoint-url "$R2_ENDPOINT" --only-show-errors
+          aws s3 ls "s3://$BUCKET/daily/" --endpoint-url "$R2_ENDPOINT" | tail -3
