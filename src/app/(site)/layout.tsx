@@ -9,6 +9,7 @@ import { MobileMenu } from "@/components/site/mobile-menu";
 import { MobileSearch } from "@/components/site/mobile-search";
 import { BottomNav } from "@/components/site/bottom-nav";
 import { SwRegister } from "@/components/site/sw-register";
+import { PushSettings } from "@/components/site/push-settings";
 import { TawkChat } from "@/components/site/tawk-chat";
 import { GoogleAnalytics } from "@/components/site/google-analytics";
 import { ConsentProvider, CookieSettingsLink } from "@/components/site/consent";
@@ -302,6 +303,7 @@ export default async function PublicLayout({ children }: { children: React.React
             Terms of Use
           </Link>
           <CookieSettingsLink className="inline-flex min-h-8 items-center underline hover:text-white" />
+          <PushSettings compact />
         </div>
       </footer>
 
