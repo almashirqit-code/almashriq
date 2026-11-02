@@ -45,7 +45,7 @@ export default async function MachinePage({ params }: { params: Promise<{ stock:
   const sold = m.status === "sold" || m.status === "shipped";
   const images = m.images.map(publicImageUrl);
   const url = `${SITE_URL}/machinery/${encodeURIComponent(m.stock_no)}`;
-  const wa = whatsapp(company, `Hello, please send me a C&F quotation for ${m.stock_no} ${title}. My destination port is: `);
+  const wa = whatsapp(company, `Hello, please send me a C&F quotation for ${m.stock_no} ${title}. My destination port is: `, m.stock_no);
   const specs: [string, string | number | null][] = [
     ["Stock ID", m.stock_no],
     ["Type", m.category],
@@ -124,7 +124,7 @@ export default async function MachinePage({ params }: { params: Promise<{ stock:
                 <div className="text-3xl font-black text-brand-600">{price ?? "Ask for price"}</div>
               </div>
               {wa && (
-                <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
+                <a href={wa} target="_blank" rel="noopener" className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
                   <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
               )}

@@ -82,7 +82,7 @@ export default async function MarketPage({ params }: { params: Promise<{ country
 
       <div className="mt-6 flex flex-wrap gap-3">
         {wa && (
-          <a href={wa} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#25D366] px-5 font-bold text-jet-950 hover:brightness-110">
+          <a href={wa} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#25D366] px-5 font-bold text-jet-950 hover:brightness-110">
             <MessageCircle className="h-4 w-4" /> Ask for a C&amp;F price to {port}
           </a>
         )}
@@ -99,7 +99,7 @@ export default async function MarketPage({ params }: { params: Promise<{ country
         <p className="mt-1 pl-4 text-sm text-slate-500">Buyers {m.inName} often ask us for {m.popular}.</p>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {latest.cars.map((c) => (
-            <CarCard key={c.id} c={c} wa={whatsapp(company, `Hello, I'm ${m.inName} and interested in ${c.stock_no} ${carTitle(c)}. Please quote C&F ${port}.`)} />
+            <CarCard key={c.id} c={c} wa={whatsapp(company, `Hello, I'm ${m.inName} and interested in ${c.stock_no} ${carTitle(c)}. Please quote C&F ${port}.`, c.stock_no)} />
           ))}
         </div>
         <div className="mt-4 flex flex-wrap gap-2">

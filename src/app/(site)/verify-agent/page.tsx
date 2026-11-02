@@ -18,7 +18,7 @@ export default async function VerifyAgentPage() {
   const contact = (
     <div className="mt-4 flex flex-wrap gap-2">
       {wa && (
-        <a href={wa} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950">
+        <a href={wa} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950">
           WhatsApp us{company.mobile ? ` · ${company.mobile}` : ""}
         </a>
       )}

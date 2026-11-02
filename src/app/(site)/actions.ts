@@ -22,6 +22,7 @@ export async function sendInquiry(_prev: InquiryState, fd: FormData): Promise<In
     stock_no: s(fd, "stock_no", 60),
     page_url: s(fd, "page_url", 500),
     source: s(fd, "source", 30) || "website",
+    marketing: fd.get("marketing") === "on",
   };
   if (!v.name) return { ok: false, message: "Please enter your name." };
   if (!v.email && !v.phone) return { ok: false, message: "Please enter your email or WhatsApp number so we can reply." };

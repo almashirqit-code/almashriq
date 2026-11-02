@@ -41,6 +41,10 @@ export function InquiryForm({ stockNo, defaultMessage = "", source = "website", 
       </div>
       <input name="port" placeholder="Destination port (e.g. Mombasa, Durban)" className={F} aria-label="Destination port" />
       <textarea name="message" rows={compact ? 3 : 5} defaultValue={defaultMessage} placeholder="Your message" className="w-full rounded-xl px-3.5 py-3 text-sm leading-relaxed" aria-label="Message" />
+      <label className="flex items-start gap-2.5 text-xs text-white/80">
+        <input type="checkbox" name="marketing" className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--accent)]" />
+        <span>Send me new stock and offers by email or WhatsApp (optional, unsubscribe any time).</span>
+      </label>
       <Turnstile resetKey={state} />
       {state && !state.ok && (
         <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-700">
@@ -51,7 +55,7 @@ export function InquiryForm({ stockNo, defaultMessage = "", source = "website", 
         <Send className="h-4 w-4" /> {pending ? "Sending…" : stockNo ? "Get a C&F quotation" : "Send inquiry"}
       </button>
       <p className="text-center text-xs text-white/60">
-        We reply within 24 hours. Your details are only used to answer your inquiry —{" "}
+        We reply within 24 hours. Unless you tick the box above, your details are only used to answer your inquiry —{" "}
         <Link href="/privacy" className="underline hover:text-white">
           Privacy Policy
         </Link>
