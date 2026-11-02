@@ -66,6 +66,12 @@ grant execute on function public.delete_push_subscription(text) to anon, authent
 -- page again doesn't repeat an alert.
 -- ---------------------------------------------------------------------
 alter table public.vehicles add column if not exists notified_shipping text;
+-- Cars that exist today count as already told, so the first save after this doesn't send old news.
+update public.vehicles v
+   set notified_shipping = v.shipping_status || '|' || coalesce(nullif(trim(s.courier_tracking), ''), '')
+  from public.vehicles v2
+  left join public.vehicle_shipments s on s.vehicle_id = v2.id
+ where v.id = v2.id and v.notified_shipping is null;
 
 -- Customers a car belongs to (same rule as portal_vehicle_ids). Server only.
 create or replace function public.vehicle_customer_ids(p_vehicle_id uuid)
