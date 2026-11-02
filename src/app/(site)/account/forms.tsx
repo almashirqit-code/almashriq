@@ -34,7 +34,7 @@ function Done({ title, children }: { title: string; children: React.ReactNode })
 function Saved({ state, children }: { state: AuthState; children: React.ReactNode }) {
   if (!state.ok) return null;
   return (
-    <p className="flex items-start gap-1.5 text-sm font-semibold text-emerald-400" role="status">
+    <p className="flex items-start gap-1.5 text-sm font-semibold text-emerald-700" role="status">
       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> {children}
     </p>
   );
@@ -81,6 +81,7 @@ export function SignUpForm() {
     );
   return (
     <form action={action} className="space-y-3">
+      <p className="text-xs text-white/70">Fields marked * are required.</p>
       <div className="hidden" aria-hidden>
         <label>
           Website <input name="website" tabIndex={-1} autoComplete="off" />
@@ -119,7 +120,8 @@ export function SignUpForm() {
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="password" className={LABEL}>Password *</label>
-          <PasswordInput id="password" name="password" required minLength={8} autoComplete="new-password" className={F} />
+          <PasswordInput id="password" name="password" required minLength={8} autoComplete="new-password" aria-describedby="password_hint" className={F} />
+          <p id="password_hint" className="mt-1 text-xs text-white/70">At least 8 characters</p>
         </div>
         <div>
           <label htmlFor="confirm" className={LABEL}>Confirm password *</label>
