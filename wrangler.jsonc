@@ -17,7 +17,9 @@
   // The live site. Cloudflare creates the DNS records and certificates for these.
   "routes": [
     { "pattern": "www.almashriqtrading.site", "custom_domain": true },
-    { "pattern": "almashriqtrading.site", "custom_domain": true }
+    { "pattern": "almashriqtrading.site", "custom_domain": true },
+    { "pattern": "www.almashriqtrading.app", "custom_domain": true },
+    { "pattern": "almashriqtrading.app", "custom_domain": true }
   ],
   "r2_buckets": [
     { "binding": "PHOTOS", "bucket_name": "almashriq-photos" },

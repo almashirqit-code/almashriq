@@ -46,7 +46,8 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   // The bare domain → www (one address for Google). Same for the old Vercel address in production.
   const bare = CANONICAL_HOST.replace(/^www\./, "");
-  if ((host === bare && host !== CANONICAL_HOST) || (process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app") && host !== CANONICAL_HOST)) {
+  // almashriqtrading.app (bare and www) is an alias of the main site.
+  if ((host === bare && host !== CANONICAL_HOST) || /^(www\.)?almashriqtrading\.app$/.test(host) ||(process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app") && host !== CANONICAL_HOST)) {
     const url = new URL(request.nextUrl.pathname + request.nextUrl.search, `https://${CANONICAL_HOST}`);
     return NextResponse.redirect(url, 308);
   }
