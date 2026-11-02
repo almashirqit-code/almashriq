@@ -245,7 +245,7 @@ export default async function PublicHome() {
         {arrivals.length ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {arrivals.map((c) => (
-              <CarCard key={c.id} c={c} wa={whatsapp(company, `Hello, I'm interested in ${c.stock_no} ${carTitle(c)}.`)} />
+              <CarCard key={c.id} c={c} wa={whatsapp(company, `Hello, I'm interested in ${c.stock_no} ${carTitle(c)}.`, c.stock_no)} />
             ))}
           </div>
         ) : (

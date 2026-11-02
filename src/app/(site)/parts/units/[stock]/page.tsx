@@ -50,8 +50,8 @@ export default async function PartUnitPage({ params }: { params: Promise<{ stock
   const price = priceLabel(u);
   const url = `${SITE_URL}/parts/units/${encodeURIComponent(u.stock_no)}`;
   const ref = `${u.stock_no} ${name}${u.model_code ? ` (${u.model_code})` : ""}`;
-  const wa = whatsapp(company, `Hello Al Mashriq, I'm interested in parts from unit ${ref}. I need: `);
-  const askFor = (part: string) => whatsapp(company, `Hello Al Mashriq, please quote the ${label(part).toLowerCase()} from unit ${ref}. My destination port is: `);
+  const wa = whatsapp(company, `Hello Al Mashriq, I'm interested in parts from unit ${ref}. I need: `, u.stock_no);
+  const askFor = (part: string) => whatsapp(company, `Hello Al Mashriq, please quote the ${label(part).toLowerCase()} from unit ${ref}. My destination port is: `, u.stock_no);
   const cuts = u.unit_parts.filter((p) => UNIT_CUTS.includes(p as UnitPart));
   const others = u.unit_parts.filter((p) => !UNIT_CUTS.includes(p as UnitPart));
   const condition = u.unit_condition ? UNIT_CONDITION_LABEL[u.unit_condition as UnitCondition] ?? u.unit_condition : null;
@@ -147,7 +147,7 @@ export default async function PartUnitPage({ params }: { params: Promise<{ stock
             )}
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {wa && (
-                <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
+                <a href={wa} target="_blank" rel="noopener" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
                   <MessageCircle className="h-5 w-5" /> Ask for parts
                 </a>
               )}
@@ -180,7 +180,7 @@ export default async function PartUnitPage({ params }: { params: Promise<{ stock
                         return (
                           <li key={p}>
                             {link ? (
-                              <a href={link} target="_blank" rel="noreferrer" className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-white/5 px-3.5 text-sm font-bold ring-1 ring-white/10 hover:bg-white/10">
+                              <a href={link} target="_blank" rel="noopener" className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-white/5 px-3.5 text-sm font-bold ring-1 ring-white/10 hover:bg-white/10">
                                 {label(p)}
                                 <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700">
                                   <MessageCircle className="h-3.5 w-3.5" /> Ask

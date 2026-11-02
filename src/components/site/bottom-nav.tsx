@@ -32,7 +32,7 @@ export function BottomNav({ wa }: { wa: string | null }) {
         </Link>
       ))}
       {wa ? (
-        <a href={wa} target="_blank" rel="noreferrer" className={`${item} text-[#4ADE80]`}>
+        <a href={wa} target="_blank" rel="noopener" className={`${item} text-[#4ADE80]`}>
           <span className="flex h-7 w-12 items-center justify-center">
             <MessageCircle className="h-5 w-5" />
           </span>

@@ -12,7 +12,7 @@ export function StickyContact({ price, wa }: { price: string | null; wa: string 
         <div className="truncate text-lg font-black leading-tight">{price ?? "Ask for price"}</div>
       </div>
       {wa && (
-        <a href={wa} target="_blank" rel="noreferrer" aria-label="Chat on WhatsApp" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#25D366] text-jet-950 shadow-lg shadow-black/30">
+        <a href={wa} target="_blank" rel="noopener" aria-label="Chat on WhatsApp" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#25D366] text-jet-950 shadow-lg shadow-black/30">
           <MessageCircle className="h-6 w-6" />
         </a>
       )}

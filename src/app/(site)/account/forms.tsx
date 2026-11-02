@@ -140,6 +140,10 @@ export function SignUpForm() {
           .
         </span>
       </label>
+      <label className="flex items-start gap-2.5 text-sm">
+        <input type="checkbox" name="marketing" className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--accent)]" />
+        <span>Send me new stock, offers and news by email or WhatsApp. Optional — you can unsubscribe at any time.</span>
+      </label>
       <Turnstile resetKey={state} />
       <ErrorLine state={state} />
       <Submit pending={pending}>Create account</Submit>

@@ -59,7 +59,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
   const price = priceLabel(c);
   const sold = c.status === "sold" || c.status === "shipped";
   const images = c.images.map(publicImageUrl);
-  const wa = whatsapp(company, `Hello, please send me a C&F quotation for ${c.stock_no} ${title}. My destination port is: `);
+  const wa = whatsapp(company, `Hello, please send me a C&F quotation for ${c.stock_no} ${title}. My destination port is: `, c.stock_no);
   const url = `${SITE_URL}/cars/${encodeURIComponent(c.stock_no)}`;
   const specs: [string, string | number | null][] = [
     ["Stock ID", c.stock_no],
@@ -191,7 +191,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {wa && (
-                <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
+                <a href={wa} target="_blank" rel="noopener" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 shadow-lg shadow-black/25 hover:brightness-110">
                   <MessageCircle className="h-5 w-5" /> WhatsApp
                 </a>
               )}
@@ -293,7 +293,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((r) => (
-              <CarCard key={r.id} c={r} wa={whatsapp(company, `Hello, I'm interested in ${r.stock_no} ${carTitle(r)}.`)} />
+              <CarCard key={r.id} c={r} wa={whatsapp(company, `Hello, I'm interested in ${r.stock_no} ${carTitle(r)}.`, r.stock_no)} />
             ))}
           </div>
         </section>

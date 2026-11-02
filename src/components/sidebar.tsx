@@ -34,6 +34,7 @@ import {
   History,
   Gauge,
   Mail,
+  BarChart3,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
@@ -78,6 +79,7 @@ const GROUPS: { label: DictKey; items: Item[] }[] = [
       { href: "/admin/support", label: "nav_support", icon: MessagesSquare },
       { href: "/admin/customers", label: "nav_customers", icon: Users },
       { href: "/admin/portal-signups", label: "nav_portal_signups", icon: UserPlus, roles: ["admin", "manager"] },
+      { href: "/admin/inquiry-report", label: "nav_inquiry_report", icon: BarChart3, roles: ["admin", "manager"] },
       { href: "/admin/payment-slips", label: "nav_payment_slips", icon: Receipt },
       { href: "/admin/favorites", label: "nav_favorites", icon: Heart, roles: ["admin", "manager"] },
       { href: "/admin/reservations", label: "nav_reservations", icon: BookmarkCheck },

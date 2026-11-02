@@ -73,6 +73,7 @@ export async function customerSignUp(_prev: AuthState, formData: FormData): Prom
         whatsapp: clean(formData.get("whatsapp"), 40),
         country: clean(formData.get("country"), 80),
         port: clean(formData.get("port"), 80),
+        marketing: formData.get("marketing") === "on" ? "true" : "false",
       },
     },
   });

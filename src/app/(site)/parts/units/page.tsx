@@ -134,7 +134,7 @@ export default async function PartUnitsPage({ searchParams }: { searchParams: Pr
                 const imgs = (u.images?.length ? u.images : u.cover ? [u.cover] : []).map(publicImageUrl);
                 const cuts = u.unit_parts.filter((p) => UNIT_CUTS.includes(p as UnitPart));
                 const others = u.unit_parts.filter((p) => !UNIT_CUTS.includes(p as UnitPart));
-                const wa = whatsapp(company, `Hello Al Mashriq, I'm interested in parts from unit ${u.stock_no} ${title}${u.model_code ? ` (${u.model_code})` : ""}. I need: `);
+                const wa = whatsapp(company, `Hello Al Mashriq, I'm interested in parts from unit ${u.stock_no} ${title}${u.model_code ? ` (${u.model_code})` : ""}. I need: `, u.stock_no);
                 return (
                   <article key={u.id} className="glass-lite glass-hover flex flex-col overflow-hidden rounded-2xl">
                     <Link href={detail} className="relative block aspect-[4/3] bg-black/20" aria-label={`${title} — ${u.stock_no}`}>
@@ -186,7 +186,7 @@ export default async function PartUnitsPage({ searchParams }: { searchParams: Pr
                           View unit
                         </Link>
                         {wa ? (
-                          <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 hover:brightness-110">
+                          <a href={wa} target="_blank" rel="noopener" className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 hover:brightness-110">
                             <MessageCircle className="h-4 w-4" /> Ask for parts
                           </a>
                         ) : (

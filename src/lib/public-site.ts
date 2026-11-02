@@ -185,10 +185,24 @@ export function priceLabel(c: { price: number | null; price_currency: Currency }
   return new Intl.NumberFormat("en-US", { style: "currency", currency: c.price_currency || "USD", maximumFractionDigits: 0 }).format(Number(c.price));
 }
 
+const waNumber = (company: PublicCompany) => (company.mobile || company.phone || "").replace(/[^\d]/g, "").replace(/^0+/, "");
+
 /** wa.me link with a ready-made message. */
-export function whatsapp(company: PublicCompany, message: string) {
-  const num = (company.mobile || company.phone || "").replace(/[^\d]/g, "").replace(/^0+/, "");
+export function waMeUrl(company: PublicCompany, message: string) {
+  const num = waNumber(company);
   return num ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : null;
+}
+
+/**
+ * WhatsApp link for the website: goes through /wa, which logs the click (page, stock no, country,
+ * UTM tags) for the Inquiry report and then redirects to wa.me. Links must keep the Referer
+ * (rel="noopener", not "noreferrer") so /wa knows the page.
+ */
+export function whatsapp(company: PublicCompany, message: string, ref?: string | null) {
+  if (!waNumber(company)) return null;
+  const q = new URLSearchParams({ text: message });
+  if (ref) q.set("ref", ref);
+  return `/wa?${q}`;
 }
 
 /** Customer support mailbox (Zoho). Sales inquiries use the company email from Configuration. */
@@ -510,6 +524,7 @@ export async function submitInquiryRpc(v: {
   stock_no: string;
   page_url: string;
   source: string;
+  marketing: boolean;
 }) {
   const { data, error } = await anon().rpc("submit_inquiry", {
     p_name: v.name,
@@ -521,8 +536,23 @@ export async function submitInquiryRpc(v: {
     p_stock_no: v.stock_no,
     p_page_url: v.page_url,
     p_source: v.source,
+    p_marketing: v.marketing,
   });
   return { no: data as number | null, error: error?.message ?? null };
+}
+
+/** Records one WhatsApp click (no IP or other personal data). Never throws: the redirect matters more. */
+export async function logWhatsappClick(v: { page: string; stock_no: string; country: string; utm_source: string; utm_campaign: string; referrer: string }) {
+  try {
+    await anon().rpc("log_whatsapp_click", {
+      p_page: v.page,
+      p_stock_no: v.stock_no,
+      p_country: v.country,
+      p_utm_source: v.utm_source,
+      p_utm_campaign: v.utm_campaign,
+      p_referrer: v.referrer,
+    });
+  } catch {}
 }
 
 /** URL slug for a make landing page ("Land Rover" → "land-rover"). */
