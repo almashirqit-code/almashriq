@@ -23,8 +23,8 @@
     { "binding": "PHOTOS", "bucket_name": "almashriq-photos" },
     // Private documents (no public domain): payment slips, receipts, support files, remittance and vehicle docs.
     { "binding": "DOCS", "bucket_name": "almashriq-docs" },
-    // Next.js page and data cache (open-next.config.ts).
-    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "almashriq-cache" }
+    // Next.js page and data cache (open-next.config.ts). In Asia, near the visitors and the database.
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "almashriq-cache-apac" }
   ],
   // revalidateTag timestamps for the Next.js cache (open-next.config.ts).
   "d1_databases": [

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { checkDatabase, checkPage, timed, type Check } from "@/lib/health";
 import { SITE_URL } from "@/lib/public-site";
 import { PageHeader } from "@/components/ui";
-import { RefreshControls } from "./refresh";
+import { ClearCacheButton, RefreshControls } from "./refresh";
 import { photoBucket } from "@/lib/photo-store";
 
 export const metadata = { title: "System monitor" };
@@ -135,6 +135,10 @@ export default async function SystemPage() {
               </>
             )}
           </dl>
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <p className="mb-2 text-slate-600">Website changes normally show at once. After an upgrade, or if a page still looks old, clear the cache:</p>
+            <ClearCacheButton />
+          </div>
         </section>
         <section className="card px-5 py-4 text-sm text-slate-600">
           <h2 className="card-title mb-2">
