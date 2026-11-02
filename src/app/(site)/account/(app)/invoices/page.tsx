@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "My invoices", robots: { index: false
 export default async function AccountInvoices() {
   await requireActivePortal();
   const invoices = await getPortalInvoices();
-  if (!invoices.length) return <EmptyNote>No invoices yet. Your invoices and quotations will appear here as soon as your agent issues them.</EmptyNote>;
+  if (!invoices.length) return <EmptyNote href="/account/support" cta="Message your agent">No invoices yet. Your invoices and quotations will appear here as soon as your agent issues them.</EmptyNote>;
 
   return (
     <div className="grid gap-2">

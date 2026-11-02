@@ -1,27 +1,38 @@
 import type { Metadata } from "next";
-import { Car, Ship, Package, FileText, Download, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { Car, Ship, Package, FileText, Download, ExternalLink, MessagesSquare, Clock3 } from "lucide-react";
 import { publicImageUrl } from "@/lib/format";
-import { requireActivePortal, getPortalVehicles, getPortalDocuments, SHIPPING_STATUS, DOC_KIND_LABEL, fmtDate } from "@/lib/portal";
-import { Card, Pill, Field, EmptyNote } from "../ui";
+import { requireActivePortal, getPortalVehicles, getPortalDocuments, getPortalTTs, SHIPPING_STATUS, DOC_KIND_LABEL, fmtDate } from "@/lib/portal";
+import { Card, Pill, Field, EmptyNote, Journey, carJourney, paidDates } from "../ui";
 
 export const metadata: Metadata = { title: "My cars", robots: { index: false, follow: false } };
 
-const STEPS = ["not_booked", "booked", "shipped", "delivered"] as const;
+/** Papers every export car gets; shown as "not ready yet" until uploaded, so buyers know what to expect. */
+const EXPECTED_DOCS: { label: string; kinds: string[] }[] = [
+  { label: "Bill of lading (B/L)", kinds: ["bl", "amend_bl", "surrender", "draft_bl", "waybill"] },
+  { label: "Export certificate", kinds: ["export_cert", "export_cert_en"] },
+];
 
 /** The customer's cars: status, shipping progress and tracking, and their documents. */
 export default async function AccountCars() {
   await requireActivePortal();
-  const [cars, docs] = await Promise.all([getPortalVehicles(), getPortalDocuments()]);
-  if (!cars.length) return <EmptyNote>No cars on your account yet. Cars appear here once they are reserved or invoiced to you.</EmptyNote>;
+  const [cars, docs, tts] = await Promise.all([getPortalVehicles(), getPortalDocuments(), getPortalTTs()]);
+  if (!cars.length)
+    return (
+      <EmptyNote href="/cars" cta="Browse stock">
+        No cars on your account yet. Cars appear here once they are reserved or invoiced to you.
+      </EmptyNote>
+    );
+  const paid = paidDates(tts);
 
   return (
     <div className="grid gap-4">
       {cars.map((v) => {
-        const step = v.shipping_status ? STEPS.indexOf(v.shipping_status) : 0;
         const ship = v.shipping_status ? SHIPPING_STATUS[v.shipping_status] : SHIPPING_STATUS.not_booked;
         const myDocs = docs.filter((d) => d.vehicle_id === v.id);
         return (
-          <Card key={v.id}>
+          <Card key={v.id} className="scroll-mt-24">
+            <span id={`car-${v.id}`} />
             <div className="flex flex-wrap gap-4">
               <div className="h-28 w-40 shrink-0 overflow-hidden rounded-xl bg-black/5">
                 {v.cover ? (
@@ -43,16 +54,14 @@ export default async function AccountCars() {
                   </div>
                   <Pill cls={ship.cls}>{ship.label}</Pill>
                 </div>
-                {/* progress: preparing → booked → on the way → arrived */}
-                <ol className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Shipping progress">
-                  {STEPS.map((s, i) => (
-                    <li key={s} className="min-w-0">
-                      <div className={`h-1.5 rounded-full ${i <= step ? "bg-[var(--accent)]" : "bg-current opacity-15"}`} />
-                      <div className={`mt-1 truncate text-[11px] ${i <= step ? "font-bold" : "opacity-60"}`}>{SHIPPING_STATUS[s].label}</div>
-                    </li>
-                  ))}
-                </ol>
+                <Link href={`/account/inquiries?stock=${encodeURIComponent(v.stock_no)}`} className="glass mt-3 inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold hover:brightness-105">
+                  <MessagesSquare className="h-4 w-4" /> Ask about this car
+                </Link>
               </div>
+            </div>
+
+            <div className="mt-4 border-t border-current/10 pt-4">
+              <Journey steps={carJourney(v, paid.get(v.stock_no))} fmt={fmtDate} />
             </div>
 
             {(v.vessel_name || v.etd || v.eta || v.bl_no || v.container_no) && (
@@ -95,9 +104,14 @@ export default async function AccountCars() {
               <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-white/60">
                 <FileText className="h-3.5 w-3.5" /> Documents
               </div>
-              {myDocs.length === 0 ? (
-                <p className="text-sm text-white/70">Documents such as the B/L and export certificate will appear here when they&apos;re ready.</p>
-              ) : (
+              {EXPECTED_DOCS.filter((e) => !myDocs.some((d) => e.kinds.includes(d.kind))).map((e) => (
+                <p key={e.label} className="mb-2 flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm ring-1 ring-current/10">
+                  <Clock3 className="h-4 w-4 shrink-0 opacity-60" aria-hidden />
+                  <span className="min-w-0 flex-1 font-semibold">{e.label}</span>
+                  <span className="text-xs text-white/70">Not ready yet</span>
+                </p>
+              ))}
+              {myDocs.length === 0 ? null : (
                 <ul className="grid gap-2 sm:grid-cols-2">
                   {myDocs.map((d) => (
                     <li key={d.id}>
