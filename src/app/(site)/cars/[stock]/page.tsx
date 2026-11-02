@@ -5,7 +5,7 @@ import { MessageCircle, Mail, MapPin, Check, CalendarDays, Gauge, Cog, Fuel, Shi
 import { publicImageUrl } from "@/lib/format";
 import { carTitle, getCar, getCompany, getYardPhotos, listCars, makeSlug, priceLabel, whatsapp, SITE_URL } from "@/lib/public-site";
 import { Gallery } from "@/components/site/gallery";
-import { InquiryForm } from "@/components/site/inquiry-form";
+import { QuoteForm } from "@/components/site/quote-form";
 import { JsonLd } from "@/components/site/json-ld";
 import { CarCard } from "../../car-card";
 import { ShipsFrom } from "@/components/site/ships-from";
@@ -141,7 +141,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
       </nav>
 
       {/*
-        Phones: gallery → summary → details → quote form (the sticky bar jumps to the form).
+        Phones: gallery → summary → details → quote form (the sticky bar also opens the same form as a sheet).
         Desktop: gallery | summary, then details | quote form (sticky), so neither column leaves a gap.
       */}
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -262,12 +262,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
         <div className="lg:col-start-2 lg:row-start-2">
           <div id="quote" className="glass-lite scroll-mt-20 rounded-3xl p-5 lg:sticky lg:top-24">
             <h2 className="mb-3 text-lg font-black text-navy-950">Get a quotation for this car</h2>
-            <InquiryForm
-              stockNo={c.stock_no}
-              source="car_page"
-              compact
-              defaultMessage={`Please send me a C&F quotation for ${c.stock_no} ${title}.`}
-            />
+            <QuoteForm stockNo={c.stock_no} title={title} wa={wa} />
             <p className="mt-3 text-center text-sm">
               Already a customer?{" "}
               <Link href={`/account/inquiries?stock=${encodeURIComponent(c.stock_no)}`} className="font-bold text-brand-700 hover:underline">
@@ -278,7 +273,7 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
         </div>
       </div>
 
-      <StickyContact price={price} wa={wa} />
+      <StickyContact price={price} wa={wa} quote={{ stockNo: c.stock_no, title }} />
 
       {related.length > 0 && (
         <section className="mt-10">

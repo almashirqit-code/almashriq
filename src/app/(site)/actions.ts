@@ -4,6 +4,8 @@ import { submitInquiryRpc } from "@/lib/public-site";
 import { rateLimit } from "@/lib/rate-limit";
 import { passedTurnstile, TURNSTILE_FAILED } from "@/lib/turnstile";
 import { notifyInquiry } from "@/lib/notify";
+import { headers } from "next/headers";
+import { getPortalMe } from "@/lib/portal";
 
 export type InquiryState = { ok: boolean; message: string; no?: number | null } | null;
 
@@ -25,6 +27,12 @@ export async function sendInquiry(_prev: InquiryState, fd: FormData): Promise<In
     marketing: fd.get("marketing") === "on",
   };
   if (!v.name) return { ok: false, message: "Please enter your name." };
+  // The car-page quote sheet asks only for name, WhatsApp/phone and destination (email optional).
+  if (s(fd, "quick")) {
+    if (!v.phone) return { ok: false, message: "Please enter your WhatsApp or phone number so we can send the quote." };
+    if (!/\d{6,}/.test(v.phone.replace(/[\s()-]/g, ""))) return { ok: false, message: "Please enter a full phone number with country code, e.g. +254 712 345 678." };
+    if (!v.port) return { ok: false, message: "Please enter your destination port or country." };
+  }
   if (!v.email && !v.phone) return { ok: false, message: "Please enter your email or WhatsApp number so we can reply." };
   if (v.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return { ok: false, message: "Please enter a valid email address." };
   if (!v.message && !v.stock_no) return { ok: false, message: "Please write a short message." };
@@ -37,4 +45,28 @@ export async function sendInquiry(_prev: InquiryState, fd: FormData): Promise<In
   }
   notifyInquiry(res.no);
   return { ok: true, no: res.no, message: "Thank you! Your inquiry has been received. Our sales team will reply within 24 hours." };
+}
+
+export type QuotePrefill = { name: string; email: string; phone: string; port: string; country: string };
+
+/**
+ * Prefill for the quote sheet. Car pages are cached for everyone, so this runs per visitor on open:
+ * the signed-in customer's own details (portal_me, RLS-scoped) or just the Cloudflare-detected country.
+ */
+export async function quotePrefill(): Promise<QuotePrefill> {
+  const code = ((await headers()).get("cf-ipcountry") ?? "").toUpperCase();
+  let country = "";
+  if (/^[A-Z]{2}$/.test(code) && code !== "XX" && code !== "T1") {
+    try {
+      country = new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? "";
+    } catch {}
+  }
+  const me = await getPortalMe().catch(() => null);
+  return {
+    name: me?.full_name ?? me?.customer?.name ?? "",
+    email: me?.email ?? "",
+    phone: me?.whatsapp ?? me?.phone ?? "",
+    port: me?.port ?? me?.customer?.port ?? "",
+    country: me?.country ?? me?.customer?.country ?? country,
+  };
 }
