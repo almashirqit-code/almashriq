@@ -8,7 +8,7 @@ import { getT } from "@/lib/i18n/server";
 import { date, money } from "@/lib/format";
 import { REMITTANCE_STATUSES, type Remittance, type RemittanceDocument } from "@/lib/types";
 import type { DictKey } from "@/lib/i18n/dictionaries";
-import { Empty, NumberedPagination, IconChip } from "@/components/ui";
+import { Empty, NumberedPagination, PageHeader } from "@/components/ui";
 import { RowActions } from "./list-controls";
 import { DocIcons } from "./doc-icons";
 
@@ -96,26 +96,25 @@ export default async function RemittancesPage({
 
   return (
     <>
-      <div className="no-print mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3.5">
-          <IconChip tone="emerald">
-            <Banknote />
-          </IconChip>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t("rem_title")}</h1>
-            <p className="mt-0.5 text-xs text-slate-500">
-              {t("nav_remittances")} <span className="mx-1">›</span>
-              <span className="text-slate-700">{t("rem_list")}</span>
-            </p>
-          </div>
-        </div>
-        {canEdit && (
-          <Link href="/admin/remittances/new" className="btn-primary">
-            <PlusCircle className="h-4 w-4" />
-            {t("rem_add")}
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        icon={<Banknote />}
+        tone="emerald"
+        title={t("rem_title")}
+        subtitle={
+          <>
+            {t("nav_remittances")} <span className="mx-1">›</span>
+            <span className="text-slate-700">{t("rem_list")}</span>
+          </>
+        }
+        actions={
+          canEdit && (
+            <Link href="/admin/remittances/new" className="btn-primary">
+              <PlusCircle className="h-4 w-4" />
+              {t("rem_add")}
+            </Link>
+          )
+        }
+      />
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <form action="/admin/remittances" className="flex flex-wrap items-center gap-2">

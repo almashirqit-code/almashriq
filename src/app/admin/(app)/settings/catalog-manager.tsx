@@ -113,7 +113,7 @@ export function CatalogManager({ makes, usage, canEdit }: { makes: CatalogMake[]
                       <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-slate-300" />
                     </button>
                     {canEdit && (
-                      <div className="flex pr-1.5 opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
+                      <div className="flex pr-1.5 transition [@media(hover:hover)]:opacity-0 group-hover:opacity-100 focus-within:opacity-100">
                         <button type="button" className="rounded p-1.5 text-slate-500 hover:bg-slate-100" title="Rename" onClick={() => setEdit({ type: "make", id: m.id, name: m.name })}>
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
@@ -207,11 +207,11 @@ export function CatalogManager({ makes, usage, canEdit }: { makes: CatalogMake[]
                           {m.model_code && <span className="ml-2 font-mono text-xs text-slate-400">{m.model_code}</span>}
                         </span>
                         {canEdit && (
-                          <div className="flex opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
+                          <div className="flex transition [@media(hover:hover)]:opacity-0 group-hover:opacity-100 focus-within:opacity-100">
                             <button type="button" className="rounded p-1.5 text-slate-500 hover:bg-slate-100" title="Rename" onClick={() => setEdit({ type: "model", id: m.id, name: m.name, code: m.model_code ?? "" })}>
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
-                            <button type="button" className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600" title="Remove from the list" onClick={() => run(() => deleteModel(m.id))}>
+                            <button type="button" className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600" title="Remove from the list" onClick={() => confirm(`Remove ${m.name} from the list?\n\nStock that already uses it is not changed.`) && run(() => deleteModel(m.id))}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>

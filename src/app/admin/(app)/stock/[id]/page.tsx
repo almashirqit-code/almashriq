@@ -190,6 +190,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
           {invoices.length > 0 && (
             <section className="card overflow-hidden">
               <h2 className="border-b border-slate-100 px-5 py-3.5 text-sm font-semibold">{t("stock_in_invoices")}</h2>
+              <div className="overflow-x-auto">
               <table className="table">
                 <tbody>
                   {invoices.map(({ inv, amount }) => (
@@ -210,6 +211,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
                   ))}
                 </tbody>
               </table>
+              </div>
             </section>
           )}
         </div>

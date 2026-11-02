@@ -105,7 +105,7 @@ export function StockPhotos({
               <img src={publicImageUrl(p.path)} alt="" loading="lazy" className="h-full w-full cursor-zoom-in object-cover" onClick={() => setLightbox(publicImageUrl(p.path))} />
               {i === 0 && <span className="absolute left-1.5 top-1.5 rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">COVER</span>}
               {canEdit && (
-                <div className="absolute right-1.5 top-1.5 flex gap-1 opacity-0 transition group-hover:opacity-100">
+                <div className="absolute right-1.5 top-1.5 flex gap-1 transition [@media(hover:hover)]:opacity-0 group-hover:opacity-100 focus-within:opacity-100">
                   {i !== 0 && (
                     <button type="button" title="Set as cover" className="rounded bg-white/90 p-1 text-slate-700 shadow hover:bg-white" onClick={() => makeCover(p.id)}>
                       <Star className="h-3.5 w-3.5" />

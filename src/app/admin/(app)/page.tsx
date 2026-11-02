@@ -10,9 +10,11 @@ import { Stat, InvoiceStatusBadge, VehicleStatusBadge, Empty, IconChip } from "@
 import { fetchAll } from "@/lib/fetch-all";
 import { getDisplayCurrency } from "@/lib/display-currency";
 import { Greeting } from "./greeting";
-import { SalesChart, MakesChart } from "./dashboard-charts";
+import { SalesChart, PieBreakdown } from "./dashboard-charts";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { loadEntries, totals, loadProfit, loadReceivables } from "./ledger/data";
+import { loadRates } from "./reservations/data";
+import { expenseCategoryLabel } from "@/lib/expenses";
 
 const ACTIVE: InvoiceStatus[] = ["issued", "partially_paid", "paid"];
 
@@ -30,7 +32,8 @@ export default async function DashboardPage() {
   const countStatus = (s: VehicleStatus, ownership = "own") =>
     supabase.from("vehicles").select("id", { count: "exact", head: true }).eq("status", s).eq("ownership", ownership);
 
-  const [inStock, reserved, thirdParty, stockRows, salesRows, openRows, soldItems, recentInv, recentVeh, custCount] =
+  const inquiryCount = (s: string) => supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", s);
+  const [inStock, reserved, thirdParty, stockRows, salesRows, openRows, soldItems, recentInv, recentVeh, custCount, inqNew, inqContacted, inqQuoted] =
     await Promise.all([
       countStatus("in_stock"),
       countStatus("reserved"),
@@ -66,6 +69,9 @@ export default async function DashboardPage() {
         .order("created_at", { ascending: false })
         .limit(6),
       supabase.from("customers").select("id", { count: "exact", head: true }),
+      inquiryCount("new"),
+      inquiryCount("contacted"),
+      inquiryCount("quoted"),
     ]);
 
   // Stock value + makes
@@ -76,10 +82,6 @@ export default async function DashboardPage() {
     stockValue += costJpy(v);
     makes.set(v.make, (makes.get(v.make) ?? 0) + 1);
   }
-  const topMakes = [...makes.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([make, count]) => ({ make, count }));
 
   // Sales per month (JPY equivalent) + this month by currency
   const months: { key: string; label: string; jpy: number }[] = [];
@@ -187,10 +189,61 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      <section className="mt-4">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">{t("dash_glance")}</h2>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="card p-5">
+            <h3 className="card-title mb-4">
+              <IconChip tone="brand" size="sm">
+                <Car />
+              </IconChip>
+              {t("dash_pie_stock")}
+            </h3>
+            <PieBreakdown
+              locale={locale}
+              centerLabel={t("dash_cars")}
+              emptyLabel={t("dash_none")}
+              data={[
+                { label: t("dash_in_stock"), value: inStock.count ?? 0 },
+                { label: t("dash_reserved"), value: reserved.count ?? 0 },
+                { label: t("dash_third_party_short"), value: thirdPartyInStock },
+              ]}
+            />
+          </div>
+          <div className="card p-5">
+            <h3 className="card-title mb-4">
+              <IconChip tone="violet" size="sm">
+                <Package />
+              </IconChip>
+              {t("dash_pie_makes")}
+            </h3>
+            <PieBreakdown locale={locale} centerLabel={t("dash_cars")} otherLabel={t("dash_other")} emptyLabel={t("dash_none")} data={[...makes.entries()].map(([label, value]) => ({ label, value }))} />
+          </div>
+          <Link href="/admin/inquiries" className="card block p-5 transition hover:ring-2 hover:ring-brand-200">
+            <h3 className="card-title mb-4">
+              <IconChip tone="fuchsia" size="sm">
+                <Users />
+              </IconChip>
+              {t("dash_pie_pipeline")}
+            </h3>
+            <PieBreakdown
+              locale={locale}
+              centerLabel={t("iq_title")}
+              emptyLabel={t("dash_none")}
+              data={[
+                { label: t("iq_st_new"), value: inqNew.count ?? 0 },
+                { label: t("iq_st_contacted"), value: inqContacted.count ?? 0 },
+                { label: t("iq_st_quoted"), value: inqQuoted.count ?? 0 },
+              ]}
+            />
+          </Link>
+        </div>
+      </section>
+
       {can.seeCost(profile.role) && <FinanceMonth monthStart={monthStart} today={now.toISOString().slice(0, 10)} title={t("dash_finance_month")} isAdmin={profile.role === "admin"} />}
 
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="card p-5 lg:col-span-2">
+      <div className="mt-4">
+        <div className="card p-5">
           <h2 className="card-title mb-4">
             <IconChip tone="brand" size="sm">
               <TrendingUp />
@@ -198,15 +251,6 @@ export default async function DashboardPage() {
             {t("dash_sales_chart")}
           </h2>
           <SalesChart data={months.map((m) => ({ label: m.label, value: Math.round(display.fromJpy(m.jpy)) }))} locale={locale} currency={display.cur} />
-        </div>
-        <div className="card p-5">
-          <h2 className="card-title mb-4">
-            <IconChip tone="violet" size="sm">
-              <Car />
-            </IconChip>
-            {t("dash_top_makes")}
-          </h2>
-          {topMakes.length ? <MakesChart data={topMakes} /> : <Empty>{t("no_results")}</Empty>}
         </div>
       </div>
 
@@ -224,6 +268,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
           {recentInv.data?.length ? (
+            <div className="overflow-x-auto">
             <table className="table">
               <tbody>
                 {recentInv.data.map((inv) => {
@@ -246,6 +291,7 @@ export default async function DashboardPage() {
                 })}
               </tbody>
             </table>
+            </div>
           ) : (
             <Empty>{t("no_results")}</Empty>
           )}
@@ -263,6 +309,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
           {recentVeh.data?.length ? (
+            <div className="overflow-x-auto">
             <table className="table">
               <tbody>
                 {recentVeh.data.map((v) => (
@@ -280,6 +327,7 @@ export default async function DashboardPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <Empty>{t("no_results")}</Empty>
           )}
@@ -292,11 +340,28 @@ export default async function DashboardPage() {
 /** Admins and managers: this month's sales, money in, costs and profit, with links to the ledger tools. */
 async function FinanceMonth({ monthStart, today, title, isAdmin }: { monthStart: string; today: string; title: string; isAdmin: boolean }) {
   const p = { from: monthStart, to: today };
-  const [entries, profit, receivables] = await Promise.all([loadEntries(p), loadProfit(p), loadReceivables()]);
+  const supabase = await createClient();
+  const [entries, profit, receivables, { rates }, { data: expenseRows }, { t: tr, locale }] = await Promise.all([
+    loadEntries(p),
+    loadProfit(p),
+    loadReceivables(),
+    loadRates(),
+    supabase.from("company_expenses").select("category, amount_jpy").gte("expense_date", p.from).lte("expense_date", p.to).limit(20000),
+    getT(),
+  ]);
   const t = totals(entries);
   const overdue = receivables.list.filter((r) => r.daysLate > 0).length;
   const display = await getDisplayCurrency();
   const yen = (n: number) => display.fmt(n);
+  const sum = (pairs: [string, number][]) => {
+    const m = new Map<string, number>();
+    for (const [k, v] of pairs) m.set(k, (m.get(k) ?? 0) + v);
+    return [...m.entries()].map(([label, value]) => ({ label, value: display.fromJpy(value) }));
+  };
+  const salesByOffice = sum(entries.filter((e) => e.kind === "sale").map((e) => [e.office ?? tr("dash_no_office"), e.jpy]));
+  const expensesByCat = sum((expenseRows ?? []).map((r) => [expenseCategoryLabel(r.category), Number(r.amount_jpy)]));
+  // Balances are in each invoice's currency: convert at today's Configuration rate (1 unit = N JPY).
+  const owedByAge = sum(receivables.list.map((r) => [tr(`dash_age_${r.bucket}` as DictKey), r.balance * (r.currency === "JPY" ? 1 : Number(rates[r.currency]) || 1)]));
   const links = [
     { href: "/admin/ledger", label: "Ledger", icon: BookOpen },
     { href: "/admin/expenses", label: "Expenses", icon: Receipt },
@@ -343,6 +408,21 @@ async function FinanceMonth({ monthStart, today, title, isAdmin }: { monthStart:
             <div key={x.label}>{body}</div>
           );
         })}
+      </div>
+      <div className="mt-5 grid grid-cols-1 gap-6 border-t border-slate-100 pt-5 lg:grid-cols-3">
+        <div>
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{tr("dash_pie_sales_office")}</h3>
+          <PieBreakdown data={salesByOffice} locale={locale} currency={display.cur} centerLabel={tr("dash_sales")} otherLabel={tr("dash_other")} emptyLabel={tr("dash_none")} />
+        </div>
+        <div>
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{tr("dash_pie_expenses")}</h3>
+          <PieBreakdown data={expensesByCat} locale={locale} currency={display.cur} centerLabel={tr("dash_expenses")} otherLabel={tr("dash_other")} emptyLabel={tr("dash_none")} />
+        </div>
+        <Link href="/admin/ledger?tab=receivables" className="block rounded-xl transition hover:bg-slate-50">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{tr("dash_pie_owed")}</h3>
+          <PieBreakdown data={owedByAge} locale={locale} currency={display.cur} centerLabel={tr("dash_owed")} otherLabel={tr("dash_other")} emptyLabel={tr("dash_none")} />
+          <p className="mt-2 text-[11px] text-slate-400">{tr("dash_owed_note")}</p>
+        </Link>
       </div>
       <p className="mt-3 text-xs text-slate-500">
         <ArrowUpRight className="mr-1 inline h-3 w-3" />

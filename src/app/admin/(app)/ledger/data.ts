@@ -29,18 +29,21 @@ export const ENTRY_LABEL: Record<EntryKind, string> = {
   expense: "Expense",
 };
 
-export type Entry = { date: string; kind: EntryKind; ref: string; party: string; detail: string; currency: Currency; amount: number; jpy: number; href: string | null };
+/** office / shift: TTs carry their own; expenses their office; sales and payments follow the customer's agent
+ * (assigned, else whoever registered the customer), the same rule the access policies use; car purchases have none. */
+export type Entry = { date: string; kind: EntryKind; ref: string; party: string; detail: string; currency: Currency; amount: number; jpy: number; href: string | null; office: string | null; shift: string | null };
 
 const LIMIT = 20000;
 const jpy = (amount: number, rate: number | null | undefined) => Math.round(Number(amount || 0) * (Number(rate) || 1));
 type Named = { name: string } | null;
+type Owned = { name: string; assigned_to: string | null; created_by: string | null } | null;
 
 export async function loadEntries(p: Period): Promise<Entry[]> {
   const supabase = await createClient();
-  const [inv, pay, tts, cars, exp] = await Promise.all([
+  const [inv, pay, tts, cars, exp, staff] = await Promise.all([
     supabase
       .from("invoices")
-      .select("id, invoice_no, doc_type, issue_date, currency, total, exchange_rate, customers(name)")
+      .select("id, invoice_no, doc_type, issue_date, currency, total, exchange_rate, customers(name, assigned_to, created_by)")
       .in("doc_type", ["invoice", "auction_deposit"])
       .not("status", "in", "(draft,cancelled)")
       .gte("issue_date", p.from)
@@ -48,13 +51,13 @@ export async function loadEntries(p: Period): Promise<Entry[]> {
       .limit(LIMIT),
     supabase
       .from("payments")
-      .select("id, paid_on, amount, method, reference, invoices!inner(id, invoice_no, currency, exchange_rate, customers(name))")
+      .select("id, paid_on, amount, method, reference, invoices!inner(id, invoice_no, currency, exchange_rate, customers(name, assigned_to, created_by))")
       .gte("paid_on", p.from)
       .lte("paid_on", p.to)
       .limit(LIMIT),
     supabase
       .from("remittances")
-      .select("id, received_date, currency, remit_amount, bank_charges, exchange_rate, remitter, bank, customers(name)")
+      .select("id, received_date, currency, remit_amount, bank_charges, exchange_rate, remitter, bank, office, shift, customers(name)")
       .gte("received_date", p.from)
       .lte("received_date", p.to)
       .limit(LIMIT),
@@ -67,19 +70,24 @@ export async function loadEntries(p: Period): Promise<Entry[]> {
       .limit(LIMIT),
     supabase
       .from("company_expenses")
-      .select("id, expense_date, category, description, paid_to, currency, amount, amount_jpy, vehicles!company_expenses_vehicle_id_fkey(stock_no)")
+      .select("id, expense_date, category, description, paid_to, office, currency, amount, amount_jpy, vehicles!company_expenses_vehicle_id_fkey(stock_no)")
       .gte("expense_date", p.from)
       .lte("expense_date", p.to)
       .limit(LIMIT),
+    supabase.from("profiles").select("id, office, shift"),
   ]);
 
+  const clean = (s: string | null | undefined) => (s ?? "").trim() || null;
+  const prof = new Map((staff.data ?? []).map((x) => [x.id as string, { office: clean(x.office), shift: clean(x.shift) }]));
+  const owner = (c: Owned) => prof.get(c?.assigned_to ?? c?.created_by ?? "") ?? { office: null, shift: null };
   const out: Entry[] = [];
   for (const i of inv.data ?? []) {
     out.push({
       date: i.issue_date,
       kind: "sale",
       ref: i.invoice_no,
-      party: (i.customers as unknown as Named)?.name ?? "",
+      party: (i.customers as unknown as Owned)?.name ?? "",
+      ...owner(i.customers as unknown as Owned),
       detail: i.doc_type === "auction_deposit" ? "Auction deposit" : "Invoice",
       currency: i.currency as Currency,
       amount: Number(i.total),
@@ -88,12 +96,13 @@ export async function loadEntries(p: Period): Promise<Entry[]> {
     });
   }
   for (const x of pay.data ?? []) {
-    const i = x.invoices as unknown as { id: string; invoice_no: string; currency: Currency; exchange_rate: number; customers: Named };
+    const i = x.invoices as unknown as { id: string; invoice_no: string; currency: Currency; exchange_rate: number; customers: Owned };
     out.push({
       date: x.paid_on,
       kind: "payment",
       ref: i.invoice_no,
       party: i.customers?.name ?? "",
+      ...owner(i.customers),
       detail: [x.method, x.reference].filter(Boolean).join(" · ") || "Payment",
       currency: i.currency,
       amount: Number(x.amount),
@@ -107,6 +116,8 @@ export async function loadEntries(p: Period): Promise<Entry[]> {
       kind: "tt",
       ref: `TT #${r.id}`,
       party: (r.customers as unknown as Named)?.name ?? r.remitter ?? "",
+      office: clean(r.office),
+      shift: clean(r.shift),
       detail: [r.bank, Number(r.bank_charges) ? `bank charges ${r.bank_charges}` : ""].filter(Boolean).join(" · "),
       currency: r.currency as Currency,
       amount: Number(r.remit_amount),
@@ -118,9 +129,9 @@ export async function loadEntries(p: Period): Promise<Entry[]> {
     const cur = (v.cost_currency ?? "JPY") as Currency;
     const buy = Number(v.purchase_price || 0) + Number(v.purchase_tax || 0);
     if (buy > 0)
-      out.push({ date: v.purchase_date, kind: "purchase", ref: v.stock_no, party: v.supplier_name ?? "", detail: `${v.make} ${v.model} (incl. tax)`, currency: cur, amount: buy, jpy: jpy(buy, v.cost_fx_rate), href: `/admin/stock/${v.id}` });
+      out.push({ date: v.purchase_date, kind: "purchase", ref: v.stock_no, party: v.supplier_name ?? "", detail: `${v.make} ${v.model} (incl. tax)`, currency: cur, amount: buy, jpy: jpy(buy, v.cost_fx_rate), href: `/admin/stock/${v.id}`, office: null, shift: null });
     if (Number(v.expenses) > 0)
-      out.push({ date: v.purchase_date, kind: "car_expense", ref: v.stock_no, party: "", detail: `${v.make} ${v.model} — transport, repairs, fees`, currency: cur, amount: Number(v.expenses), jpy: jpy(v.expenses, v.cost_fx_rate), href: `/admin/stock/${v.id}` });
+      out.push({ date: v.purchase_date, kind: "car_expense", ref: v.stock_no, party: "", detail: `${v.make} ${v.model} — transport, repairs, fees`, currency: cur, amount: Number(v.expenses), jpy: jpy(v.expenses, v.cost_fx_rate), href: `/admin/stock/${v.id}`, office: null, shift: null });
   }
   for (const e of exp.data ?? []) {
     const car = (e.vehicles as unknown as { stock_no: string } | null)?.stock_no;
@@ -129,6 +140,8 @@ export async function loadEntries(p: Period): Promise<Entry[]> {
       kind: "expense",
       ref: `EXP #${e.id}`,
       party: e.paid_to ?? "",
+      office: clean(e.office),
+      shift: null,
       detail: `${expenseCategoryLabel(e.category)} — ${e.description}${car ? ` (${car})` : ""}`,
       currency: e.currency as Currency,
       amount: Number(e.amount),
