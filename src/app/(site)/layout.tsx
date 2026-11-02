@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Mail, Phone, MapPin, MessageCircle, Printer, Search, ChevronDown, Send, UserRound } from "lucide-react";
+import { Mail, Phone, MapPin, MessageCircle, Search, ChevronDown, Send, UserRound } from "lucide-react";
 import { getCompany, getFacets, getMakeTiles, whatsapp, SITE_URL, SUPPORT_EMAIL } from "@/lib/public-site";
 import { WorldClock } from "@/components/world-clock";
 import { FxBadge } from "@/components/fx-badge";
@@ -24,6 +24,7 @@ import "./site.css";
 // Public site face (the ERP keeps Plus Jakarta Sans); falls back to it and Noto Sans JP via site.css
 // Desktop bar: these sit under "More"
 const MORE = ["/payment", "/blog"];
+const FOOT_HEAD = "text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-site", display: "swap" });
 
@@ -248,84 +249,65 @@ export default async function PublicLayout({ children }: { children: React.React
 
       {/* Footer */}
       <footer className="on-dark on-dark-bar mt-14 border-t border-white/10">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-6 lg:py-10 lg:grid-cols-5 lg:px-6">
-          {/* Phones get a slim footer (company, address, call/WhatsApp, legal row): the side menu already has the page links */}
+        {/* Desktop: four calm columns (brand · pages · markets · contact). Makes live in the Makes menu above.
+            Phones get a slim footer (company, address, call/WhatsApp, legal row): the side menu already has the page links */}
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-10 gap-y-8 px-4 py-6 lg:grid-cols-[1.25fr_1fr_1.25fr_1.1fr] lg:px-6 lg:py-10">
           <div className="hidden lg:block">
             {custom ? logoImg("h-11") : <span className={logoPlate}><Logo tone="light" size="lg" /></span>}
-            <p className="mt-3 text-sm leading-6 text-white/70">{company.company_name} exports quality Japanese used vehicles and spare parts worldwide by RoRo and container.</p>
+            <p className="mt-3 max-w-[34ch] text-sm leading-6 text-white/70">{company.company_name} exports quality Japanese used vehicles and spare parts worldwide by RoRo and container.</p>
             <SocialLinks className="mt-4 text-white/85" />
           </div>
-          <div className="hidden lg:block">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">Popular makes</div>
-            <ul className="mt-2 flex flex-wrap gap-x-4 text-sm lg:mt-3 lg:block lg:space-y-1">
-              {makes.slice(0, 8).map((m) => (
-                <li key={m.slug}>
-                  <Link href={`/makes/${m.slug}`} className="inline-flex min-h-10 items-center text-white/70 hover:text-white lg:min-h-11">
-                    {m.label}
+          <nav className="hidden lg:block" aria-label="Footer">
+            <div className={FOOT_HEAD}>Explore</div>
+            <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+              {links.slice(1).filter((l) => l.href !== "/account").map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="inline-flex min-h-8 items-center text-white/70 hover:text-white">
+                    {l.label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
           <div className="hidden lg:block">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">
+            <div className={FOOT_HEAD}>
               <Link href="/export" className="hover:underline">
                 We export to
               </Link>
             </div>
-            <ul className="mt-2 flex flex-wrap gap-x-4 text-sm lg:mt-3 lg:block lg:space-y-1">
+            <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
               {MARKETS.map((m) => (
                 <li key={m.slug}>
-                  <Link href={`/export/${m.slug}`} className="inline-flex min-h-10 items-center text-white/70 hover:text-white lg:min-h-11">
+                  <Link href={`/export/${m.slug}`} className="inline-flex min-h-8 items-center text-white/70 hover:text-white">
                     {m.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="hidden lg:block">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">Information</div>
-            <ul className="mt-2 flex flex-wrap gap-x-4 text-sm lg:mt-3 lg:block lg:space-y-1">
-              {links.slice(1).map((l) => (
-                <li key={l.href}>
-                  <Link href={l.href} className="inline-flex min-h-10 items-center text-white/70 hover:text-white lg:min-h-11">
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="col-span-2 space-y-2.5 text-sm text-white/75 lg:col-span-1">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white">
+          <div className="col-span-2 space-y-1.5 text-sm text-white/75 lg:col-span-1">
+            <div className={FOOT_HEAD}>
               <span className="lg:hidden">{company.company_name}</span>
               <span className="hidden lg:inline">Contact</span>
             </div>
             {company.address && (
-              <div className="flex gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
+              <div className="flex gap-2 pt-1.5">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" />
                 <span className="whitespace-pre-line">{company.address}</span>
               </div>
             )}
             {company.phone && (
-              <a href={`tel:${company.phone}`} className="flex min-h-11 items-center gap-2 hover:text-white">
-                <Phone className="h-4 w-4 text-rose-300" /> {company.phone}
+              <a href={`tel:${company.phone}`} className="flex min-h-11 items-center gap-2 hover:text-white lg:min-h-8">
+                <Phone className="h-4 w-4 text-[var(--gold)]" /> {company.phone}
               </a>
-            )}
-            {company.fax && (
-              <div className="hidden items-center gap-2 lg:flex">
-                <Printer className="h-4 w-4 text-rose-300" /> Fax {company.fax}
-              </div>
             )}
             {company.email && (
-              <a href={`mailto:${company.email}`} className="hidden min-h-11 lg:flex items-center gap-2 break-all hover:text-white">
-                <Mail className="h-4 w-4 shrink-0 text-rose-300" /> Sales: {company.email}
+              <a href={`mailto:${company.email}`} className="hidden min-h-8 items-center gap-2 hover:text-white lg:flex">
+                <Mail className="h-4 w-4 shrink-0 text-[var(--gold)]" /> {company.email}
               </a>
             )}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="hidden min-h-11 lg:flex items-center gap-2 break-all hover:text-white">
-              <Mail className="h-4 w-4 shrink-0 text-rose-300" /> Support: {SUPPORT_EMAIL}
-            </a>
             {wa && (
-              <a href={wa} target="_blank" rel="noopener" className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950 hover:brightness-110">
+              <a href={wa} target="_blank" rel="noopener" className="!mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950 hover:brightness-110">
                 <MessageCircle className="h-4 w-4" /> WhatsApp{company.mobile ? ` · ${company.mobile}` : ""}
               </a>
             )}
@@ -335,6 +317,9 @@ export default async function PublicLayout({ children }: { children: React.React
           <span>
             © {new Date().getFullYear()} {company.company_name}. All rights reserved.
           </span>
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex min-h-8 items-center hover:text-white">
+            Support: {SUPPORT_EMAIL}
+          </a>
           <Link href="/verify-agent" className="inline-flex min-h-8 items-center hover:text-white">
             Verify an agent
           </Link>
