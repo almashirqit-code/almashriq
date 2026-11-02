@@ -5,8 +5,10 @@ Guidance for AI coding agents working in this repository.
 ## What this is
 
 Al Mashriq ERP — a vehicle-export ERP and public car/parts/machinery website for a
-Japanese used-car dealer. **Next.js 15** (App Router) · **Supabase** (Postgres, Auth,
-Storage) · **Tailwind** · deployed on **Vercel**. English / 日本語 UI. Node ≥ 20.
+Japanese used-car dealer. **Next.js 15** (App Router) · **Supabase** (Postgres, Auth) ·
+**Tailwind** · deployed on **Cloudflare Workers** (Paid plan) via OpenNext, with photos,
+private documents and the Next.js cache in **R2** (+ D1 for cache tags) — see
+`wrangler.jsonc` and `open-next.config.ts`. English / 日本語 UI. Node ≥ 20.
 
 - `src/app/(site)/` — public website (no login)
 - `src/app/admin/(app)/` — the ERP (staff only, Admin / Manager / Sales roles)
@@ -45,11 +47,20 @@ Prefer reuse over addition. The best change is the smallest one that does the jo
   `next build` while dev is running)
 - `npm run typecheck` — `tsc --noEmit` (there is **no** ESLint config; `next lint` is a no-op)
 - `npm run build` — production build; run it before opening a PR
+- `npm run cf:build` / `cf:preview` / `cf:deploy` — OpenNext build for Cloudflare, local
+  Workers preview, and manual deploy
+
+## Cloudflare Workers runtime
+
+- Code runs on Workers with `nodejs_compat`, not full Node — check that a new npm package
+  works on Workers before adding it.
+- Upgrade Next.js only to versions `@opennextjs/cloudflare` supports.
+- Secrets are set in the Cloudflare dashboard, never in `wrangler.jsonc`.
 
 ## Workflow
 
 - Branch per task (`claude/<short-name>`), commit, open a PR, and deploy only on the
-  user's go-ahead. `main` auto-deploys to production on Vercel.
+  user's go-ahead. `main` auto-deploys to production on Cloudflare.
 - After a code change that renders in the browser, verify it in the preview rather than
   asking the user to check by hand. Admin pages behind the login can't be clicked through
   without credentials — say so instead of claiming they were tested.

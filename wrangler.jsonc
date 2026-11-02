@@ -3,7 +3,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "almashriq",
   "main": ".open-next/worker.js",
-  // Minified it is ~2.8 MB gzipped, under the Workers Free 3 MB limit (3.3 MB without).
+  // Workers Paid (10 MB limit). Minified it is ~2.8 MB gzipped (3.3 MB without), which also starts faster.
   "minify": true,
   // Keep variables added in the Cloudflare dashboard (e.g. RESEND_API_KEY) when deploying from here.
   "keep_vars": true,
