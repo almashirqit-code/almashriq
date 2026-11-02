@@ -61,7 +61,8 @@ export default async function PublicHome() {
       title: carTitle(c),
       subtitle: [c.grade, c.mileage != null ? `${c.mileage.toLocaleString()} km` : null, priceLabel(c) ? `FOB ${priceLabel(c)}` : "Ask for price"].filter(Boolean).join(" · "),
       href: `/cars/${encodeURIComponent(c.stock_no)}`,
-      tag: "New arrival",
+      // Same rule as the car cards: only cars listed in the last 7 days
+      tag: Date.now() - new Date(c.created_at).getTime() < 7 * 864e5 ? "New arrival" : undefined,
     }));
   const years = Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i);
 

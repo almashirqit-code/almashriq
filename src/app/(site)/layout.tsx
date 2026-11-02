@@ -210,7 +210,7 @@ export default async function PublicLayout({ children }: { children: React.React
             fx={fx}
           />
         </div>
-        <div className="hidden h-0.5 bg-gradient-to-r from-cerulean-500 via-brand-500/70 to-transparent lg:block" />
+        <div className="hidden h-0.5 bg-gradient-to-r from-[var(--gold)] via-brand-500/70 to-transparent lg:block" />
       </nav>
 
       <main>{children}</main>
