@@ -120,25 +120,3 @@ export function PieBreakdown({
     </div>
   );
 }
-
-export function MakesChart({ data }: { data: { make: string; count: number }[] }) {
-  return (
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
-          <XAxis type="number" hide allowDecimals={false} />
-          <YAxis type="category" dataKey="make" tickLine={false} axisLine={false} fontSize={12} width={84} stroke="#475569" />
-          <Tooltip
-            cursor={{ fill: "#eaf6fc" }}
-            contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12, boxShadow: "0 10px 25px -10px rgb(15 23 42 / 0.2)" }}
-          />
-          <Bar dataKey="count" radius={[0, 8, 8, 0]} maxBarSize={18}>
-            {data.map((_, i) => (
-              <Cell key={i} fill={VIBE[i % VIBE.length]} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
