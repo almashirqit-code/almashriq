@@ -20,11 +20,19 @@ export async function clientIp() {
  * locks real users out — right for public inquiries. Pass `failClosed` for the
  * sign-in path, where a database outage must not open the door to brute force.
  */
+let warned = false;
+
 export async function rateLimit(action: string, max: number, windowSeconds: number, extra = "", failClosed = false) {
   const onError = !failClosed; // allow on error unless the caller wants it blocked
   try {
     const ip = await clientIp();
-    const secret = process.env.RATE_LIMIT_SECRET || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+    // The secret makes keys unguessable: rate_limit_hit is callable with the public anon key, so without it
+    // anyone could compute another visitor's key and fill their bucket (blocking their sign-in or inquiry).
+    const secret = process.env.RATE_LIMIT_SECRET ?? "";
+    if (!secret && !warned) {
+      warned = true;
+      console.warn("RATE_LIMIT_SECRET is not set: rate-limit keys can be guessed. Set it as a Worker secret.");
+    }
     const key = `${action}:${createHash("sha256").update(`${secret}|${action}|${ip}|${extra.toLowerCase()}`).digest("hex").slice(0, 40)}`;
     const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       auth: { persistSession: false, autoRefreshToken: false },
