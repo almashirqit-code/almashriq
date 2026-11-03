@@ -48,7 +48,7 @@ export function CatalogManager({ makes, usage, canEdit }: { makes: CatalogMake[]
             key={k.key}
             type="button"
             onClick={() => (setKind(k.key), setSelectedId(null), setEdit(null), setMsg(null))}
-            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${kind === k.key ? "bg-gradient-to-r from-slate-700 to-slate-900 text-white shadow" : "text-slate-600 hover:bg-slate-50"}`}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${kind === k.key ? "bg-harbour text-white" : "text-slate-600 hover:bg-slate-50"}`}
           >
             {k.label} <span className="opacity-60">{makes.filter((m) => m.kind === k.key).length}</span>
           </button>

@@ -37,7 +37,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               </div>
             )}
             {company.phone && (
-              <a href={`tel:${company.phone}`} className="flex items-center gap-2 hover:text-white">
+              <a href={`tel:${company.phone}`} className="-my-2 flex min-h-11 items-center gap-2 hover:text-white">
                 <Phone className="h-4 w-4 text-brand-600" /> {company.phone}
               </a>
             )}
@@ -47,11 +47,11 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               </div>
             )}
             {company.email && (
-              <a href={`mailto:${company.email}`} className="flex items-center gap-2 break-all hover:text-white">
+              <a href={`mailto:${company.email}`} className="-my-2 flex min-h-11 items-center gap-2 break-all hover:text-white">
                 <Mail className="h-4 w-4 shrink-0 text-brand-600" /> Sales: {company.email}
               </a>
             )}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-2 break-all hover:text-white">
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="-my-2 flex min-h-11 items-center gap-2 break-all hover:text-white">
               <Mail className="h-4 w-4 shrink-0 text-brand-600" /> Support: {SUPPORT_EMAIL}
             </a>
             <div className="flex items-center gap-2">

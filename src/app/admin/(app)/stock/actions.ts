@@ -218,6 +218,7 @@ export async function makeAvailable(id: string): Promise<MakeAvailableResult> {
 }
 
 export async function refreshVehicle(vehicleId: string) {
+  await assertRole(["admin", "manager", "sales"]);
   revalidatePath(`/admin/stock/${vehicleId}`);
   revalidatePath("/admin/stock");
 }

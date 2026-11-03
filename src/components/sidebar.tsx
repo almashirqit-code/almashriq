@@ -157,9 +157,6 @@ export function Sidebar({
 
   const nav = (
     <nav className="relative flex h-full flex-col overflow-hidden">
-      {/* colour glows */}
-      <div className="pointer-events-none absolute -left-24 -top-24 h-64 w-64 rounded-full bg-cerulean-600/25 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-brand-500/15 blur-3xl" />
 
       <Link href="/admin" className="relative block px-5 pb-3 pt-5" onClick={() => setOpen(false)}>
         {logoUrl ? (
@@ -171,7 +168,7 @@ export function Sidebar({
           <Logo size="md" alt={companyName} />
         )}
         <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 ring-1 ring-white/10">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+          <span className="h-1.5 w-1.5 rounded-full bg-brand-600" />
           ERP
         </span>
       </Link>
@@ -192,16 +189,17 @@ export function Sidebar({
                       <Link
                         href={i.href}
                         target={i.newTab ? "_blank" : undefined}
+                        aria-current={active ? "page" : undefined}
                         onClick={() => setOpen(false)}
                         className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-medium transition ${
                           active
-                            ? "bg-white/[0.08] text-white shadow-inner ring-1 ring-white/10"
+                            ? "bg-white/[0.08] text-white shadow-[inset_2px_0_0_#d71920]"
                             : "text-slate-300 hover:bg-white/[0.05] hover:text-white"
                         }`}
                       >
                         <span
                           className={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
-                            active ? "bg-cerulean-600 text-white shadow-lg shadow-cerulean-900/40" : "bg-white/[0.06] text-slate-300 group-hover:bg-white/10 group-hover:text-white"
+                            active ? "text-brand-400" : "text-slate-400 group-hover:text-white"
                           }`}
                         >
                           <Icon className="h-4 w-4" />
@@ -211,7 +209,6 @@ export function Sidebar({
                           <span className="min-w-5 rounded-full bg-brand-600 px-1.5 text-center text-[11px] font-bold leading-5 text-white">{badges[i.href]}</span>
                         ) : null}
                         {i.newTab && <ExternalLink className="h-3.5 w-3.5 text-slate-500" />}
-                        {active && <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_#ec3a40]" />}
                       </Link>
                       {i.children && (
                         <ul className="ml-[1.6rem] mt-0.5 space-y-0.5 border-l border-white/10 pl-3">
@@ -265,12 +262,12 @@ export function Sidebar({
     </nav>
   );
 
-  const bg = "bg-jet-950";
+  const bg = "bg-harbour-deep";
 
   return (
     <>
       <button
-        className="no-print fixed left-3 top-2.5 z-40 rounded-xl bg-jet-950 p-2 text-white shadow-lg ring-1 ring-white/10 lg:hidden"
+        className="no-print fixed left-3 top-2.5 z-40 rounded-lg bg-harbour-deep p-2 text-white shadow-lg ring-1 ring-white/10 lg:hidden"
         onClick={() => setOpen(true)}
         aria-label="Menu"
       >

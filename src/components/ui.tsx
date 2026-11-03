@@ -2,23 +2,23 @@ import Link from "next/link";
 import type { InvoiceStatus, VehicleStatus } from "@/lib/types";
 import { branchFlag, branchName } from "@/lib/branches";
 
-/** Vibrant accent palette used for icon chips, stat cards and module colours. */
+/** Flat, tinted accent palette for icon chips and module colours. Colour marks the module; it never decorates. */
 export const TONES = {
-  brand: { chip: "from-brand-500 to-brand-700 shadow-brand-500/30", bar: "from-brand-500 to-brand-700", soft: "bg-brand-50 text-brand-700" },
-  violet: { chip: "from-jet-800 to-jet-950 shadow-black/25", bar: "from-cerulean-600 to-jet-900", soft: "bg-slate-100 text-jet-900" },
-  emerald: { chip: "from-emerald-400 to-teal-600 shadow-emerald-500/30", bar: "from-emerald-400 to-teal-600", soft: "bg-emerald-50 text-emerald-700" },
-  amber: { chip: "from-amber-400 to-orange-500 shadow-amber-500/30", bar: "from-amber-400 to-orange-500", soft: "bg-amber-50 text-amber-700" },
-  sky: { chip: "from-cerulean-400 to-cerulean-700 shadow-cerulean-500/30", bar: "from-cerulean-400 to-cerulean-700", soft: "bg-cerulean-50 text-cerulean-700" },
-  fuchsia: { chip: "from-brand-400 to-brand-600 shadow-brand-500/30", bar: "from-brand-400 to-brand-600", soft: "bg-brand-50 text-brand-700" },
-  cyan: { chip: "from-cerulean-300 to-cerulean-600 shadow-cerulean-500/30", bar: "from-cerulean-300 to-cerulean-600", soft: "bg-cerulean-50 text-cerulean-700" },
-  slate: { chip: "from-slate-500 to-slate-700 shadow-slate-500/30", bar: "from-slate-400 to-slate-600", soft: "bg-slate-100 text-slate-700" },
+  brand: { chip: "bg-harbour-50 text-harbour", bar: "bg-harbour", soft: "bg-harbour-50 text-harbour" },
+  violet: { chip: "bg-slate-100 text-slate-800", bar: "bg-slate-700", soft: "bg-slate-100 text-slate-800" },
+  emerald: { chip: "bg-emerald-50 text-emerald-700", bar: "bg-emerald-600", soft: "bg-emerald-50 text-emerald-700" },
+  amber: { chip: "bg-amber-50 text-amber-700", bar: "bg-amber-500", soft: "bg-amber-50 text-amber-800" },
+  sky: { chip: "bg-cerulean-50 text-cerulean-700", bar: "bg-cerulean-600", soft: "bg-cerulean-50 text-cerulean-700" },
+  fuchsia: { chip: "bg-brand-50 text-brand-700", bar: "bg-brand-600", soft: "bg-brand-50 text-brand-700" },
+  cyan: { chip: "bg-cerulean-50 text-cerulean-700", bar: "bg-cerulean-500", soft: "bg-cerulean-50 text-cerulean-700" },
+  slate: { chip: "bg-slate-100 text-slate-600", bar: "bg-slate-500", soft: "bg-slate-100 text-slate-700" },
 } as const;
 export type Tone = keyof typeof TONES;
 
 export function IconChip({ tone = "brand", children, size = "md" }: { tone?: Tone; children: React.ReactNode; size?: "sm" | "md" }) {
-  const dims = size === "sm" ? "h-8 w-8 rounded-lg [&_svg]:h-4 [&_svg]:w-4" : "h-10 w-10 rounded-xl [&_svg]:h-5 [&_svg]:w-5";
+  const dims = size === "sm" ? "h-8 w-8 rounded-md [&_svg]:h-4 [&_svg]:w-4" : "h-10 w-10 rounded-lg [&_svg]:h-5 [&_svg]:w-5";
   return (
-    <span className={`inline-flex shrink-0 items-center justify-center bg-gradient-to-br text-white shadow-lg ${dims} ${TONES[tone].chip}`}>
+    <span className={`inline-flex shrink-0 items-center justify-center ${dims} ${TONES[tone].chip}`}>
       {children}
     </span>
   );
@@ -47,12 +47,12 @@ export function PageHeader({
           {back && (
             <Link
               href={back.href}
-              className="mb-1 inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:text-brand-600 hover:ring-brand-200"
+              className="mb-1 inline-flex items-center gap-1 rounded-md py-0.5 text-xs font-medium text-slate-500 transition hover:text-harbour"
             >
               ← {back.label}
             </Link>
           )}
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{title}</h1>
           {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
         </div>
       </div>
@@ -126,8 +126,8 @@ export function PartsBadge({ label }: { label: string }) {
 export function Empty({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center gap-3 px-4 py-14 text-center text-sm text-slate-500">
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 text-xl">🗂️</span>
-      {children}
+      <span aria-hidden className="h-px w-10 bg-slate-300" />
+      <div className="max-w-sm text-pretty">{children}</div>
     </div>
   );
 }
@@ -146,11 +146,9 @@ export function Stat({
   tone?: Tone;
 }) {
   return (
-    <div className="card group relative overflow-hidden p-5 transition hover:-translate-y-0.5 hover:shadow-lg">
-      <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${TONES[tone].bar}`} />
-      <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br opacity-[0.08] transition group-hover:opacity-[0.14] ${TONES[tone].bar}`} />
+    <div className="card p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{label}</div>
+        <div className="text-xs font-semibold text-slate-600">{label}</div>
         {icon && <IconChip tone={tone} size="sm">{icon}</IconChip>}
       </div>
       <div className="mt-2 break-words text-xl font-bold tabular-nums tracking-tight text-slate-900 sm:text-2xl">{value}</div>
@@ -237,7 +235,8 @@ export function NumberedPagination({
           <Link
             key={n}
             href={makeHref(n)}
-            className={`${cell} ${n === page ? "bg-gradient-to-br from-rose-500 to-brand-600 font-semibold text-white shadow-md shadow-brand-500/30" : "text-slate-700 hover:bg-white hover:shadow-sm"}`}
+            aria-current={n === page ? "page" : undefined}
+            className={`${cell} ${n === page ? "bg-harbour font-semibold text-white" : "text-slate-700 hover:bg-white hover:shadow-sm"}`}
           >
             {n}
           </Link>
@@ -284,7 +283,7 @@ export function Section({
     <section className="card">
       <div className="card-head">
         <h2 className="card-title">
-          <span className="h-4 w-1 rounded-full bg-gradient-to-b from-rose-500 to-brand-600" />
+          <span aria-hidden className="h-4 w-1 rounded-full bg-brand-600" />
           {title}
         </h2>
         {actions}

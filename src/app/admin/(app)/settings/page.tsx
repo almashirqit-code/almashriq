@@ -14,6 +14,7 @@ import { MastersManager } from "../masters/masters-manager";
 import { FreightManager } from "../freight/freight-manager";
 import { MakeLogos, type MakeRow } from "./make-logos";
 import { OfficesManager } from "./offices-manager";
+import { fetchAll } from "@/lib/fetch-all";
 
 type Tab = "general" | "offices" | "branches" | "catalog" | "ports" | "freight" | "makes";
 
@@ -63,8 +64,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   } else if (tab === "catalog") {
     const [{ data: cm }, vs, ms] = await Promise.all([
       supabase.from("catalog_makes").select("id, kind, name, active, catalog_models(id, name, model_code, active)").order("name").limit(3000),
-      supabase.from("vehicles").select("make").limit(30000),
-      supabase.from("machinery").select("make").limit(30000),
+      // "In stock" counts per make must see every row (the API returns at most 1,000 per request)
+      fetchAll<{ make: string | null }>((from, to) => supabase.from("vehicles").select("make").order("id").range(from, to)).then((data) => ({ data })),
+      fetchAll<{ make: string | null }>((from, to) => supabase.from("machinery").select("make").order("id").range(from, to)).then((data) => ({ data })),
     ]);
     const count = (rows: { make: string | null }[] | null) => {
       const out: Record<string, number> = {};
@@ -79,8 +81,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   } else if (tab === "ports") {
     const [ports, auctions, yards] = await Promise.all([
       supabase.from("ports").select("*").order("name"),
-      supabase.from("auction_houses").select("*").order("name").limit(5000),
-      supabase.from("yards").select("*").order("name").limit(5000),
+      fetchAll((from, to) => supabase.from("auction_houses").select("*").order("name").order("id").range(from, to)).then((data) => ({ data })),
+      fetchAll((from, to) => supabase.from("yards").select("*").order("name").order("id").range(from, to)).then((data) => ({ data })),
     ]);
     body = (
       <MastersManager
@@ -93,7 +95,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     );
   } else if (tab === "freight") {
     const [rates, ports] = await Promise.all([
-      supabase.from("freight_rates").select("*").order("destination").order("shipment_type").limit(5000),
+      fetchAll((from, to) => supabase.from("freight_rates").select("*").order("destination").order("shipment_type").order("id").range(from, to)).then((data) => ({ data })),
       supabase.from("ports").select("*").order("name"),
     ]);
     body = <FreightManager rates={(rates.data ?? []) as FreightRate[]} ports={(ports.data ?? []) as Port[]} canEdit={can.editStock(profile.role)} />;
@@ -111,7 +113,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             key={key}
             href={`/admin/settings?tab=${key}`}
             className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
-              tab === key ? "bg-gradient-to-r from-slate-700 to-slate-900 text-white shadow" : "text-slate-600 hover:bg-slate-50"
+              tab === key ? "bg-harbour text-white" : "text-slate-600 hover:bg-slate-50"
             }`}
           >
             <Icon className="h-4 w-4" />

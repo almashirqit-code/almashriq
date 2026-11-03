@@ -1,6 +1,6 @@
 /*
  * Public website — light theme in the Al Mashriq palette: white / light-grey page, jet-black text,
- * logo-red buttons (#D71920, white text 5.2:1), black header, footer and phone bottom bar.
+ * logo-red buttons (#9e1b16, white text 5.2:1), black header, footer and phone bottom bar.
  * Everything is scoped under .site-glass (the public layout wrapper), so the admin is untouched.
  *
  * How colours work here
@@ -18,54 +18,44 @@
 
 html:has(.site-glass),
 body:has(.site-glass) {
-  background: #f5f6f8;
+  background: #f4f0ea;
 }
 
 .site-glass {
-  --fg: 10 10 12;
-  --ink: #0a0a0c;
-  --ink-2: #33363d;
-  --ink-3: #555a63;
-  --ink-4: #6b7079;
-  --surface: #ffffff;
-  --surface-hi: #fbfbfc;
-  --line: rgb(10 10 12 / 0.1);
-  --line-hi: rgb(10 10 12 / 0.2);
+  --fg: 26 23 20;
+  --ink: #1a1714;
+  --ink-2: #3a342e;
+  --ink-3: #5a534b;
+  --ink-4: #6d655c;
+  --surface: #fffcf8;
+  --surface-hi: #fffcf8;
+  --line: rgb(26 23 20 / 0.1);
+  --line-hi: rgb(26 23 20 / 0.2);
   /* Navy (primary actions, dark bars) · steel blue (links) · logo red (rules, highlights, lead buttons) */
-  --accent: #10243a;
-  --accent-hi: #1c3a5a;
-  --accent-text: #315a78;
-  --red: #d71920;
-  --red-text: #b5141a;
-  --cerulean: #315a78;
-  --cerulean-text: #315a78;
-  --focus: #315a78;
+  --accent: #141210;
+  --accent-hi: #2b2621;
+  --accent-text: #9e1b16;
+  --red: #9e1b16;
+  --red-text: #9e1b16;
+  --cerulean: #9e1b16;
+  --cerulean-text: #9e1b16;
+  --focus: #9e1b16;
   color-scheme: light;
   color: var(--ink);
-  background: #f5f6f8;
+  background: #f4f0ea;
   min-height: 100vh;
   position: relative;
   isolation: isolate;
   -webkit-tap-highlight-color: transparent;
 }
-/* Very soft colour glows behind the content (static: cheap to paint) */
-.site-glass::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(40rem 28rem at 105% -5%, rgb(215 25 32 / 0.07), transparent 60%),
-    radial-gradient(38rem 30rem at -10% 28%, rgb(49 90 120 / 0.07), transparent 60%);
-}
+
 .site-glass ::selection {
-  background: rgb(215 25 32 / 0.35);
+  background: rgb(158 27 22 / 0.35);
   color: var(--ink);
 }
 .site-glass {
   caret-color: var(--accent-text);
-  scrollbar-color: rgb(49 90 120 / 0.45) transparent;
+  scrollbar-color: rgb(158 27 22 / 0.45) transparent;
   font-family: var(--font-site), var(--font-sans), "Noto Sans JP", system-ui, sans-serif;
 }
 .site-glass :is(h1, h2, h3) {
@@ -83,15 +73,15 @@ body:has(.site-glass) {
   background-color: var(--accent-hi);
 }
 .site-glass .via-brand-500\/70 {
-  --tw-gradient-via: rgb(215 25 32 / 0.7) !important;
+  --tw-gradient-via: rgb(158 27 22 / 0.7) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 .site-glass .shadow-brand-900\/30,
 .site-glass .shadow-brand-900\/25 {
-  --tw-shadow-color: rgb(16 36 58 / 0.25);
+  --tw-shadow-color: rgb(20 18 16 / 0.25);
 }
 .site-glass .shadow-brand-900\/40 {
-  --tw-shadow-color: rgb(16 36 58 / 0.3);
+  --tw-shadow-color: rgb(20 18 16 / 0.3);
 }
 .site-glass .to-rose-300 {
   --tw-gradient-from: var(--red) !important;
@@ -126,15 +116,15 @@ body:has(.site-glass) {
 .site-glass .text-white\/65 {
   color: rgb(var(--fg) / 0.72);
 }
-/* The older light pages' greys (breadcrumbs, intros, dates) are a touch too light on #f5f6f8 */
+/* The older light pages' greys (breadcrumbs, intros, dates) are a touch too light on #f4f0ea */
 .site-glass .text-slate-400 {
-  color: #5f6673;
+  color: #5f574f;
 }
 .site-glass .text-slate-500 {
-  color: #535a66;
+  color: #5f574f;
 }
 .site-glass .text-navy-500 {
-  color: #00658a;
+  color: #9e1b16;
 }
 /* Solid / near-solid white surfaces stay white (Tailwind "white" follows --fg otherwise) */
 .site-glass .bg-white {
@@ -174,40 +164,44 @@ body:has(.site-glass) {
   color: #fff;
 }
 .site-glass .on-dark {
-  --ink: #f4f6f8;
-  --ink-2: #c9cfd7;
-  --ink-3: #a5adb8;
-  --ink-4: #949ca8;
+  --ink: #f4f0ea;
+  --ink-2: #d7d2cb;
+  --ink-3: #b3aba1;
+  --ink-4: #a39a90;
   --surface: rgb(255 255 255 / 0.07);
   --surface-hi: rgb(255 255 255 / 0.12);
   --line: rgb(255 255 255 / 0.14);
   --line-hi: rgb(255 255 255 / 0.28);
-  --accent-text: #ff8a8e;
-  /* Red text and icons on navy: lighter than the logo red so they stay readable */
-  --red-text: #ff6b70;
-  --cerulean-text: #a9c4da;
-  --focus: #ff8a8e;
+  --accent-text: #e58b83;
+  /* Lacquer text and icons on Night: lighter so they stay readable */
+  --red-text: #e58b83;
+  --cerulean-text: #d7d2cb;
+  --focus: #e58b83;
   color-scheme: dark;
   color: var(--ink);
 }
+/* Lacquer is too dark for icons and text on Night (2.3:1); dark areas use the lighter lacquer instead */
+.site-glass :is(.on-dark, [class^="bg-navy-9"], [class*=" bg-navy-9"], [class^="bg-jet"], [class*=" bg-jet"], [class*=" bg-[var(--accent)]"]) :is(.text-brand-500, .text-brand-600, .text-brand-700) {
+  color: #e58b83;
+}
 /* The dark bars themselves: deep navy-slate (tinted toward the cerulean accent), not flat black */
 .site-glass .on-dark-bar {
-  background: #10243a;
+  background: #141210;
 }
 /* The thin utility strip above the header sits a step deeper so the two rows read apart */
 .site-glass div.on-dark-bar {
-  background: #0b1a2b;
+  background: #0c0b0a;
 }
 .site-glass footer.on-dark-bar {
-  background: linear-gradient(180deg, #10243a, #0b1a2b);
+  background: linear-gradient(180deg, #141210, #0c0b0a);
 }
 
 /* Home hero band: deep navy, a faint steel lift top-right, a red hairline where it meets the page */
 .site-glass .home-hero {
   background:
-    radial-gradient(48rem 26rem at 85% 0%, rgb(49 90 120 / 0.45), transparent 70%),
-    #10243a;
-  border-bottom: 1px solid rgb(215 25 32 / 0.55);
+    radial-gradient(48rem 26rem at 85% 0%, rgb(158 27 22 / 0.45), transparent 70%),
+    #141210;
+  border-bottom: 1px solid rgb(158 27 22 / 0.55);
 }
 
 /* Home "How to buy" journey: the red route line behind the step numbers */
@@ -218,7 +212,7 @@ body:has(.site-glass) {
   top: 1.25rem;
   bottom: 1.25rem;
   width: 2px;
-  background: linear-gradient(var(--red), rgb(215 25 32 / 0.25));
+  background: linear-gradient(var(--red), rgb(158 27 22 / 0.25));
 }
 @media (min-width: 1024px) {
   .site-glass .journey::before {
@@ -228,7 +222,7 @@ body:has(.site-glass) {
     bottom: auto;
     width: auto;
     height: 2px;
-    background: linear-gradient(90deg, var(--red), rgb(215 25 32 / 0.25));
+    background: linear-gradient(90deg, var(--red), rgb(158 27 22 / 0.25));
   }
 }
 .site-glass .home-hero.rounded-3xl {
@@ -241,21 +235,21 @@ body:has(.site-glass) {
 .site-glass .glass-lite {
   background: var(--surface);
   border: 1px solid var(--line);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.14);
+  box-shadow: 0 1px 2px rgb(26 23 20 / 0.04), 0 8px 24px -12px rgb(26 23 20 / 0.14);
 }
 .site-glass .glass-strong {
   background: rgb(255 255 255 / 0.94);
   border: 1px solid var(--line);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   backdrop-filter: blur(18px) saturate(160%);
-  box-shadow: 0 10px 40px rgb(15 23 42 / 0.16);
+  box-shadow: 0 10px 40px rgb(26 23 20 / 0.16);
 }
 .site-glass .glass-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .site-glass .glass-hover:hover {
   border-color: var(--line-hi);
-  box-shadow: 0 2px 4px rgb(15 23 42 / 0.05), 0 14px 32px -12px rgb(15 23 42 / 0.22);
+  box-shadow: 0 2px 4px rgb(26 23 20 / 0.05), 0 14px 32px -12px rgb(26 23 20 / 0.22);
   transform: translateY(-2px);
 }
 .site-glass .glass-hover:active {
@@ -272,7 +266,7 @@ body:has(.site-glass) {
 }
 .site-glass .on-dark.glass-strong,
 .site-glass .on-dark .glass-strong {
-  background: rgb(16 36 58 / 0.92);
+  background: rgb(20 18 16 / 0.92);
   border-color: var(--line);
   box-shadow: 0 10px 40px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
@@ -282,22 +276,22 @@ body:has(.site-glass) {
   border: 1px solid rgb(255 255 255 / 0.7);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 0 8px 32px rgb(15 23 42 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.8);
+  box-shadow: 0 8px 32px rgb(26 23 20 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.8);
 }
 
 /* Phone top bar: white like the desktop logo row (the navy menu row is desktop only) */
 @media (max-width: 1023.98px) {
   /* nav.site-nav outranks the .on-dark.glass-strong fallbacks further down */
   .site-glass nav.site-nav.on-dark.glass-strong {
-    --fg: 10 10 12;
-    --ink: #0a0a0c;
-    --line: rgb(10 10 12 / 0.1);
-    --focus: #315a78;
+    --fg: 26 23 20;
+    --ink: #1a1714;
+    --line: rgb(26 23 20 / 0.1);
+    --focus: #9e1b16;
     color-scheme: light;
     color: var(--ink);
     background: rgb(255 255 255 / 0.94);
     border-color: var(--line);
-    box-shadow: 0 1px 0 var(--line), 0 6px 20px -12px rgb(15 23 42 / 0.25);
+    box-shadow: 0 1px 0 var(--line), 0 6px 20px -12px rgb(26 23 20 / 0.25);
   }
 }
 
@@ -307,10 +301,10 @@ body:has(.site-glass) {
 .site-glass textarea,
 .site-glass .input {
   background-color: #fff;
-  border: 1px solid rgb(10 10 12 / 0.16);
+  border: 1px solid rgb(26 23 20 / 0.16);
   color: var(--ink);
   border-radius: 0.75rem;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  box-shadow: 0 1px 2px rgb(26 23 20 / 0.04);
 }
 .site-glass .on-dark input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
 .site-glass .on-dark select,
@@ -328,17 +322,17 @@ body:has(.site-glass) {
 .site-glass select:focus,
 .site-glass textarea:focus {
   border-color: var(--focus);
-  box-shadow: 0 0 0 3px rgb(49 90 120 / 0.22);
+  box-shadow: 0 0 0 3px rgb(158 27 22 / 0.22);
   outline: none;
 }
 .site-glass select option,
 .site-glass select optgroup {
   background: #fff;
-  color: #0a0a0c;
+  color: #1a1714;
 }
 .site-glass .on-dark select option {
-  background: #10243a;
-  color: #f4f6f8;
+  background: #141210;
+  color: #f4f0ea;
 }
 .site-glass input:-webkit-autofill {
   -webkit-text-fill-color: var(--ink);
@@ -430,7 +424,7 @@ body:has(.site-glass) {
     background: var(--surface);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.14);
+    box-shadow: 0 1px 2px rgb(26 23 20 / 0.04), 0 8px 24px -12px rgb(26 23 20 / 0.14);
   }
 }
 .site-glass #results {
@@ -453,7 +447,7 @@ body:has(.site-glass) {
   }
   .site-glass .on-dark .glass-strong,
   .site-glass .on-dark.glass-strong {
-    background: rgb(16 36 58 / 0.98);
+    background: rgb(20 18 16 / 0.98);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
@@ -464,7 +458,7 @@ body:has(.site-glass) {
   }
   .site-glass .on-dark .glass-strong,
   .site-glass .on-dark.glass-strong {
-    background: #10243a;
+    background: #141210;
   }
 }
 @media (prefers-reduced-motion: reduce) {

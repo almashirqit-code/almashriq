@@ -6,7 +6,7 @@ import { POPULAR_MODELS } from "@/lib/models";
 import { dicebear } from "@/lib/avatar";
 import Link from "next/link";
 import { Search, ShieldCheck, Ship, Banknote, ArrowRight, Send, Quote, FileCheck2, Globe, ChevronDown, UserRound, Fuel, Leaf, Zap, Cog } from "lucide-react";
-import { publicImageUrl } from "@/lib/format";
+import { publicImageUrl, titleCase, plural } from "@/lib/format";
 import { getCompany, getFacets, getBodyPhotos, listCars, whatsapp, carTitle, priceLabel, getMakeTiles, getReviews, getPosts, getOffers, assetUrl } from "@/lib/public-site";
 import { CarCard } from "./car-card";
 import { HeroSlider } from "@/components/site/hero-slider";
@@ -99,7 +99,7 @@ export default async function PublicHome() {
                   <option value="">All makes</option>
                   {facets.make.map(([m, n]) => (
                     <option key={m} value={m}>
-                      {m} ({n})
+                      {titleCase(m)} ({n})
                     </option>
                   ))}
                 </select>
@@ -107,7 +107,7 @@ export default async function PublicHome() {
                   <option value="">All bodies</option>
                   {facets.body.map(([b, n]) => (
                     <option key={b} value={b}>
-                      {b} ({n})
+                      {titleCase(b)} ({n})
                     </option>
                   ))}
                 </select>
@@ -136,7 +136,7 @@ export default async function PublicHome() {
                   </select>
                 </div>
               </details>
-              <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--red)] text-sm font-extrabold text-white hover:bg-[#b5141a]">
+              <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--red)] text-sm font-extrabold text-white hover:bg-[#9e1b16]">
                 <Search className="h-4 w-4" /> Search {facets.available.toLocaleString()} cars
               </button>
             </div>
@@ -213,11 +213,11 @@ export default async function PublicHome() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={m.logo} alt={`${m.label} logo`} loading="lazy" className="max-h-9 max-w-full object-contain" />
                   ) : (
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#17181c] text-base font-black text-white">{m.label.slice(0, 1)}</span>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2b2621] text-base font-black text-white">{m.label.slice(0, 1)}</span>
                   )}
                 </span>
-                <span className="w-full truncate text-xs font-bold">{m.label}</span>
-                <span className="text-[11px] text-white/50">{m.n} cars</span>
+                <span className="w-full truncate text-xs font-bold">{titleCase(m.label)}</span>
+                <span className="text-[11px] text-white/50">{plural(m.n, "car")}</span>
               </Link>
             ))}
           </HScrollRow>
@@ -236,16 +236,16 @@ export default async function PublicHome() {
                 <div className="relative aspect-[4/3] bg-black/20">
                   {photo ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo} alt={`${b} cars`} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                    <img src={photo} alt={`${titleCase(b)} cars`} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                   ) : (
                     <div className="flex h-full items-center justify-center">
                       <BodyIcon type={b} className="h-9 w-[4.5rem] text-white/70" />
                     </div>
                   )}
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0a0a0c]/85 to-transparent" />
-                  <span className="absolute bottom-1.5 left-2.5 right-2 truncate text-[13px] font-extrabold uppercase tracking-wide text-white drop-shadow">{b}</span>
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#1a1714]/85 to-transparent" />
+                  <span className="absolute bottom-1.5 left-2.5 right-2 truncate text-[13px] font-extrabold text-white drop-shadow">{titleCase(b)}</span>
                 </div>
-                <div className="px-2.5 py-2 text-[11px] text-white/60">{n.toLocaleString()} cars</div>
+                <div className="px-2.5 py-2 text-[11px] text-white/60">{plural(n, "car")}</div>
               </Link>
             );
           })}
@@ -387,7 +387,7 @@ export default async function PublicHome() {
         <ol className="journey relative grid gap-5 lg:grid-cols-6 lg:gap-4">
           {BUY_STEPS.map((s, i) => (
             <li key={s.title} className="relative flex gap-4 lg:flex-col lg:gap-3">
-              <span className="on-dark relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--red)] bg-[#10243a] text-base font-extrabold tabular-nums text-white">{i + 1}</span>
+              <span className="on-dark relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--red)] bg-[#141210] text-base font-extrabold tabular-nums text-white">{i + 1}</span>
               <div className="min-w-0 pt-1.5 lg:pt-0">
                 <h3 className="font-bold">{s.title}</h3>
                 <p className="mt-1 text-sm leading-6 text-white/70">{s.body}</p>
@@ -462,7 +462,7 @@ export default async function PublicHome() {
               <p className="mt-1 max-w-[52ch] text-white/75">Tell us the model, year, budget and your port. We buy daily at Japanese auctions and can source it for you.</p>
             </div>
           </div>
-          <Link href="/contact" className="relative inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--red)] px-6 font-extrabold text-white hover:bg-[#b5141a] md:w-auto">
+          <Link href="/contact" className="relative inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--red)] px-6 font-extrabold text-white hover:bg-[#9e1b16] md:w-auto">
             <Send className="h-4 w-4" /> Request a vehicle
           </Link>
         </div>

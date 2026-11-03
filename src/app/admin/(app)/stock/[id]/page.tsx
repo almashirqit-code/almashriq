@@ -105,7 +105,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
         actions={
           <>
             {v.status === "in_stock" && !activeRes && (
-              <Link href={`/admin/reservations/new?vehicle=${v.id}`} className="btn bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md shadow-orange-500/25 hover:from-amber-500 hover:to-orange-600">
+              <Link href={`/admin/reservations/new?vehicle=${v.id}`} className="btn border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100">
                 <BookmarkPlus className="h-4 w-4" />
                 {t("rv_reserve")}
               </Link>
@@ -123,7 +123,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
               </Link>
             )}
             {(v.shipping_status !== "not_booked" || v.status !== "in_stock" || activeRes) && (
-              <Link href={`/admin/stock/${v.id}/shipping`} className="btn bg-gradient-to-r from-slate-800 to-slate-900 text-white hover:from-slate-700 hover:to-slate-800">
+              <Link href={`/admin/stock/${v.id}/shipping`} className="btn bg-slate-800 text-white hover:bg-slate-700">
                 <Ship className="h-4 w-4" />
                 {v.shipping_status === "not_booked" && v.status !== "shipped" ? t("sh_book") : t("sh_edit")}
               </Link>

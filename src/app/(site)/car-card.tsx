@@ -27,7 +27,7 @@ export function CarCard({ c, wa }: { c: PublicCard; wa: string | null }) {
       <Link href={href} // Phones: a 4:3 frame (the photos' own shape) inset in the row, not stretched to the card's height, so the car isn't cropped
             className="relative my-2 ml-2 block aspect-[4/3] w-[40%] shrink-0 self-center overflow-hidden rounded-xl bg-slate-200 sm:m-0 sm:w-auto sm:self-auto sm:rounded-none" aria-label={`${carTitle(c)} — ${c.stock_no}`}>
         <CardPhotos images={imgs} alt={`${carTitle(c)} ${c.stock_no}`} />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#0a0a0c]/50 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#1a1714]/50 to-transparent" />
         <span className="absolute left-1.5 top-1.5 rounded-lg bg-black/55 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm sm:left-2.5 sm:top-2.5 sm:px-2 sm:text-xs">{c.stock_no}</span>
         {c.image_count > 1 && (
           <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-lg bg-black/55 px-1.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm sm:bottom-auto sm:right-2.5 sm:top-2.5 sm:px-2 sm:text-xs">

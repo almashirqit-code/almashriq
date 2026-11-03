@@ -186,7 +186,7 @@ export function ReservationForm({
       {/* ---------- Left: vehicle, origin, cost ---------- */}
       <div className="space-y-5">
         <section className="card overflow-hidden">
-          <div className="relative aspect-[16/9] bg-gradient-to-br from-slate-100 to-slate-200">
+          <div className="relative aspect-[16/9] bg-slate-100">
             {vehicle.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={publicImageUrl(vehicle.image)} alt="" className="h-full w-full object-cover" />
@@ -491,11 +491,10 @@ export function ReservationForm({
 
             {seeCost && (
               <div
-                className={`relative overflow-hidden rounded-2xl p-5 text-white shadow-lg ${
-                  profit >= 0 ? "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/20" : "bg-gradient-to-br from-rose-500 to-brand-700 shadow-brand-500/20"
+                className={`relative overflow-hidden rounded-xl p-5 text-white ${
+                  profit >= 0 ? "bg-emerald-700" : "bg-red-700"
                 }`}
               >
-                <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
                 <div className="relative text-xs font-semibold uppercase tracking-wider text-white/80">{t("rv_breakdown")}</div>
                 <dl className="relative mt-3 space-y-1.5 text-sm">
                   <div className="flex justify-between">

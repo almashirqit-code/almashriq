@@ -1,3 +1,4 @@
+import { plural } from "@/lib/format";
 import Link from "next/link";
 import { X, Car } from "lucide-react";
 import { carTitle, getBranches, getCompany, getFacets, listCars, makeSlug, whatsapp, PAGE_SIZE, SITE_URL, type Filters } from "@/lib/public-site";
@@ -117,9 +118,10 @@ export async function CarListing({
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black tracking-tight sm:text-3xl">{heading}</h1>
-          <p className="text-sm text-white/60">{res.total.toLocaleString()} cars found
-            {/* Unfiltered list includes reserved/sold cars; say so, so it matches the "available" count elsewhere */}
-            {res.total === facets.total && facets.total > facets.available && ` · ${facets.available.toLocaleString()} available now`}
+          <p className="text-sm text-white/60">{/* Unfiltered list includes reserved/sold cars: lead with the same "available" count used elsewhere */}
+            {res.total === facets.total && facets.total > facets.available
+              ? `${plural(facets.available, "car")} available · ${(facets.total - facets.available).toLocaleString()} reserved or sold`
+              : `${plural(res.total, "car")} found`}
           </p>
           {intro}
         </div>

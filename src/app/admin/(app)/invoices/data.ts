@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import { DEFAULT_RATES, type Currency, type Settings } from "@/lib/types";
+import { fetchAll } from "@/lib/fetch-all";
+import { DEFAULT_RATES, type Currency, type Customer, type Settings } from "@/lib/types";
 import type { VehicleOption } from "./invoice-editor";
 
 const VEHICLE_COLS =
@@ -10,12 +11,16 @@ const VEHICLE_COLS =
 export async function loadEditorData(includeVehicleIds: string[] = []) {
   const supabase = await createClient();
   const [customers, available, included, settings] = await Promise.all([
-    supabase
-      .from("customers")
-      .select("id, name, company, country, port, address, phone, email, consignee_name, consignee_address, consignee_phone, notify_party")
-      .order("name")
-      .limit(5000),
-    supabase.from("vehicles").select(VEHICLE_COLS).in("status", ["in_stock", "reserved"]).order("stock_no").limit(5000),
+    // Pickers and totals must see every row: the API returns at most 1,000 per request.
+    fetchAll<Pick<Customer, "id" | "name" | "company" | "country" | "port" | "address" | "phone" | "email" | "consignee_name" | "consignee_address" | "consignee_phone" | "notify_party">>((from, to) =>
+      supabase
+        .from("customers")
+        .select("id, name, company, country, port, address, phone, email, consignee_name, consignee_address, consignee_phone, notify_party")
+        .order("name")
+        .order("id")
+        .range(from, to)
+    ).then((data) => ({ data })),
+    fetchAll((from, to) => supabase.from("vehicles").select(VEHICLE_COLS).in("status", ["in_stock", "reserved"]).order("stock_no").order("id").range(from, to)).then((data) => ({ data })),
     includeVehicleIds.length
       ? supabase.from("vehicles").select(VEHICLE_COLS).in("id", includeVehicleIds)
       : Promise.resolve({ data: [] as VehicleOption[] }),

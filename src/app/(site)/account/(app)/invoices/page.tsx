@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { money } from "@/lib/format";
-import { requireActivePortal, getPortalInvoices, DOC_TYPE_LABEL, INVOICE_STATUS, fmtDate } from "@/lib/portal";
+import { requireActivePortal, getPortalInvoices, DOC_TYPE_LABEL, INVOICE_STATUS, fmtDate, isOverdue } from "@/lib/portal";
 import { Pill, EmptyNote } from "../ui";
 
 export const metadata: Metadata = { title: "My invoices", robots: { index: false, follow: false } };
@@ -16,6 +16,7 @@ export default async function AccountInvoices() {
       {invoices.map((i) => {
         const balance = Number(i.total) - Number(i.amount_paid);
         const quote = i.doc_type === "quotation";
+        const overdue = isOverdue(i);
         return (
           <Link
             key={i.id}
@@ -26,7 +27,7 @@ export default async function AccountInvoices() {
               <div className="font-bold">{i.invoice_no}</div>
               <div className="text-xs text-white/70">
                 {DOC_TYPE_LABEL[i.doc_type]} · {fmtDate(i.issue_date)}
-                {quote && i.valid_until ? ` · valid until ${fmtDate(i.valid_until)}` : !quote && i.due_date ? ` · due ${fmtDate(i.due_date)}` : ""}
+                {quote && i.valid_until ? ` · valid until ${fmtDate(i.valid_until)}` : !quote && i.due_date ? ` · ${overdue ? "was due" : "due"} ${fmtDate(i.due_date)}` : ""}
                 {i.units ? ` · ${i.units} ${i.units === 1 ? "car" : "cars"}` : ""}
               </div>
             </div>
@@ -35,7 +36,7 @@ export default async function AccountInvoices() {
               {!quote && i.status !== "cancelled" && balance > 0.005 ? `Balance ${money(balance, i.currency)}` : ""}
             </div>
             <div className="text-right">
-              {quote ? <Pill cls="bg-violet-100 text-violet-900">Quotation</Pill> : <Pill cls={INVOICE_STATUS[i.status].cls}>{INVOICE_STATUS[i.status].label}</Pill>}
+              {quote ? <Pill cls="bg-violet-100 text-violet-900">Quotation</Pill> : overdue ? <Pill cls="bg-red-100 text-red-900">Overdue</Pill> : <Pill cls={INVOICE_STATUS[i.status].cls}>{INVOICE_STATUS[i.status].label}</Pill>}
             </div>
           </Link>
         );

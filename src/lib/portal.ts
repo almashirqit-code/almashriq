@@ -264,5 +264,13 @@ export const DOC_KIND_LABEL: Record<string, string> = {
   dhl_docs: "DHL documents",
 };
 
+/** Past its due date (compared in Japan time, where invoices are issued) and still owing money. */
+export const isOverdue = (i: { doc_type: string; status: string; due_date: string | null; total: number | string; amount_paid: number | string }) =>
+  i.doc_type !== "quotation" &&
+  (i.status === "issued" || i.status === "partially_paid") &&
+  !!i.due_date &&
+  i.due_date.slice(0, 10) < new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" }) &&
+  Number(i.total) - Number(i.amount_paid) > 0.005;
+
 export const fmtDate = (d: string | null | undefined) =>
   d ? new Date(d.length === 10 ? `${d}T00:00:00` : d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";

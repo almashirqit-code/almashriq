@@ -13,6 +13,7 @@ import {
   getPortalSlips,
   closingBalances,
   fmtDate,
+  isOverdue,
 } from "@/lib/portal";
 import { Card, Pill, SectionTitle, carJourney, currentStep, paidDates } from "./ui";
 
@@ -92,7 +93,7 @@ export default async function AccountHome() {
     ? {
         tone: "pay" as const,
         title: `Pay ${unpaid[0].invoice_no}: ${money(Number(unpaid[0].total) - Number(unpaid[0].amount_paid), unpaid[0].currency)}`,
-        text: `${unpaid[0].due_date ? `Due ${fmtDate(unpaid[0].due_date)}. ` : ""}Pay only into the bank account printed on the invoice, then upload your slip so we can match it.`,
+        text: `${unpaid[0].due_date ? `${isOverdue(unpaid[0]) ? "Overdue since" : "Due"} ${fmtDate(unpaid[0].due_date)}. ` : ""}Pay only into the bank account printed on the invoice, then upload your slip so we can match it.`,
         actions: (
           <>
             <Link href="/account/payments" className={`${BTN} bg-white text-[var(--accent)] hover:brightness-95`}>
@@ -149,7 +150,7 @@ export default async function AccountHome() {
         {(balances.length > 0 || unpaid.length > 1) && (
           <p className="mt-4 border-t border-white/15 pt-3 text-sm text-white/80">
             {balances.length > 0 && <>Total balance due: <b className="tabular-nums text-white">{balances.map(([c, v]) => money(v, c)).join(" · ")}</b>. </>}
-            {unpaid.length > 1 && `${unpaid.length} invoices are open. `}
+            {unpaid.length > 1 && `${unpaid.length} invoices are open${unpaid.some(isOverdue) ? `, ${unpaid.filter(isOverdue).length} overdue` : ""}. `}
             <Link href="/account/statement" className="font-bold underline">
               View statement
             </Link>

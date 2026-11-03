@@ -2,6 +2,7 @@
  * Parsers for the old website (almashriqtrading.site).
  * Pure string functions — no DOM — so they run in server actions.
  */
+import { titleCase } from "@/lib/format";
 
 export const SITE_ORIGIN = "https://www.almashriqtrading.site";
 export const SITE_HOSTS = ["www.almashriqtrading.site", "almashriqtrading.site"];
@@ -46,17 +47,6 @@ const decode = (s: string) =>
     .replace(/&gt;/g, ">")
     .replace(/\s+/g, " ")
     .trim();
-
-const titleCase = (s: string) =>
-  s
-    .toLowerCase()
-    .replace(/\b([a-z])/g, (c) => c.toUpperCase())
-    .replace(/\bBmw\b/, "BMW")
-    .replace(/\bGmc\b/, "GMC")
-    .replace(/\bMg\b/, "MG")
-    .replace(/\bSuv\b/, "SUV")
-    .replace(/\bMpv\b/, "MPV")
-    .replace(/\b(\d+)wd\b/i, (m) => m.toUpperCase());
 
 const int = (s: string | undefined | null) => {
   if (!s) return null;

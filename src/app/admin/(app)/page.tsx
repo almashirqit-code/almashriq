@@ -24,9 +24,11 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const display = await getDisplayCurrency();
 
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-  const yearAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString().slice(0, 10);
+  // Months and "today" follow Japan time (the Worker runs in UTC): read the JST calendar date, then use UTC getters on it.
+  const now = new Date(Date.now() + 9 * 3600_000);
+  const ymd = (y: number, m: number) => new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10);
+  const monthStart = ymd(now.getUTCFullYear(), now.getUTCMonth());
+  const yearAgo = ymd(now.getUTCFullYear(), now.getUTCMonth() - 11);
 
   // Vehicle figures cover the company's own cars; third-party listings are only counted in a hint.
   const countStatus = (s: VehicleStatus, ownership = "own") =>
@@ -41,22 +43,32 @@ export default async function DashboardPage() {
       fetchAll<{ make: string; purchase_price: number | null; purchase_tax: number | null; expenses: number | null; cost_fx_rate: number | null; status: string }>((from, to) =>
         supabase.from("vehicles").select("make, purchase_price, purchase_tax, expenses, cost_fx_rate, status").in("status", ["in_stock", "reserved"]).eq("ownership", "own").order("id").range(from, to)
       ).then((data) => ({ data })),
-      supabase
-        .from("invoices")
-        .select("issue_date, total, currency, exchange_rate")
-        .eq("doc_type", "invoice")
-        .in("status", ACTIVE)
-        .gte("issue_date", yearAgo)
-        .limit(20000),
-      supabase.from("invoices").select("total, amount_paid, currency").neq("doc_type", "quotation").in("status", ["issued", "partially_paid"]).limit(20000),
-      supabase
-        .from("invoice_items")
-        .select("vehicle_id, invoices!inner(issue_date, status), vehicles!inner(ownership)")
-        .not("vehicle_id", "is", null)
-        .eq("vehicles.ownership", "own")
-        .gte("invoices.issue_date", monthStart)
-        .eq("invoices.doc_type", "invoice")
-        .in("invoices.status", ACTIVE),
+      // Totals must see every row: the API returns at most 1,000 per request, so page through them.
+      fetchAll<{ issue_date: string; total: number; currency: Currency; exchange_rate: number | null }>((from, to) =>
+        supabase
+          .from("invoices")
+          .select("issue_date, total, currency, exchange_rate")
+          .eq("doc_type", "invoice")
+          .in("status", ACTIVE)
+          .gte("issue_date", yearAgo)
+          .order("id")
+          .range(from, to)
+      ).then((data) => ({ data })),
+      fetchAll<{ total: number; amount_paid: number; currency: Currency }>((from, to) =>
+        supabase.from("invoices").select("total, amount_paid, currency").neq("doc_type", "quotation").in("status", ["issued", "partially_paid"]).order("id").range(from, to)
+      ).then((data) => ({ data })),
+      fetchAll<{ vehicle_id: string }>((from, to) =>
+        supabase
+          .from("invoice_items")
+          .select("vehicle_id, invoices!inner(issue_date, status), vehicles!inner(ownership)")
+          .not("vehicle_id", "is", null)
+          .eq("vehicles.ownership", "own")
+          .gte("invoices.issue_date", monthStart)
+          .eq("invoices.doc_type", "invoice")
+          .in("invoices.status", ACTIVE)
+          .order("id")
+          .range(from, to)
+      ).then((data) => ({ data })),
       supabase
         .from("invoices")
         .select("id, invoice_no, issue_date, total, currency, status, customers(name)")
@@ -86,10 +98,10 @@ export default async function DashboardPage() {
   // Sales per month (JPY equivalent) + this month by currency
   const months: { key: string; label: string; jpy: number }[] = [];
   for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
     months.push({
-      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
-      label: new Intl.DateTimeFormat(locale === "ja" ? "ja-JP" : "en-US", { month: "short" }).format(d),
+      key: d.toISOString().slice(0, 7),
+      label: new Intl.DateTimeFormat(locale === "ja" ? "ja-JP" : "en-US", { month: "short", timeZone: "UTC" }).format(d),
       jpy: 0,
     });
   }
@@ -125,36 +137,33 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <section className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-rose-500 to-orange-400 p-6 text-white shadow-xl shadow-brand-600/20 sm:p-8">
-        <div className="pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full bg-fuchsia-500/40 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 left-1/3 h-64 w-64 rounded-full bg-amber-300/40 blur-3xl" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.18)_1px,transparent_0)] [background-size:22px_22px] opacity-40" />
-        <div className="relative flex flex-wrap items-end justify-between gap-6">
+      <section className="mb-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">{t("dash_title")}</div>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+            <div className="text-xs font-semibold text-slate-500">{t("dash_title")}</div>
+            <h1 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
               <Greeting name={(profile.full_name || "").split(" ")[0]} />
             </h1>
-            <p className="mt-1 max-w-lg text-sm text-white/85">{t("dash_hero_sub")}</p>
+            <p className="mt-0.5 max-w-lg text-sm text-slate-500">{t("dash_hero_sub")}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {can.editStock(profile.role) && (
-              <Link href="/admin/stock/new" className="btn bg-white text-brand-700 shadow-lg shadow-black/10 hover:bg-white/90">
+              <Link href="/admin/stock/new" className="btn-primary">
                 <Plus className="h-4 w-4" />
                 {t("top_new_vehicle")}
               </Link>
             )}
-            <Link href="/admin/invoices/new" className="btn bg-white/15 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
+            <Link href="/admin/invoices/new" className="btn-secondary">
               <FileText className="h-4 w-4" />
               {t("top_new_invoice")}
             </Link>
             {can.editStock(profile.role) && (
               <>
-                <Link href="/admin/remittances/new" className="btn bg-white/15 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
+                <Link href="/admin/remittances/new" className="btn-secondary">
                   <Banknote className="h-4 w-4" />
                   TT
                 </Link>
-                <Link href="/admin/stock/import" className="btn bg-white/15 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
+                <Link href="/admin/stock/import" className="btn-secondary">
                   <Upload className="h-4 w-4" />
                   {t("nav_import")}
                 </Link>
@@ -346,7 +355,9 @@ async function FinanceMonth({ monthStart, today, title, isAdmin }: { monthStart:
     loadProfit(p),
     loadReceivables(),
     loadRates(),
-    supabase.from("company_expenses").select("category, amount_jpy").gte("expense_date", p.from).lte("expense_date", p.to).limit(20000),
+    fetchAll<{ category: string; amount_jpy: number }>((from, to) =>
+      supabase.from("company_expenses").select("category, amount_jpy").gte("expense_date", p.from).lte("expense_date", p.to).order("id").range(from, to)
+    ).then((data) => ({ data })),
     getT(),
   ]);
   const t = totals(entries);

@@ -15,17 +15,15 @@ export default async function LoginPage({
   const { disabled } = await searchParams;
 
   return (
-    <main className="relative flex min-h-screen flex-col bg-[#f5f6f8]">
+    <main className="relative flex min-h-screen flex-col bg-[#f4f0ea]">
       <header className="flex items-center justify-between bg-jet-950 px-4 py-2.5">
         <Logo size="sm" />
         <LanguageToggle locale={locale} dark />
       </header>
-      <div className="h-0.5 bg-gradient-to-r from-brand-600 via-brand-500/60 to-transparent" />
+      <div className="h-0.5 bg-brand-600" />
 
       <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4">
         {/* soft brand glows, like the website */}
-        <div className="pointer-events-none absolute -right-32 -top-32 h-[26rem] w-[26rem] rounded-full bg-brand-600/[0.07] blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-32 h-[24rem] w-[24rem] rounded-full bg-cerulean-600/[0.07] blur-3xl" />
 
         <div className="relative w-full max-w-sm">
           <div className="mb-6 flex flex-col items-center">

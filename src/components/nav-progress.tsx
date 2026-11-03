@@ -55,7 +55,7 @@ export function NavProgress() {
   if (!busy) return null;
   return (
     <div role="progressbar" aria-label={t("loading")} aria-busy="true" className="no-print fixed inset-x-0 top-0 z-[60] h-0.5 overflow-hidden bg-cerulean-100">
-      <div className="nav-progress h-full bg-gradient-to-r from-cerulean-500 to-brand-600" />
+      <div className="nav-progress h-full bg-brand-600" />
     </div>
   );
 }
