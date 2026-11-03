@@ -50,7 +50,7 @@ export default async function InquiryPage({ params }: { params: Promise<{ id: st
               </ConfirmButton>
             )}
             {cust && v && v.status === "in_stock" && (
-              <Link href={`/admin/reservations/new?vehicle=${v.id}`} className="btn bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+              <Link href={`/admin/reservations/new?vehicle=${v.id}`} className="btn border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100">
                 <BookmarkPlus className="h-4 w-4" />
                 {t("iq_reserve", { stock: v.stock_no })}
               </Link>

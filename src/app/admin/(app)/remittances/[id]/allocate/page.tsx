@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/fetch-all";
 import { getT } from "@/lib/i18n/server";
 import type { Currency, Remittance } from "@/lib/types";
 import { PageHeader } from "@/components/ui";
@@ -19,19 +20,28 @@ export default async function AllocatePage({ params }: { params: Promise<{ id: s
   if (Number(rem.remaining_amount) <= 0) redirect(`/admin/remittances/${id}`);
 
   const [vehicles, items, allocs] = await Promise.all([
-    supabase
-      .from("vehicles")
-      .select("id, stock_no, chassis_no, make, model, year, status, price, price_currency")
-      .order("created_at", { ascending: false })
-      .limit(10000),
-    supabase
-      .from("invoice_items")
-      .select("vehicle_id, amount, invoices!inner(id, invoice_no, customer_id, currency, exchange_rate, status)")
-      .not("vehicle_id", "is", null)
-      .neq("invoices.status", "cancelled")
-      .neq("invoices.doc_type", "quotation")
-      .limit(10000),
-    supabase.from("remittance_allocations").select("vehicle_id, amount, remittances(currency, exchange_rate)").limit(20000),
+    // Every row counts here (sold prices, amounts already allocated): the API returns at most 1,000 per request.
+    fetchAll<{ id: string; stock_no: string; chassis_no: string | null; make: string; model: string; year: number | null; status: StockOption["status"] }>((from, to) =>
+      supabase
+        .from("vehicles")
+        .select("id, stock_no, chassis_no, make, model, year, status, price, price_currency")
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to)
+    ).then((data) => ({ data })),
+    fetchAll<{ vehicle_id: string; amount: number; invoices: unknown }>((from, to) =>
+      supabase
+        .from("invoice_items")
+        .select("vehicle_id, amount, invoices!inner(id, invoice_no, customer_id, currency, exchange_rate, status)")
+        .not("vehicle_id", "is", null)
+        .neq("invoices.status", "cancelled")
+        .neq("invoices.doc_type", "quotation")
+        .order("id")
+        .range(from, to)
+    ).then((data) => ({ data })),
+    fetchAll<{ vehicle_id: string; amount: number; remittances: unknown }>((from, to) =>
+      supabase.from("remittance_allocations").select("vehicle_id, amount, remittances(currency, exchange_rate)").order("id").range(from, to)
+    ).then((data) => ({ data })),
   ]);
 
   // Sold price (from the vehicle's live invoice) and what has already been allocated to it, in JPY.

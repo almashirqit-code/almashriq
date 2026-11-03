@@ -48,7 +48,7 @@ export function MobileMenu({ links, makes, contact, fx }: { links: { href: strin
         <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
           {/* Portalled to <body>, outside the .site-glass theme scope, so it carries its own light frosted-glass styling. */}
-          <div className="absolute inset-y-0 right-0 flex w-[min(22rem,88vw)] flex-col overflow-y-auto rounded-l-3xl border-l border-[#ffffff]/70 bg-[#ffffff]/70 pb-[env(safe-area-inset-bottom)] text-[#0a0a0c] shadow-[0_20px_60px_rgb(15_23_42/0.3),inset_1px_0_0_rgb(255_255_255/0.8)] backdrop-blur-2xl backdrop-saturate-150 [color-scheme:light]">
+          <div className="absolute inset-y-0 right-0 flex w-[min(22rem,88vw)] flex-col overflow-y-auto rounded-l-3xl border-l border-[#ffffff]/70 bg-[#ffffff]/70 pb-[env(safe-area-inset-bottom)] text-[#1a1714] shadow-[0_20px_60px_rgb(15_23_42/0.3),inset_1px_0_0_rgb(255_255_255/0.8)] backdrop-blur-2xl backdrop-saturate-150 [color-scheme:light]">
             <div className="flex items-center justify-between px-5 pb-2 pt-4">
               <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-600">Menu</span>
               <button type="button" onClick={() => setOpen(false)} aria-label="Close menu" className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-900/5">

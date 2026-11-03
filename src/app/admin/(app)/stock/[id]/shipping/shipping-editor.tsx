@@ -34,10 +34,10 @@ const STEP_ICON: Record<ShippingStatus, React.ElementType> = {
   delivered: PackageCheck,
 };
 const STEP_GRAD: Record<ShippingStatus, string> = {
-  not_booked: "from-slate-400 to-slate-500",
-  booked: "from-cerulean-400 to-cerulean-700",
-  shipped: "from-jet-800 to-jet-950",
-  delivered: "from-emerald-400 to-teal-600",
+  not_booked: "bg-slate-500",
+  booked: "bg-cerulean-600",
+  shipped: "bg-harbour",
+  delivered: "bg-emerald-600",
 };
 /** Documents that move the shipping status — highlighted on the cards. */
 const KEY_DOCS: Partial<Record<VehicleDocKind, ShippingStatus>> = { bl: "shipped", waybill: "delivered", surrender: "delivered" };
@@ -158,7 +158,7 @@ export function ShippingEditor({
               >
                 <span
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white ${
-                    done ? `bg-gradient-to-br shadow-lg ${STEP_GRAD[st]}` : "bg-slate-200 text-slate-400"
+                    done ? STEP_GRAD[st] : "bg-slate-200 text-slate-400"
                   }`}
                 >
                   {done && i < idx ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}

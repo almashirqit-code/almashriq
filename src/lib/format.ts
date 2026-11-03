@@ -85,3 +85,18 @@ export function withThumbs(paths: string[]) {
 export function vehicleTitle(v: { year?: number | null; make: string; model: string; grade?: string | null }) {
   return [v.year, v.make, v.model, v.grade].filter(Boolean).join(" ");
 }
+
+/** "MINI VAN" → "Mini Van", "Bmw" → "BMW": display labels for makes and body types stored in mixed case. */
+export const titleCase = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (c) => c.toUpperCase())
+    .replace(/\bBmw\b/, "BMW")
+    .replace(/\bGmc\b/, "GMC")
+    .replace(/\bMg\b/, "MG")
+    .replace(/\bSuv\b/, "SUV")
+    .replace(/\bMpv\b/, "MPV")
+    .replace(/\b(\d+)wd\b/i, (m) => m.toUpperCase());
+
+/** "1 car", "1,508 cars". */
+export const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;

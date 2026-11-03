@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { BRANCH_CODES } from "@/lib/branches";
 import { SHIPPING_STATUSES, VEHICLE_STATUSES } from "@/lib/types";
+import { fetchAll } from "@/lib/fetch-all";
 
 export type StockFilter = { q?: string; status?: string; ship?: string; make?: string; branch?: string; agent?: string; customer?: string };
 
@@ -24,10 +25,11 @@ export async function relatedIds(supabase: Db, f: StockFilter) {
   const customer = f.customer && UUID.test(f.customer) ? f.customer : null;
   const [ships, byAgent, resCust, invCust] = await Promise.all([
     q ? supabase.from("vehicle_shipments").select("vehicle_id").or(`booking_no.ilike.%${q}%,bl_no.ilike.%${q}%,container_no.ilike.%${q}%`).limit(500) : null,
-    agent ? supabase.from("reservations").select("vehicle_id").neq("status", "cancelled").or(`sales_agent_id.eq.${agent},created_by.eq.${agent}`).limit(2000) : null,
-    customer ? supabase.from("reservations").select("vehicle_id").neq("status", "cancelled").eq("customer_id", customer).limit(2000) : null,
+    // Agent / customer filters must see all their cars, not the first 1,000
+    agent ? fetchAll<{ vehicle_id: string | null }>((from, to) => supabase.from("reservations").select("vehicle_id").neq("status", "cancelled").or(`sales_agent_id.eq.${agent},created_by.eq.${agent}`).order("id").range(from, to)).then((data) => ({ data })) : null,
+    customer ? fetchAll<{ vehicle_id: string | null }>((from, to) => supabase.from("reservations").select("vehicle_id").neq("status", "cancelled").eq("customer_id", customer).order("id").range(from, to)).then((data) => ({ data })) : null,
     customer
-      ? supabase.from("invoice_items").select("vehicle_id, invoices!inner(customer_id, status)").eq("invoices.customer_id", customer).neq("invoices.status", "cancelled").not("vehicle_id", "is", null).limit(2000)
+      ? fetchAll<{ vehicle_id: string | null }>((from, to) => supabase.from("invoice_items").select("vehicle_id, invoices!inner(customer_id, status)").eq("invoices.customer_id", customer).neq("invoices.status", "cancelled").not("vehicle_id", "is", null).order("id").range(from, to)).then((data) => ({ data }))
       : null,
   ]);
   const ids = (r: { data: { vehicle_id: string | null }[] | null } | null) => (r?.data ?? []).map((x) => x.vehicle_id).filter((x): x is string => !!x);

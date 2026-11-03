@@ -36,9 +36,9 @@ export function Modal({
   if (!open) return null;
   const width = size === "md" ? "max-w-lg" : size === "xl" ? "max-w-4xl" : "max-w-2xl";
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative flex max-h-[92vh] w-full ${width} flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl`}>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : undefined}>
+      <div className="absolute inset-0 bg-slate-950/50" onClick={onClose} />
+      <div className={`relative flex max-h-[92vh] w-full ${width} flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-xl`}>
         <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
           {icon}
           <h2 className="flex-1 text-base font-bold text-slate-900">{title}</h2>

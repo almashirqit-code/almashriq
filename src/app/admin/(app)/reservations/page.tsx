@@ -3,6 +3,7 @@ import { RowsSelect } from "@/components/rows-select";
 import { rowsParam } from "@/lib/rows";
 import { BookmarkCheck, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/fetch-all";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { date, money, num, vehicleTitle } from "@/lib/format";
@@ -57,11 +58,14 @@ export default async function ReservationsPage({
     query = query.or(ors.join(","));
   }
 
-  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+  // Start of this month in Japan time (00:00 JST = 15:00 UTC the day before).
+  const jst = new Date(Date.now() + 9 * 3600_000);
+  const monthStart = new Date(Date.UTC(jst.getUTCFullYear(), jst.getUTCMonth(), 1) - 9 * 3600_000).toISOString();
   const [{ data, count }, { data: agents }, { data: activeRows }, { count: invoicedMonth }] = await Promise.all([
     query,
     supabase.from("profiles").select("id, full_name, email").order("full_name"),
-    supabase.from("reservations").select("profit_jpy").eq("status", "active").limit(10000),
+    // The total must see every active reservation: the API returns at most 1,000 rows per request.
+    fetchAll<{ profit_jpy: number | null }>((from, to) => supabase.from("reservations").select("profit_jpy").eq("status", "active").order("id").range(from, to)).then((data) => ({ data })),
     supabase.from("reservations").select("id", { count: "exact", head: true }).eq("status", "invoiced").gte("updated_at", monthStart),
   ]);
   const rows = (data ?? []) as unknown as Row[];

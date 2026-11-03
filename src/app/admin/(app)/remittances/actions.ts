@@ -110,6 +110,7 @@ export async function deleteDocument(docId: string, remittanceId: number) {
 }
 
 export async function refreshRemittance(id: number) {
+  await assertRole(["admin", "manager", "sales"]);
   refresh(id);
 }
 

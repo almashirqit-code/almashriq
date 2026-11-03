@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/ui";
 import { ShippingEditor } from "./shipping-editor";
 import { SameShipment, type ShipmentMate } from "./same-shipment";
 import { effectiveShipping } from "../../filters";
+import { fetchAll } from "@/lib/fetch-all";
 
 export const metadata = { title: "Shipping & documents" };
 
@@ -41,7 +42,7 @@ export default async function ShippingPage({
       .neq("invoices.status", "cancelled")
       .eq("invoices.doc_type", "invoice")
       .limit(1),
-    supabase.from("vehicle_shipments").select("ship_company, forwarding_agent, courier_service, courier_company").limit(2000),
+    fetchAll<{ ship_company: string | null; forwarding_agent: string | null; courier_service: string | null; courier_company: string | null }>((from, to) => supabase.from("vehicle_shipments").select("ship_company, forwarding_agent, courier_service, courier_company").order("vehicle_id").range(from, to)).then((data) => ({ data })),
   ]);
   if (!v) notFound();
 

@@ -9,10 +9,10 @@ import type { DictKey } from "@/lib/i18n/dictionaries";
 import type { Role } from "@/lib/types";
 
 const NEW_ITEMS: { href: string; label: DictKey; icon: React.ElementType; grad: string; roles?: Role[] }[] = [
-  { href: "/admin/stock/new", label: "top_new_vehicle", icon: Car, grad: "from-rose-500 to-brand-600", roles: ["admin", "manager"] },
-  { href: "/admin/invoices/new", label: "top_new_invoice", icon: FileText, grad: "from-fuchsia-500 to-pink-600" },
-  { href: "/admin/customers/new", label: "top_new_customer", icon: Users, grad: "from-cerulean-400 to-cerulean-700" },
-  { href: "/admin/remittances/new", label: "top_new_remittance", icon: Banknote, grad: "from-emerald-400 to-teal-600", roles: ["admin", "manager"] },
+  { href: "/admin/stock/new", label: "top_new_vehicle", icon: Car, grad: "bg-harbour-50 text-harbour", roles: ["admin", "manager"] },
+  { href: "/admin/invoices/new", label: "top_new_invoice", icon: FileText, grad: "bg-brand-50 text-brand-700" },
+  { href: "/admin/customers/new", label: "top_new_customer", icon: Users, grad: "bg-cerulean-50 text-cerulean-700" },
+  { href: "/admin/remittances/new", label: "top_new_remittance", icon: Banknote, grad: "bg-emerald-50 text-emerald-700", roles: ["admin", "manager"] },
 ];
 
 export function TopbarSearch() {
@@ -48,7 +48,7 @@ export function TopbarSearch() {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder={t("top_search")}
-        className="w-full rounded-xl border border-slate-200 bg-slate-50/80 py-2 pl-9 pr-10 text-sm outline-none transition placeholder:text-slate-400 hover:bg-white focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-500/10"
+        className="w-full rounded-lg border border-slate-300/80 bg-slate-50/80 py-2 pl-9 pr-10 text-sm outline-none transition placeholder:text-slate-400 hover:bg-white focus:border-harbour focus:bg-white focus:ring-4 focus:ring-harbour/10"
       />
       <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white px-1.5 text-[10px] font-semibold text-slate-400">/</kbd>
     </form>
@@ -80,7 +80,7 @@ export function QuickCreate({ role }: { role: Role }) {
         <ChevronDown className="h-3.5 w-3.5 opacity-80" />
       </button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-1.5 shadow-xl shadow-slate-900/10">
+        <div className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-xl border border-slate-200/80 bg-white p-1.5 shadow-xl shadow-slate-900/10">
           {items.map((i) => {
             const Icon = i.icon;
             return (
@@ -90,7 +90,7 @@ export function QuickCreate({ role }: { role: Role }) {
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
-                <span className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow ${i.grad}`}>
+                <span className={`flex h-8 w-8 items-center justify-center rounded-md ${i.grad}`}>
                   <Icon className="h-4 w-4" />
                 </span>
                 {t(i.label)}

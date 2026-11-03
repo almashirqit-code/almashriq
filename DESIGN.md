@@ -1,22 +1,17 @@
 ---
 name: Al Mashriq Trading (public website)
-description: Corporate Japanese vehicle exporter with a marketplace stock list; white and navy, muted gold accent.
+description: Corporate Japanese vehicle exporter with a marketplace stock list; warm paper and night, lacquer seal.
 colors:
-  navy: "#10243a"
-  navy-hi: "#1c3a5a"
-  navy-deep: "#0b1a2b"
-  steel: "#315a78"
-  gold: "#c5a15a"
-  gold-hover: "#d4b273"
-  gold-on-navy-text: "#dcc28e"
-  page: "#f5f6f8"
-  surface: "#ffffff"
-  tint: "#eef2f6"
-  ink: "#0a0a0c"
-  ink-2: "#33363d"
-  ink-3: "#555a63"
-  ink-4: "#6b7079"
-  ink-on-navy: "#f4f6f8"
+  paper: "#f4f0ea"
+  card: "#fffcf8"
+  ink: "#1a1714"
+  night: "#141210"
+  night-hi: "#2b2621"
+  mute: "#6d655c"
+  line: "#e3dbd1"
+  chrome: "#d7d2cb"
+  lacquer: "#9e1b16"
+  lacquer-on-night: "#e58b83"
   whatsapp: "#25D366"
 typography:
   display:
@@ -67,21 +62,21 @@ spacing:
   section-gap: "48px"
 components:
   button-primary:
-    backgroundColor: "{colors.navy}"
-    textColor: "{colors.surface}"
+    backgroundColor: "{colors.night}"
+    textColor: "{colors.card}"
     rounded: "{rounded.control}"
     padding: "0 16px"
     height: "44px"
   button-primary-hover:
-    backgroundColor: "{colors.navy-hi}"
+    backgroundColor: "{colors.night-hi}"
   button-gold:
-    backgroundColor: "{colors.gold}"
-    textColor: "{colors.navy}"
+    backgroundColor: "{colors.lacquer}"
+    textColor: "{colors.card}"
     rounded: "{rounded.control}"
     padding: "0 24px"
     height: "48px"
   button-gold-hover:
-    backgroundColor: "{colors.gold-hover}"
+    backgroundColor: "{colors.lacquer}"
   button-whatsapp:
     backgroundColor: "{colors.whatsapp}"
     textColor: "{colors.ink}"
@@ -89,39 +84,41 @@ components:
     padding: "0 16px"
     height: "48px"
   input:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.card}"
     textColor: "{colors.ink}"
     rounded: "{rounded.control}"
     padding: "0 12px"
     height: "48px"
   chip:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.card}"
     textColor: "{colors.ink}"
     rounded: "{rounded.pill}"
     padding: "0 16px"
     height: "44px"
   card:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.card}"
     rounded: "{rounded.card}"
     padding: "{spacing.card-pad}"
   price-panel:
-    backgroundColor: "{colors.navy}"
-    textColor: "{colors.surface}"
+    backgroundColor: "{colors.night}"
+    textColor: "{colors.card}"
     rounded: "{rounded.card}"
     padding: "16px"
   badge-new-arrival:
-    backgroundColor: "{colors.gold}"
-    textColor: "{colors.navy}"
+    backgroundColor: "{colors.lacquer}"
+    textColor: "{colors.card}"
     rounded: "{rounded.badge}"
     padding: "2px 8px"
   nav-bar:
-    backgroundColor: "{colors.navy}"
-    textColor: "{colors.surface}"
+    backgroundColor: "{colors.night}"
+    textColor: "{colors.card}"
 ---
 
 # Design System: Al Mashriq Trading (public website)
 
-Scope: the public website only (`src/app/(site)/` and `src/components/site/`), everything inside the `.site-glass` wrapper. The staff ERP under `src/app/admin` keeps its own logo-red and cerulean look, driven by the shared Tailwind `brand` / `navy` / `cerulean` scales, and is out of scope here. On the public site those shared scales are remapped in `site.css` to the navy, steel and gold below. Invoices and the ERP stay red.
+> **Palette (current): Paper, Night and Lacquer — whole platform (site, portal, ERP).** Paper #F4F0EA page, Card #FFFCF8 surfaces, Ink #1A1714 text, Night #141210 dark bands and primary buttons, Mute #6D655C secondary text, Line #E3DBD1 hairlines, Chrome #D7D2CB metal/dividers on dark, Lacquer #9E1B16 seal (rules, links, lead buttons, "New arrival"). On Night use lacquer-on-night #E58B83, because Lacquer is only 2.3:1 there. In the prose below, read "navy" as Night, "steel" and "gold" as Lacquer, and "white" surfaces as Card. Tailwind's `slate` is remapped to the warm ramp, `brand`/`rose` to Lacquer, and `jet`/`harbour`/dark `navy` to Night. Printed invoices keep the logo red.
+
+Scope: the public website only (`src/app/(site)/` and `src/components/site/`), everything inside the `.site-glass` wrapper. The staff ERP under `src/app/admin` and the customer portal share the same palette through the Tailwind scales; the ERP's denser rules are in `docs/design-audit.md`. Printed invoices keep the logo red.
 
 ## Overview
 

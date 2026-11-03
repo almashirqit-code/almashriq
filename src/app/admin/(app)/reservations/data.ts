@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/fetch-all";
 import { getProfile } from "@/lib/auth";
 import { convert } from "@/lib/format";
 import { costJpy } from "@/lib/branches";
@@ -107,9 +108,10 @@ export async function loadFormLists() {
   const supabase = await createClient();
   const me = await getProfile();
   const [customers, agents, freight] = await Promise.all([
-    supabase.from("customers").select("id, customer_no, name, company, country, port").order("name").limit(5000),
+    // Pickers and totals must see every row: the API returns at most 1,000 per request.
+    fetchAll((from, to) => supabase.from("customers").select("id, customer_no, name, company, country, port").order("name").order("id").range(from, to)).then((data) => ({ data })),
     supabase.from("profiles").select("id, full_name, email, role, office, active").order("full_name"),
-    supabase.from("freight_rates").select("*").eq("active", true).order("destination").limit(5000),
+    fetchAll((from, to) => supabase.from("freight_rates").select("*").eq("active", true).order("destination").order("id").range(from, to)).then((data) => ({ data })),
   ]);
   return {
     customers: (customers.data ?? []) as { id: string; customer_no: number; name: string; company: string | null; country: string | null; port: string | null }[],

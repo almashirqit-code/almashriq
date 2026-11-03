@@ -11,11 +11,11 @@ import { branchFlag, branchName, costJpy } from "@/lib/branches";
 type T = (k: DictKey, v?: Record<string, string | number>) => string;
 
 export const PAYMENT_STYLE: Record<PaymentStatus, { badge: string; bar: string; row: string }> = {
-  available: { badge: "bg-sky-50 text-sky-700 ring-sky-600/20", bar: "from-cerulean-400 to-cerulean-600", row: "" },
-  reserved: { badge: "bg-amber-50 text-amber-700 ring-amber-600/25", bar: "from-amber-400 to-orange-500", row: "bg-amber-50/20" },
-  invoiced: { badge: "bg-indigo-50 text-indigo-700 ring-indigo-600/20", bar: "from-jet-800 to-jet-950", row: "bg-indigo-50/20" },
-  partial: { badge: "bg-orange-50 text-orange-700 ring-orange-600/25", bar: "from-orange-400 to-rose-500", row: "bg-orange-50/30" },
-  paid: { badge: "bg-emerald-50 text-emerald-700 ring-emerald-600/25", bar: "from-emerald-400 to-teal-600", row: "bg-emerald-50/30" },
+  available: { badge: "bg-sky-50 text-sky-700 ring-sky-600/20", bar: "bg-cerulean-500", row: "" },
+  reserved: { badge: "bg-amber-50 text-amber-700 ring-amber-600/25", bar: "bg-amber-500", row: "bg-amber-50/20" },
+  invoiced: { badge: "bg-indigo-50 text-indigo-700 ring-indigo-600/20", bar: "bg-harbour", row: "bg-indigo-50/20" },
+  partial: { badge: "bg-orange-50 text-orange-700 ring-orange-600/25", bar: "bg-orange-500", row: "bg-orange-50/30" },
+  paid: { badge: "bg-emerald-50 text-emerald-700 ring-emerald-600/25", bar: "bg-emerald-600", row: "bg-emerald-50/30" },
 };
 export const SHIPPING_STYLE: Record<ShippingStatus, string> = {
   not_booked: "bg-slate-100 text-slate-500 ring-slate-400/20",
@@ -57,11 +57,11 @@ export function StockRow({
 
   return (
     <div className={`relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition hover:shadow-md ${style.row}`}>
-      <div className={`absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b ${style.bar}`} />
+      <div className={`absolute inset-y-0 left-0 w-1 ${style.bar}`} />
       <div className="grid grid-cols-1 gap-4 p-4 pl-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.9fr)_minmax(0,1.55fr)_minmax(0,1fr)]">
         {/* 1 — vehicle */}
         <div className="flex min-w-0 gap-3">
-          <Link href={`/admin/stock/${v.id}`} className="block h-[84px] w-28 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 ring-1 ring-slate-200">
+          <Link href={`/admin/stock/${v.id}`} className="block h-[84px] w-28 shrink-0 overflow-hidden rounded-lg bg-slate-100 ring-1 ring-slate-200">
             {img ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={publicImageUrl(img.path)} alt="" className="h-full w-full object-cover" loading="lazy" />
@@ -246,7 +246,7 @@ export function StockRow({
             {(v.shipping_status !== "not_booked" || x.payment !== "available" || v.status !== "in_stock") && (
               <Link
                 href={`/admin/stock/${v.id}/shipping`}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-slate-800 to-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-slate-700 hover:to-slate-800"
+                className="inline-flex items-center gap-1.5 rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700"
               >
                 <Ship className="h-3.5 w-3.5" />
                 {v.shipping_status === "not_booked" ? t("sh_book") : t("sh_edit")}
@@ -295,7 +295,7 @@ function MoneyTile({
       <div className={`truncate text-sm font-bold tabular-nums ${color}`}>{value}</div>
       {bar != null && (
         <div className="mt-1 h-1 overflow-hidden rounded-full bg-slate-100">
-          <div className={`h-full rounded-full ${tone === "good" ? "bg-emerald-500" : "bg-gradient-to-r from-orange-400 to-red-500"}`} style={{ width: `${Math.max(0, Math.min(100, bar))}%` }} />
+          <div className={`h-full rounded-full ${tone === "good" ? "bg-emerald-500" : "bg-red-500"}`} style={{ width: `${Math.max(0, Math.min(100, bar))}%` }} />
         </div>
       )}
       {hint && <div className={`mt-0.5 truncate text-[10px] ${tone === "good" ? "text-emerald-600" : "text-slate-400"}`}>{hint}</div>}

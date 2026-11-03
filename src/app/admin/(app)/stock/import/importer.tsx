@@ -13,6 +13,7 @@ import { groupZipImages, mimeFor, readZipImages, type ZipFile } from "@/lib/phot
 import type { Currency, VehicleField } from "@/lib/types";
 import { DEFAULT_BRANCHES, jpyRate } from "@/lib/branches";
 import { photoStorage } from "@/lib/photo-upload";
+import { fetchAll } from "@/lib/fetch-all";
 
 type Row = { line: number; data: VehicleInput; errors: string[] };
 type DbVehicle = { id: string; stock_no: string; chassis_no: string | null };
@@ -154,8 +155,9 @@ export function Importer() {
 
     // 0) Auction house / yard names → ids; exchange rates for local-currency costs
     const [{ data: ahs }, { data: yds }, { data: settings }] = await Promise.all([
-      supabase.from("auction_houses").select("id, name").limit(5000),
-      supabase.from("yards").select("id, name").limit(5000),
+      // Name → id lookups must see every row, or rows past the 1,000th import without their auction house / yard
+      fetchAll<{ id: string; name: string }>((from, to) => supabase.from("auction_houses").select("id, name").order("id").range(from, to)).then((data) => ({ data })),
+      fetchAll<{ id: string; name: string }>((from, to) => supabase.from("yards").select("id, name").order("id").range(from, to)).then((data) => ({ data })),
       supabase.from("settings").select("exchange_rates").single(),
     ]);
     const rates = (settings?.exchange_rates ?? {}) as Partial<Record<Currency, number>>;

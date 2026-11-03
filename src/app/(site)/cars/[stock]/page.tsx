@@ -183,14 +183,14 @@ export default async function PublicCar({ params }: { params: Promise<{ stock: s
               <ShipsFrom code={c.branch ?? "JP"} />
             </div>
             {/* FOB is the confirmed price; shipping is quoted per port, never shown as fixed */}
-            <div className="on-dark mt-4 rounded-2xl bg-[#10243a] p-4">
+            <div className="on-dark mt-4 rounded-2xl bg-[#141210] p-4">
               <span aria-hidden className="mb-2.5 block h-0.5 w-10 rounded-full bg-[var(--red)]" />
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-white/70">FOB price</div>
                   <div className="text-3xl font-extrabold tabular-nums text-white">{price ?? "Ask for price"}</div>
                 </div>
-                <a href="#quote" className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[var(--red)] px-3.5 text-sm font-extrabold text-white hover:bg-[#b5141a]">
+                <a href="#quote" className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[var(--red)] px-3.5 text-sm font-extrabold text-white hover:bg-[#9e1b16]">
                   <Ship className="h-4 w-4" /> Get C&F price
                 </a>
               </div>

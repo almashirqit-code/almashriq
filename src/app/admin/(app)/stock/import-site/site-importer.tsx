@@ -208,7 +208,7 @@ export function SiteImporter() {
         <section className="card p-5">
           <Bar label={`Reading website pages · ${pages.done} / ${pages.total || "…"}`} value={pct(pages.done, pages.total)} grad="from-cerulean-400 to-cerulean-700" />
           <div className="mt-4">
-            <Bar label={`Importing cars · ${cars.done} / ${cars.total || "…"}`} value={pct(cars.done, cars.total)} grad="from-rose-500 to-brand-600" />
+            <Bar label={`Importing cars · ${cars.done} / ${cars.total || "…"}`} value={pct(cars.done, cars.total)} grad="bg-harbour" />
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
             <Count icon={<Car className="h-4 w-4" />} label="New" n={counts.created} tone="text-emerald-600" />
@@ -251,7 +251,7 @@ function Bar({ label, value, grad }: { label: string; value: number; grad: strin
         <span>{value}%</span>
       </div>
       <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-        <div className={`h-full rounded-full bg-gradient-to-r ${grad} transition-all`} style={{ width: `${value}%` }} />
+        <div className={`h-full rounded-full ${grad} transition-all motion-reduce:transition-none`} style={{ width: `${value}%` }} />
       </div>
     </div>
   );

@@ -22,6 +22,37 @@ const cerulean = {
   950: "#04293a",
 };
 
+// Warm neutrals from the house palette: Paper #F4F0EA, Line #E3DBD1, Chrome #D7D2CB, Mute #6D655C, Ink #1A1714, Night #141210.
+// Replaces Tailwind's cool slate everywhere, so every existing slate-* utility turns warm.
+const warm = {
+  50: "#f4f0ea",
+  100: "#ede7df",
+  200: "#e3dbd1",
+  300: "#d7d2cb",
+  400: "#a39a90",
+  500: "#7a7167",
+  600: "#6d655c",
+  700: "#4a433c",
+  800: "#2b2621",
+  900: "#1a1714",
+  950: "#141210",
+};
+
+// Lacquer seal (#9E1B16) and its tints: the house accent, also the "brand" scale.
+const lacquer = {
+  50: "#fbf1ef",
+  100: "#f5dedb",
+  200: "#ebbdb8",
+  300: "#dc958e",
+  400: "#c8665e",
+  500: "#b3382f",
+  600: "#9e1b16",
+  700: "#84160f",
+  800: "#6b130e",
+  900: "#56110d",
+  950: "#2f0806",
+};
+
 const logoRed = {
   50: "#fef2f2",
   100: "#fee2e3",
@@ -46,12 +77,23 @@ const config: Config = {
         // dark text, light tints and hairlines there. Black areas (header, footer, buttons) set it back to white.
         white: "rgb(var(--fg, 255 255 255) / <alpha-value>)",
         jet: {
-          DEFAULT: "#0a0a0c",
-          800: "#17181c",
-          900: "#111114",
-          950: "#0a0a0c",
+          DEFAULT: "#141210",
+          800: "#2b2621",
+          900: "#1a1714",
+          950: "#141210",
         },
+        slate: warm,
+        paper: "#f4f0ea",
+        card: "#fffcf8",
+        ink: "#1a1714",
+        night: "#141210",
+        mute: "#6d655c",
+        line: "#e3dbd1",
+        chrome: "#d7d2cb",
+        lacquer,
         cerulean,
+        // Primary actions (name kept from the navy era): Night #141210. The accent is the lacquer "brand" scale.
+        harbour: { DEFAULT: "#141210", hi: "#2b2621", deep: "#141210", 50: "#efe9e1", 100: "#e3dbd1" },
         navy: {
           50: cerulean[50],
           100: cerulean[100],
@@ -61,12 +103,12 @@ const config: Config = {
           500: "#007ba7",
           600: "#007ba7",
           700: "#00658a",
-          800: "#17181c",
-          900: "#111114",
-          950: "#0a0a0c",
+          800: "#2b2621",
+          900: "#1a1714",
+          950: "#141210",
         },
-        brand: logoRed,
-        rose: logoRed,
+        brand: lacquer,
+        rose: lacquer,
         sky: cerulean,
         blue: { ...cerulean, 600: "#00658a", 700: "#05506d" },
       },
