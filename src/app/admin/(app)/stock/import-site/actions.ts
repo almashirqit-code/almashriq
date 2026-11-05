@@ -6,14 +6,14 @@ import { assertRole } from "@/lib/auth";
 import { siteFetch } from "@/lib/site-import/fetch";
 import { SITE_ORIGIN, parseDetail, parseListing, parseStatusTags } from "@/lib/site-import/parse";
 
-/** Car links on one /cars page (page 1 also returns the page count). */
-export async function siteListPage(page: number): Promise<{ links: string[]; maxPage: number; error?: string }> {
+/** Car links and Sold/Reserve ribbons on one /cars page (page 1 also returns the page count). */
+export async function siteListPage(page: number): Promise<{ links: string[]; tags: Record<string, "sold" | "reserved">; maxPage: number; error?: string }> {
   await assertRole(["admin", "manager"]);
   try {
     const html = await (await siteFetch(`${SITE_ORIGIN}/cars?page=${Math.max(1, Math.floor(page))}`)).text();
     return parseListing(html);
   } catch (e) {
-    return { links: [], maxPage: 0, error: (e as Error).message };
+    return { links: [], tags: {}, maxPage: 0, error: (e as Error).message };
   }
 }
 
@@ -82,13 +82,15 @@ export async function importSiteCar(
 
   const { data: existing } = await supabase
     .from("vehicles")
-    .select("id, stock_no, status, vehicle_images(count)")
+    .select("id, stock_no, status, ownership, vehicle_images(count)")
     .eq("source_ref", car.ref)
     .maybeSingle();
 
   if (existing) {
     const imageCount = (existing.vehicle_images as unknown as { count: number }[])?.[0]?.count ?? 0;
-    if (opts.update) {
+    // The ERP is the source of truth for our own cars: never overwrite them from the website.
+    const update = opts.update && existing.ownership === "third_party";
+    if (update) {
       const patch: Record<string, unknown> = { ...row };
       // Only follow the website's Sold/Reserve tag while the car isn't in our own sales flow.
       if (["in_stock", "reserved", "sold"].includes(existing.status as string)) {
@@ -102,11 +104,30 @@ export async function importSiteCar(
       if (error) return { outcome: "failed", images: [], error: `${car.stock_no}: ${error.message}` };
     }
     return {
-      outcome: opts.update ? "updated" : "skipped",
+      outcome: update ? "updated" : "skipped",
       stockNo: existing.stock_no as string,
       vehicleId: existing.id as string,
       images: imageCount === 0 ? car.images : [],
     };
+  }
+
+  // Same car already entered directly in the ERP (the two sites number cars separately):
+  // link it to the website listing instead of creating a duplicate.
+  const chassisPrefix = (car.chassis ?? "").split("*")[0].replace(/[\\%_]/g, "\\$&");
+  if (chassisPrefix.length >= 6 && car.year) {
+    const { data: same } = await supabase
+      .from("vehicles")
+      .select("id, stock_no, vehicle_images(count)")
+      .is("source_ref", null)
+      .eq("year", car.year)
+      .ilike("chassis_no", `${chassisPrefix}%`)
+      .limit(2);
+    if (same?.length === 1) {
+      const { error } = await supabase.from("vehicles").update({ source_ref: car.ref, source_url: car.url }).eq("id", same[0].id);
+      if (error) return { outcome: "failed", images: [], error: `${car.stock_no}: ${error.message}` };
+      const imageCount = (same[0].vehicle_images as unknown as { count: number }[])?.[0]?.count ?? 0;
+      return { outcome: "skipped", stockNo: same[0].stock_no as string, vehicleId: same[0].id as string, images: imageCount === 0 ? car.images : [] };
+    }
   }
 
   const insert = {
@@ -115,7 +136,7 @@ export async function importSiteCar(
     chassis_no: masked ? null : car.chassis,
     status: opts.tag === "sold" ? "sold" : opts.tag === "reserved" ? "reserved" : "in_stock",
     ownership: "third_party",
-    supplier_name: "almashriqtrading.site",
+    supplier_name: "almashriqtradingjapan.com",
     supplier_currency: "USD",
     show_on_website: true,
     source_ref: car.ref,

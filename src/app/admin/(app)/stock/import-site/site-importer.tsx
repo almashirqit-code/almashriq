@@ -55,6 +55,7 @@ export function SiteImporter() {
       setPhase("idle");
       return false;
     }
+    Object.assign(tags.current, first.tags);
     const total = first.maxPage || 1;
     setPages({ done: 1, total });
     const links = new Set(first.links);
@@ -64,6 +65,7 @@ export function SiteImporter() {
         const r = await siteListPage(p);
         if (!r.error) {
           r.links.forEach((l) => links.add(l));
+          Object.assign(tags.current, r.tags);
           break;
         }
         if (attempt === 2) note(`Page ${p} failed: ${r.error}`);
@@ -148,7 +150,7 @@ export function SiteImporter() {
             <Globe />
           </IconChip>
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-bold text-slate-900">almashriqtrading.site → ERP</h2>
+            <h2 className="text-base font-bold text-slate-900">almashriqtradingjapan.com → ERP</h2>
             <p className="mt-0.5 text-sm text-slate-500">
               Copies every car (specs, features, price, Sold/Reserve) and its photos as <b>third-party</b> vehicles shown on the public website. Safe to run again: cars already
               imported are skipped (or updated if you tick the box), and missing photos are filled in.
