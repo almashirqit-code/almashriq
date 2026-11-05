@@ -114,12 +114,13 @@ export async function importSiteCar(
   // Same car already entered directly in the ERP (the two sites number cars separately):
   // link it to the website listing instead of creating a duplicate.
   const chassisPrefix = (car.chassis ?? "").split("*")[0].replace(/[\\%_]/g, "\\$&");
-  if (chassisPrefix.length >= 6 && car.year) {
+  if (chassisPrefix.length >= 6 && car.year && car.mileage != null) {
     const { data: same } = await supabase
       .from("vehicles")
       .select("id, stock_no, vehicle_images(count)")
       .is("source_ref", null)
       .eq("year", car.year)
+      .eq("mileage", car.mileage) // the website hides the chassis ending, so two cars can share a prefix
       .ilike("chassis_no", `${chassisPrefix}%`)
       .limit(2);
     if (same?.length === 1) {
