@@ -63,7 +63,7 @@ export async function deleteReview(id: string) {
   refresh();
 }
 
-/** Copies the reviews from almashriqtrading.site/reviews as "pending" (you publish the genuine ones). */
+/** Copies the reviews from almashriqtradingjapan.com/reviews as "pending" (you publish the genuine ones). */
 export async function importOldReviews(): Promise<{ error?: string; added?: number; found?: number }> {
   await assertRole(["admin", "manager"]);
   let list;

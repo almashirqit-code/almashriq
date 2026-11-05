@@ -4,7 +4,7 @@ import { SITE_HOSTS } from "./parse";
 /** Fetches a page or image from the old website only (never any other host). */
 export async function siteFetch(url: string, timeoutMs = 25000) {
   const u = new URL(url);
-  if (u.protocol !== "https:" || !SITE_HOSTS.includes(u.hostname)) throw new Error("Only almashriqtrading.site URLs are allowed");
+  if (u.protocol !== "https:" || !SITE_HOSTS.includes(u.hostname)) throw new Error("Only almashriqtradingjapan.com URLs are allowed");
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {

@@ -1,11 +1,11 @@
 /**
- * Parsers for the old website (almashriqtrading.site).
+ * Parsers for the old website (almashriqtradingjapan.com).
  * Pure string functions — no DOM — so they run in server actions.
  */
 import { titleCase } from "@/lib/format";
 
-export const SITE_ORIGIN = "https://www.almashriqtrading.site";
-export const SITE_HOSTS = ["www.almashriqtrading.site", "almashriqtrading.site"];
+export const SITE_ORIGIN = "https://www.almashriqtradingjapan.com";
+export const SITE_HOSTS = ["www.almashriqtradingjapan.com", "almashriqtradingjapan.com"];
 
 export type SiteCar = {
   ref: string; // "site:36161"
@@ -67,25 +67,24 @@ export function siteIdFromUrl(u: string) {
   return u.match(/\/car\/details\/[^/]+\/(\d+)/)?.[1] ?? null;
 }
 
-/** Car links + highest page number from a /cars listing page. */
+/** Car links, Sold/Reserve ribbons + highest page number from a /cars listing page. */
 export function parseListing(html: string) {
   const links = [...new Set([...html.matchAll(/href="([^"]*\/car\/details\/[^"]+)"/g)].map((m) => absolute(m[1].replace(/&amp;/g, "&"))))];
   const pages = [...html.matchAll(/[?&]page=(\d+)/g)].map((m) => Number(m[1]));
-  return { links, maxPage: pages.length ? Math.max(...pages) : 1 };
+  return { links, tags: parseStatusTags(html), maxPage: pages.length ? Math.max(...pages) : 1 };
 }
 
-/** "Sold" / "Reserve" ribbons on the homepage cards → site id → status. */
+/** "Sold" / "Reserve" ribbons on car cards → site id → status. */
 export function parseStatusTags(html: string) {
   const out: Record<string, "sold" | "reserved"> = {};
-  const links = [...html.matchAll(/\/car\/details\/[^"]+?\/(\d+)"/g)].map((m) => ({ id: m[1], at: m.index ?? 0 }));
+  const link = /\/car\/details\/[^"]+?\/(\d+)"/;
   for (const m of html.matchAll(/<span>\s*(Sold|Reserve|Reserved)\s*<\/span>/gi)) {
     const at = m.index ?? 0;
-    let best: { id: string; d: number } | null = null;
-    for (const l of links) {
-      const d = Math.abs(l.at - at);
-      if (d < 2500 && (!best || d < best.d)) best = { id: l.id, d };
-    }
-    if (best) out[best.id] = /^sold$/i.test(m[1]) ? "sold" : "reserved";
+    const wrapper = html.lastIndexOf("status-wrapper", at);
+    if (wrapper < 0) continue;
+    // Homepage cards: the ribbon's wrapper is the car link. /cars cards: the wrapper is a div and the car link follows it.
+    const id = html.slice(html.lastIndexOf("<", wrapper), wrapper).match(link)?.[1] ?? html.slice(at).match(link)?.[1];
+    if (id) out[id] = /^sold$/i.test(m[1]) ? "sold" : "reserved";
   }
   return out;
 }

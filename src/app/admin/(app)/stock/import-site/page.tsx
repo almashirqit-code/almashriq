@@ -9,7 +9,7 @@ export default async function ImportSitePage() {
   await requireRole(["admin", "manager"]);
   return (
     <>
-      <PageHeader icon={<Globe />} tone="sky" title="Import from website" subtitle="Bring the cars listed on almashriqtrading.site into the ERP" back={{ href: "/admin/stock", label: "Stock" }} />
+      <PageHeader icon={<Globe />} tone="sky" title="Import from website" subtitle="Bring the cars listed on almashriqtradingjapan.com into the ERP" back={{ href: "/admin/stock", label: "Stock" }} />
       <SiteImporter />
     </>
   );
