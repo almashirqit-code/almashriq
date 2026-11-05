@@ -9,6 +9,8 @@ import memoryQueue from "@opennextjs/cloudflare/overrides/queue/memory-queue";
 // D1 (NEXT_TAG_CACHE_D1), which is read on every hit and is consistent at once — an ERP edit shows on
 // the website on the next request, unlike KV which took up to a minute.
 export default defineCloudflareConfig({
+  // Serve cached pages without starting the Next.js server (saves CPU on every cache hit).
+  enableCacheInterception: true,
   incrementalCache: withRegionalCache(r2IncrementalCache, { mode: "long-lived" }),
   tagCache: d1NextTagCache,
   queue: memoryQueue,

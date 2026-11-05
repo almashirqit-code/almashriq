@@ -21,6 +21,8 @@
     { "pattern": "www.almashriqtrading.app", "custom_domain": true },
     { "pattern": "almashriqtrading.app", "custom_domain": true }
   ],
+  // Lets the Worker rebuild cached pages in the background. Without it they stay frozen at the last deploy.
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "almashriq" }],
   "r2_buckets": [
     { "binding": "PHOTOS", "bucket_name": "almashriq-photos" },
     // Private documents (no public domain): payment slips, receipts, support files, remittance and vehicle docs.
