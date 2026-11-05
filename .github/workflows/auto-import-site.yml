@@ -1,0 +1,46 @@
+# Nightly import of new cars from almashriqtradingjapan.com (scripts/auto-import-site.mjs).
+# Only new cars are opened; cars already in the ERP are not crawled again.
+#
+# Repository secrets (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL          already set for the database backup
+#   R2_PHOTOS_ACCESS_KEY_ID  R2 API token with Object Read & Write on almashriq-photos
+#   R2_PHOTOS_SECRET_KEY     (same token)
+name: Website import
+
+on:
+  schedule:
+    - cron: "0 21 * * *" # 21:00 UTC = 02:00 Pakistan time
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only report what would be imported"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auto-import-site
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Only what the script needs: the app's own dependencies aren't installed.
+      - run: |
+          rm package.json package-lock.json
+          npm install --no-audit --no-fund pg@8.23.1 sharp@0.35.5 @aws-sdk/client-s3@3.1144.0 tsx@4.23.15
+      - name: Import new cars
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_PHOTOS_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_PHOTOS_SECRET_KEY }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: npx tsx scripts/auto-import-site.mjs
