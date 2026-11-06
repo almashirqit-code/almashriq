@@ -183,8 +183,7 @@ export function SiteImporter() {
           </label>
         </div>
         <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          Keep this tab open while it runs (about 2–3 seconds per car, roughly an hour for all cars). You can pause and continue. Photos are compressed to about half size; the
-          free Supabase plan holds 1 GB of files.
+          Keep this tab open while it runs (about 2–3 seconds per car, roughly an hour for all cars). You can pause and continue.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {phase === "idle" || phase === "done" ? (
