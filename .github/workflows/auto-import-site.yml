@@ -1,4 +1,4 @@
-# Nightly import of new cars from almashriqtradingjapan.com (scripts/auto-import-site.mjs).
+# Daily import of new cars from almashriqtradingjapan.com (scripts/auto-import-site.mjs).
 # Only new cars are opened; cars already in the ERP are not crawled again.
 #
 # Repository secrets (Settings → Secrets and variables → Actions):
@@ -9,7 +9,7 @@ name: Website import
 
 on:
   schedule:
-    - cron: "0 21 * * *" # 21:00 UTC = 02:00 Pakistan time
+    - cron: "10 15 * * *" # 15:10 UTC = 20:10 Pakistan time
   workflow_dispatch:
     inputs:
       dry_run:
