@@ -14,7 +14,8 @@ import { FavoriteButton } from "@/components/site/favorite-button";
 import { branchName } from "@/lib/branches";
 import { CopyButton } from "@/components/site/copy-button";
 
-export const revalidate = 86400;
+// Any ERP change to a car clears this page at once, so a long lifetime only limits how often crawlers cause rebuilds.
+export const revalidate = 259200;
 // Nothing is built up front: each page is rendered on its first visit, then served from cache until it revalidates.
 export async function generateStaticParams() {
   return [];
