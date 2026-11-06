@@ -7,7 +7,7 @@ const FILTER_URLS = ["q", "body", "fuel", "trans", "steering", "min_price", "max
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: ["/admin", "/api", "/account", "/auth", "/print", ...FILTER_URLS] },
+      { userAgent: "*", allow: "/", disallow: ["/admin", "/api", "/account", "/auth", "/print", "/wa$", "/wa?", ...FILTER_URLS] },
       // SEO-tool and bulk scrapers: they walk all 1,500+ pages and bring no customers (see middleware).
       { userAgent: ["AhrefsBot", "SemrushBot", "MJ12bot", "DotBot", "PetalBot", "Bytespider", "DataForSeoBot", "BLEXBot", "serpstatbot", "MegaIndex"], disallow: "/" },
     ],

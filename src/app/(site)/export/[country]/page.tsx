@@ -82,7 +82,7 @@ export default async function MarketPage({ params }: { params: Promise<{ country
 
       <div className="mt-6 flex flex-wrap gap-3">
         {wa && (
-          <a href={wa} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#25D366] px-5 font-bold text-jet-950 hover:brightness-110">
+          <a href={wa} target="_blank" rel="noopener nofollow" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#25D366] px-5 font-bold text-jet-950 hover:brightness-110">
             <MessageCircle className="h-4 w-4" /> Ask for a C&amp;F price to {port}
           </a>
         )}

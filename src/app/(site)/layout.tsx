@@ -146,7 +146,7 @@ export default async function PublicLayout({ children }: { children: React.React
           </form>
           <div className="flex shrink-0 items-center gap-2">
             {wa && (
-              <a href={wa} target="_blank" rel="noopener" className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-bold text-jet-950 hover:brightness-110">
+              <a href={wa} target="_blank" rel="noopener nofollow" className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-bold text-jet-950 hover:brightness-110">
                 <MessageCircle className="h-4 w-4" /> WhatsApp
               </a>
             )}
@@ -277,7 +277,7 @@ export default async function PublicLayout({ children }: { children: React.React
               </a>
             )}
             {wa && (
-              <a href={wa} target="_blank" rel="noopener" className="!mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950 hover:brightness-110">
+              <a href={wa} target="_blank" rel="noopener nofollow" className="!mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950 hover:brightness-110">
                 <MessageCircle className="h-4 w-4" /> WhatsApp{company.mobile ? ` · ${company.mobile}` : ""}
               </a>
             )}
@@ -318,7 +318,7 @@ export default async function PublicLayout({ children }: { children: React.React
         <a
           href={wa}
           target="_blank"
-          rel="noopener"
+          rel="noopener nofollow"
           aria-label="WhatsApp"
           className="fixed bottom-5 right-5 z-50 hidden h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-jet-950 shadow-xl shadow-black/40 transition hover:scale-105 lg:flex"
         >

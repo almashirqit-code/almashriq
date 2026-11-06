@@ -35,8 +35,31 @@ function limited(ip: string, kind: keyof typeof LIMITS) {
  */
 const BLOCKED_BOTS = /AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|Bytespider|DataForSeoBot|BLEXBot|serpstatbot|MegaIndex|Barkrowler|SeekportBot|ImagesiftBot/i;
 
+/** Vulnerability scanners looking for files this site doesn't have. Answered here so they never start the Next.js server. */
+const SCANNER_PATHS = /(^|\/)\.(env|git|aws|svn|ssh|docker)|^\/(wp-|ipfs\/|cgi-bin|phpmyadmin)|\.(php|aspx?|jsp)$/i;
+
 /** The one address search engines should see (the custom domain). */
 const CANONICAL_HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site").host;
+
+/**
+ * Public health check for an outside uptime monitor (UptimeRobot, Better Stack…): 200 {"ok":true} when the
+ * app and its database answer, 503 otherwise. Reveals nothing private. Here, not in a route, because every
+ * ping would otherwise start the Next.js server.
+ */
+async function health() {
+  const t0 = Date.now();
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  const ok = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/public_facets`, {
+    method: "POST",
+    headers: { apikey: key, authorization: `Bearer ${key}`, "content-type": "application/json" },
+    body: "{}",
+    signal: AbortSignal.timeout(8000),
+  }).then((r) => r.ok, () => false);
+  return NextResponse.json(
+    { ok, database: ok ? "up" : "down", ms: Date.now() - t0, time: new Date().toISOString() },
+    { status: ok ? 200 : 503, headers: { "Cache-Control": "no-store" } }
+  );
+}
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -56,6 +79,17 @@ export async function middleware(request: NextRequest) {
     return new NextResponse("Crawling is not allowed.", { status: 403, headers: { "Content-Type": "text/plain" } });
   }
 
+  if (SCANNER_PATHS.test(path)) return new NextResponse("Not found", { status: 404, headers: { "Content-Type": "text/plain" } });
+
+  // A real WhatsApp button click comes from a page or a user gesture. Crawlers following these links would
+  // otherwise start the server and count as clicks in the Inquiry report. Anyone else still gets a way on.
+  if (path === "/wa" && !request.headers.has("referer") && !request.headers.has("sec-fetch-user")) {
+    return new NextResponse('<!doctype html><meta name="robots" content="noindex"><a rel="nofollow" href="/contact">Contact Al Mashriq</a>', {
+      status: 403,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
+  }
+
   const ip = (request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || "unknown").trim();
   const kind = request.method === "POST" ? "post" : path.startsWith("/api/") ? "api" : "page";
   // Link prefetches are cheap and automatic — don't count them.
@@ -67,6 +101,8 @@ export async function middleware(request: NextRequest) {
       headers: { "Retry-After": String(wait), "Content-Type": "text/plain; charset=utf-8" },
     });
   }
+
+  if (path === "/api/health") return health();
 
   let response = NextResponse.next({ request });
   // Customer portal (its print views live at /account/print/…, outside the site layout).

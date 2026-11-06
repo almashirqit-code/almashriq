@@ -37,7 +37,7 @@ export default async function AccountHome() {
         </>
       )}
       {wa && (
-        <a href={wa} target="_blank" rel="noopener" className="glass flex items-center gap-3 rounded-2xl p-4 font-bold hover:brightness-105">
+        <a href={wa} target="_blank" rel="noopener nofollow" className="glass flex items-center gap-3 rounded-2xl p-4 font-bold hover:brightness-105">
           <MessageCircle className="h-5 w-5 text-[#25D366]" /> Message us on WhatsApp
         </a>
       )}

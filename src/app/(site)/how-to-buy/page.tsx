@@ -60,7 +60,7 @@ export default async function HowToBuy() {
               <Search className="h-4 w-4" /> Browse stock
             </Link>
             {wa && (
-              <a href={wa} target="_blank" rel="noopener" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#25D366] px-5 text-sm font-bold text-jet-950 hover:brightness-110">
+              <a href={wa} target="_blank" rel="noopener nofollow" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#25D366] px-5 text-sm font-bold text-jet-950 hover:brightness-110">
                 <MessageCircle className="h-4 w-4" /> Ask on WhatsApp
               </a>
             )}

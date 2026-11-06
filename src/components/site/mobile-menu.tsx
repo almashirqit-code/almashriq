@@ -115,7 +115,7 @@ export function MobileMenu({ links, makes, contact, fx }: { links: { href: strin
                 </a>
               )}
               {contact.wa && (
-                <a href={contact.wa} target="_blank" rel="noopener" className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950">
+                <a href={contact.wa} target="_blank" rel="noopener nofollow" className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 font-bold text-jet-950">
                   <MessageCircle className="h-5 w-5" /> Chat on WhatsApp
                 </a>
               )}

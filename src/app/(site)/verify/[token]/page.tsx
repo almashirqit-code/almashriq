@@ -111,7 +111,7 @@ function ContactButtons({ wa, email }: { wa: string | null; email: string | null
   return (
     <div className="mt-5 flex flex-wrap justify-center gap-2">
       {wa && (
-        <a href={wa} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950">
+        <a href={wa} target="_blank" rel="noopener nofollow" className="inline-flex min-h-11 items-center rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950">
           WhatsApp us
         </a>
       )}
