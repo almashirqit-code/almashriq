@@ -215,7 +215,7 @@ export default async function MachineryPage({ searchParams }: { searchParams: Pr
                         <div className="flex gap-2">
                           <FavoriteButton item={{ kind: "machine", id: m.id, stock: m.stock_no, title: machineTitle(m), image: imgs[0] ?? null, price: price ?? null }} />
                           {wa && (
-                            <a href={wa} target="_blank" rel="noopener" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${m.stock_no}`}>
+                            <a href={wa} target="_blank" rel="noopener nofollow" className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366]/15 text-emerald-700 ring-1 ring-[#25D366]/40 hover:bg-[#25D366]/25" aria-label={`WhatsApp about ${m.stock_no}`}>
                               <MessageCircle className="h-5 w-5" />
                             </a>
                           )}

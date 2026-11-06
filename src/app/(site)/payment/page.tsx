@@ -58,7 +58,7 @@ export default async function PaymentPage() {
 
       <div className="mt-8 flex flex-wrap gap-3">
         {wa && (
-          <a href={wa} target="_blank" rel="noopener" className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-5 py-3 font-bold text-jet-950 hover:brightness-110">
+          <a href={wa} target="_blank" rel="noopener nofollow" className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-5 py-3 font-bold text-jet-950 hover:brightness-110">
             <MessageCircle className="h-4 w-4" /> Confirm details on WhatsApp
           </a>
         )}

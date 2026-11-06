@@ -58,7 +58,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               <Clock className="h-4 w-4 text-brand-600" /> <WorldClock zones={["japan"]} />
             </div>
             {wa && (
-              <a href={wa} target="_blank" rel="noopener" className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-bold text-jet-950 hover:brightness-110">
+              <a href={wa} target="_blank" rel="noopener nofollow" className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-bold text-jet-950 hover:brightness-110">
                 <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
               </a>
             )}

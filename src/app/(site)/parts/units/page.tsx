@@ -186,7 +186,7 @@ export default async function PartUnitsPage({ searchParams }: { searchParams: Pr
                           View unit
                         </Link>
                         {wa ? (
-                          <a href={wa} target="_blank" rel="noopener" className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 hover:brightness-110">
+                          <a href={wa} target="_blank" rel="noopener nofollow" className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-[#25D366] px-4 text-sm font-bold text-jet-950 hover:brightness-110">
                             <MessageCircle className="h-4 w-4" /> Ask for parts
                           </a>
                         ) : (
