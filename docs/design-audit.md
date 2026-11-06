@@ -18,12 +18,6 @@ Size at audit time: 103 pages (60 ERP), 52 shared components, 44 migrations.
 | 9 | No shared skeleton style; loading states vary per page. | Inconsistent perceived performance. | `.skeleton` utility (respects reduced motion) for `loading.tsx` files. | globals | Ready for Stage F loading states. |
 | 10 | Invalid inputs had no shared style. | Validation errors only shown as text. | `.input[aria-invalid=true]` red border. | `.input` | Field-level validation is visible. |
 
-### Still open (later stages)
-- 12 ERP files still hand-roll gradients (dashboard, stock detail/row, reservation form, settings, shipping editor, inquiry detail, site importer, login). Restyle in Stage F, module by module.
-- Public site: already coherent per DESIGN.md; Stage D reviews hero photography, card density and filters against real pages.
-- Portal: builds on the work in `claude/portal-redesign` (not yet merged to this branch).
-- Workflow tracing (registration → reservation → invoice → remittance → allocation → shipping) is Stage G; no business logic was changed here.
-
 ## Direction: "Export House Ledger" across all three surfaces
 - **Public site:** premium and photographic; navy bands, white stock cards, logo red as accent (DESIGN.md, palette note).
 - **Portal:** same palette, fewer bands, money and status first.
