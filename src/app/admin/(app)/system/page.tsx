@@ -39,7 +39,7 @@ export default async function SystemPage() {
       return objects.length ? "Photo store (R2) answering" : "Photo store is empty";
     }),
     checkPage("Home page", "/", /<h1/),
-    checkPage("Car stock list", "/cars", /cars found/),
+    checkPage("Car stock list", "/cars", /cars? found|reserved or sold/),
     checkPage("Sitemap (Google)", "/sitemap.xml", /<urlset/),
     checkPage("Health endpoint", "/api/health", /"ok":true/),
   ]);
