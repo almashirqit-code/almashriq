@@ -1,6 +1,6 @@
 /**
  * Nightly import of NEW cars from the old website (GitHub Actions, see .github/workflows/auto-import-site.yml).
- * Runs outside Cloudflare, so it uses no Worker CPU. Listing pages are newest first: it stops as soon as two
+ * Runs outside Cloudflare, so it uses no Worker CPU. Listing pages are newest first: it stops as soon as three
  * pages in a row hold only known cars and never opens the page of a car it already has.
  * New cars appear on the website within an hour, when the public data cache expires.
  *
@@ -20,7 +20,7 @@ const BUCKET = "almashriq-photos";
 const IMMUTABLE = "public, max-age=31536000, immutable";
 /** More than this in one night means the old site changed: import these and leave the rest for tomorrow. */
 const MAX_NEW_CARS = 100;
-const STOP_AFTER_KNOWN_PAGES = 2;
+const STOP_AFTER_KNOWN_PAGES = 3;
 // Same as src/lib/images.ts (browser only).
 const THUMB_MAX = 480;
 const THUMB_QUALITY = 72;
