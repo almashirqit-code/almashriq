@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SearchForm } from "@/components/site/search-form";
 import { flagFor } from "@/lib/brand-assets";
+import { DestinationFlags } from "@/components/site/destination-flags";
 import { MARKETS } from "@/lib/markets";
 import { POPULAR_MODELS } from "@/lib/models";
 import { dicebear } from "@/lib/avatar";
@@ -425,6 +426,8 @@ export default async function PublicHome() {
           </div>
         </div>
       </section>
+
+      <DestinationFlags />
 
       {/* Blog */}
       {posts.posts.length > 0 && (
