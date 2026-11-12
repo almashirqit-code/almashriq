@@ -11,6 +11,7 @@ import { uploadVehicleDocs } from "@/lib/vehicle-docs";
 import {
   COURIER_DOC_KINDS,
   CURRENCIES,
+  FREIGHT_TERMS,
   SHIPMENT_TYPES,
   SHIPPING_DOC_KINDS,
   SHIPPING_STATUSES,
@@ -51,6 +52,7 @@ export function ShippingEditor({
   docs,
   defaults,
   suggestions,
+  containerCars,
   initialTab,
   canEdit,
 }: {
@@ -60,6 +62,8 @@ export function ShippingEditor({
   docs: VehicleDocument[];
   defaults: { port_of_loading: string | null; place_of_delivery: string | null; shipment_type: ShipmentType | null };
   suggestions: Suggestions;
+  /** Cars with this car's container no. (this one included). */
+  containerCars: number;
   initialTab: "shipping" | "courier";
   canEdit: boolean;
 }) {
@@ -89,6 +93,9 @@ export function ShippingEditor({
     freight_charges: s?.freight_charges ?? "",
     freight_currency: s?.freight_currency ?? "USD",
     vanning_charges: s?.vanning_charges ?? "",
+    thc_charges: s?.thc_charges ?? "",
+    freight_terms: s?.freight_terms ?? "",
+    charges_scope: s?.charges_scope ?? "car",
     ship_invoice_details: s?.ship_invoice_details ?? "",
     courier_service: s?.courier_service ?? "",
     courier_company: s?.courier_company ?? "",
@@ -103,7 +110,7 @@ export function ShippingEditor({
   const SHIP_KEYS: (keyof ShipmentInput)[] = [
     "ship_company", "vessel_name", "voyage_no", "etd", "eta", "port_of_loading", "place_of_delivery", "forwarding_agent", "cut_off_date",
     "bl_no", "bl_date", "booking_no", "track_url", "shipment_type", "container_no", "freight_charges", "freight_currency", "vanning_charges",
-    "ship_invoice_details",
+    "thc_charges", "freight_terms", "charges_scope", "ship_invoice_details",
   ];
   const COURIER_KEYS: (keyof ShipmentInput)[] = ["courier_service", "courier_company", "courier_tracking", "courier_date", "courier_details", "courier_charges"];
 
@@ -140,6 +147,21 @@ export function ShippingEditor({
   );
 
   const idx = SHIPPING_STATUSES.indexOf(status);
+
+  // What the database books for this car: container totals are split equally; collect freight is the customer's.
+  const split = f.charges_scope === "container" ? Math.max(1, containerCars) : 1;
+  const part = (v: unknown) => Math.round(((Number(v) || 0) / split) * 100) / 100;
+  const share = (
+    tab === "courier"
+      ? [part(f.courier_charges) > 0 && `¥${part(f.courier_charges).toLocaleString()}`]
+      : [
+          f.freight_terms !== "collect" && part(f.freight_charges) > 0 && `${t("sh_freight")} ${f.freight_currency} ${part(f.freight_charges).toLocaleString()}`,
+          part(f.thc_charges) > 0 && `${t("sh_thc")} ¥${part(f.thc_charges).toLocaleString()}`,
+          part(f.vanning_charges) > 0 && `${t("sh_vanning")} ¥${part(f.vanning_charges).toLocaleString()}`,
+        ]
+  )
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="space-y-5">
@@ -247,6 +269,24 @@ export function ShippingEditor({
               {field("bl_date", "sh_bl_date", { type: "date" })}
               {field("track_url", "sh_track", { placeholder: "https://" })}
               <div>
+                <label className="label" htmlFor="sh-charges-for">{t("sh_charges_for")}</label>
+                <select id="sh-charges-for" className="input" value={String(f.charges_scope)} onChange={set("charges_scope")} disabled={!canEdit}>
+                  <option value="car">{t("sh_scope_car")}</option>
+                  <option value="container">{t("sh_scope_container")}</option>
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="sh-terms">{t("sh_freight_terms")}</label>
+                <select id="sh-terms" className="input" value={String(f.freight_terms ?? "")} onChange={set("freight_terms")} disabled={!canEdit}>
+                  <option value="">—</option>
+                  {FREIGHT_TERMS.map((x) => (
+                    <option key={x} value={x}>
+                      {t(`sh_terms_${x}` as DictKey)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="label">{t("sh_freight")}</label>
                 <div className="flex gap-1.5">
                   <input className="input" type="number" min={0} step="any" value={String(f.freight_charges ?? "")} onChange={set("freight_charges")} disabled={!canEdit} />
@@ -257,7 +297,13 @@ export function ShippingEditor({
                   </select>
                 </div>
               </div>
+              {field("thc_charges", "sh_thc", { type: "number", placeholder: "¥" })}
               {field("vanning_charges", "sh_vanning", { type: "number", placeholder: "¥" })}
+              <p className="text-xs text-slate-500 sm:col-span-2 xl:col-span-4">
+                {f.charges_scope === "container" && share ? t("sh_charges_split", { count: split, share }) + " " : ""}
+                {t("sh_charges_expense")}
+                {f.freight_terms === "collect" ? " " + t("sh_charges_collect") : ""}
+              </p>
               <div className="sm:col-span-2 xl:col-span-3">
                 <label className="label">{t("sh_invoice_details")}</label>
                 <textarea className="input" rows={2} value={String(f.ship_invoice_details ?? "")} onChange={set("ship_invoice_details")} disabled={!canEdit} />
@@ -270,6 +316,10 @@ export function ShippingEditor({
               {field("courier_tracking", "sh_courier_tracking")}
               {field("courier_date", "sh_courier_date", { type: "date" })}
               {field("courier_charges", "sh_courier_charges", { type: "number", placeholder: "¥" })}
+              <p className="text-xs text-slate-500 sm:col-span-2 xl:col-span-4">
+                {f.charges_scope === "container" && share ? t("sh_charges_split", { count: split, share }) + " " : ""}
+                {t("sh_charges_expense")}
+              </p>
               <div className="sm:col-span-2 xl:col-span-3">
                 <label className="label">{t("sh_courier_details")}</label>
                 <textarea className="input" rows={2} value={String(f.courier_details ?? "")} onChange={set("courier_details")} disabled={!canEdit} />

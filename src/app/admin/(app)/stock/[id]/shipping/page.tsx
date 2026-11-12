@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Ship, Info } from "lucide-react";
+import { Ship, Info, Container } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -79,6 +80,8 @@ export default async function ShippingPage({
         .filter(Boolean)
         .join(" · "),
     }));
+  // Profit sheet of this shipment: by BL like the office's sheet, else the container, else the booking.
+  const sheetRef = String(ship?.bl_no || ship?.container_no || ship?.booking_no || "").trim();
   type P = { ports: { name: string } | null } | null;
   const vv = v as unknown as { auction_houses: P; yards: P };
   const portName = vv.yards?.ports?.name ?? vv.auction_houses?.ports?.name ?? null;
@@ -102,6 +105,14 @@ export default async function ShippingPage({
         back={{ href: `/admin/stock/${id}`, label: v.stock_no }}
         title={t("sh_title")}
         subtitle={`${v.stock_no} · ${vehicleTitle(v)}${v.chassis_no ? " · " + v.chassis_no : ""}`}
+        actions={
+          sheetRef && can.seeCost(profile.role) ? (
+            <Link href={`/admin/stock/shipment?q=${encodeURIComponent(sheetRef)}`} className="btn-secondary">
+              <Container className="h-4 w-4" />
+              {t("sh_sheet")}
+            </Link>
+          ) : undefined
+        }
       />
       {unsold && (v.shipping_status as string) === "not_booked" && (
         <p className="mb-4 flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800 ring-1 ring-amber-200">
@@ -121,6 +132,7 @@ export default async function ShippingPage({
           courier_service: uniq("courier_service"),
           courier_company: uniq("courier_company"),
         }}
+        containerCars={1 + ((mateRows ?? []) as { container_no: string | null }[]).filter((m) => same(m.container_no, ship?.container_no)).length}
         initialTab={tab === "courier" ? "courier" : "shipping"}
         canEdit={can.editStock(profile.role)}
       />

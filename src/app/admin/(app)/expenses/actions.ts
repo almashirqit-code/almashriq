@@ -74,12 +74,14 @@ export async function saveExpense(_prev: ExpenseState, formData: FormData): Prom
   }
 
   if (id) {
-    const { data: old } = await supabase.from("company_expenses").select("receipt_path").eq("id", id).maybeSingle();
+    const { data: old } = await supabase.from("company_expenses").select("receipt_path, shipping_charge").eq("id", id).maybeSingle();
     if (!old) {
       if (receipt) await removePrivateFile(BUCKET, receipt.receipt_path);
       return { error: "Expense not found." };
     }
-    const { error } = await supabase.from("company_expenses").update({ ...row, ...(receipt ?? {}) }).eq("id", id);
+    // A car's freight / THC / vanning is kept by its Shipping page (migration 0044): only how it was paid can change here.
+    const change = old.shipping_charge ? { payment_method: row.payment_method, fx_rate: row.fx_rate, office: row.office } : row;
+    const { error } = await supabase.from("company_expenses").update({ ...change, ...(receipt ?? {}) }).eq("id", id);
     if (error) {
       if (receipt) await removePrivateFile(BUCKET, receipt.receipt_path);
       return { error: "The expense couldn't be saved." };
@@ -102,6 +104,8 @@ export async function deleteExpense(id: number): Promise<ExpenseState> {
   // A commission expense is removed with "Reverse commission" on the car, so the car's label stays right.
   const { data: linked } = await supabase.from("vehicles").select("stock_no").eq("commission_expense_id", id).maybeSingle();
   if (linked) return { error: `This is the commission for ${linked.stock_no}. Use "Reverse" on that car instead.` };
+  const { data: own } = await supabase.from("company_expenses").select("shipping_charge").eq("id", id).maybeSingle();
+  if (own?.shipping_charge) return { error: "This is a car's shipping charge. Change or clear it on that car's Shipping page." };
   const { data, error } = await supabase.from("company_expenses").delete().eq("id", id).select("receipt_path");
   if (error || !data?.length) return { error: "The expense couldn't be deleted." };
   if (data[0].receipt_path) await removePrivateFile(BUCKET, data[0].receipt_path as string);

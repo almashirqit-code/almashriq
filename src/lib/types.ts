@@ -27,6 +27,9 @@ export const hasFreight = (incoterm: string | null | undefined) => incoterm === 
 export const hasInsurance = (incoterm: string | null | undefined) => incoterm === "CIF";
 export type ShipmentType = "roro" | "container_20" | "container_40";
 export const SHIPMENT_TYPES: ShipmentType[] = ["roro", "container_20", "container_40"];
+export type FreightTerms = "prepaid" | "collect";
+export const FREIGHT_TERMS: FreightTerms[] = ["prepaid", "collect"];
+export type ChargesScope = "car" | "container";
 
 export interface Profile {
   id: string;
@@ -497,6 +500,12 @@ export interface VehicleShipment {
   freight_charges: number | null;
   freight_currency: Currency;
   vanning_charges: number | null;
+  /** Terminal handling charge (JPY, like vanning). */
+  thc_charges: number | null;
+  /** Collect freight is paid by the customer at destination, so it is not booked as our expense. */
+  freight_terms: FreightTerms | null;
+  /** "container": the charges are the container's totals, split equally between its cars. */
+  charges_scope: ChargesScope;
   ship_invoice_details: string | null;
   courier_service: string | null;
   courier_company: string | null;
