@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { assertRole, getProfile } from "@/lib/auth";
 import { round } from "@/lib/format";
 import { notifyInvoiceIssued } from "@/lib/notify";
-import { CURRENCIES, DOC_LIST_PATH, DOC_TYPES, INCOTERMS, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type DocType, type ExtVehicle, type Invoice, type InvoiceItem, type ShipmentType } from "@/lib/types";
+import { loadShipmentCars } from "./data";
+import { CONTAINER_MAX_VEHICLES, INVOICE_MAX_PARTS, CURRENCIES, DOC_LIST_PATH, DOC_TYPES, INCOTERMS, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type DocType, type ExtVehicle, type Invoice, type InvoiceItem, type ShipmentType } from "@/lib/types";
 
 export type InvoicePayload = {
   id?: string;
@@ -32,12 +33,23 @@ export type InvoicePayload = {
   insurance: number;
   shipment_type: ShipmentType | null;
   tax_rate: number;
-  items: { vehicle_id: string | null; description: string; quantity: number; unit_price: number; ext_vehicle?: ExtVehicle | null }[];
+  items: { vehicle_id: string | null; description: string; quantity: number; unit_price: number; ext_vehicle?: ExtVehicle | null; part_id?: string | null }[];
   show_consignee?: boolean;
   issue: boolean;
   /** When created from a reservation, that reservation is marked invoiced. */
   reservation_id?: string | null;
+  /** A container invoice made from several reservations: each one whose car is on the invoice is marked invoiced. */
+  reservation_ids?: string[];
 };
+
+/** "Add container" in the invoice editor: the cars of a booking / BL / container that are not invoiced yet. */
+export async function containerCars(ref: string): Promise<{ ids: string[]; invoiced: string[]; shipmentType: ShipmentType | null }> {
+  await getProfile();
+  const { ids, invoiced, shipmentType } = await loadShipmentCars(ref);
+  return { ids, invoiced, shipmentType };
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; error?: string }> {
   const profile = await getProfile();
@@ -55,6 +67,7 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
     .map((it) => ({
       vehicle_id: it.vehicle_id || null,
       ext_vehicle: !it.vehicle_id && it.ext_vehicle && (it.ext_vehicle.make || it.ext_vehicle.model) ? cleanExt(it.ext_vehicle) : null,
+      part_id: !it.vehicle_id && typeof it.part_id === "string" && UUID.test(it.part_id) ? it.part_id : null,
       description: String(it.description || "").trim(),
       quantity: Number(it.quantity) || 0,
       unit_price: Number(it.unit_price) || 0,
@@ -68,6 +81,12 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
   const incoterm = INCOTERMS.includes(p.incoterm ?? "") ? (p.incoterm as string) : "FOB";
   // FOB: no freight. C&F: freight. CIF: freight + insurance.
   const shipmentType = SHIPMENT_TYPES.includes(p.shipment_type as ShipmentType) ? p.shipment_type : null;
+  // One container: at most 6 vehicles and 31 part lines.
+  const cars = items.filter((it) => it.vehicle_id || it.ext_vehicle).length;
+  if (shipmentType && shipmentType !== "roro" && cars > CONTAINER_MAX_VEHICLES)
+    return { error: `A container takes at most ${CONTAINER_MAX_VEHICLES} vehicles. This invoice has ${cars}.` };
+  const partLines = items.filter((it) => it.part_id).length;
+  if (partLines > INVOICE_MAX_PARTS) return { error: `An invoice takes at most ${INVOICE_MAX_PARTS} parts. This one has ${partLines}.` };
   // RoRo: freight is included in each car's price (no separate freight line on the invoice).
   const freight = hasFreight(incoterm) && shipmentType !== "roro" ? round(Math.max(0, Number(p.freight) || 0), p.currency) : 0;
   const insurance = hasInsurance(incoterm) ? round(Math.max(0, Number(p.insurance) || 0), p.currency) : 0;
@@ -166,14 +185,12 @@ export async function saveInvoice(p: InvoicePayload): Promise<{ id?: string; err
     notifyInvoiceIssued(id);
   }
 
-  if (p.reservation_id) {
-    await supabase
-      .from("reservations")
-      .update({ status: "invoiced", invoice_id: id })
-      .eq("id", p.reservation_id)
-      .eq("status", "active");
+  const resIds = [...new Set([p.reservation_id, ...(p.reservation_ids ?? [])].filter((x): x is string => typeof x === "string" && UUID.test(x)))].slice(0, 20);
+  if (resIds.length && vehicleIds.length) {
+    // Only reservations of cars that are on this invoice.
+    await supabase.from("reservations").update({ status: "invoiced", invoice_id: id }).in("id", resIds).in("vehicle_id", vehicleIds).eq("status", "active");
     revalidatePath("/admin/reservations");
-    revalidatePath(`/admin/reservations/${p.reservation_id}`);
+    for (const r of resIds) revalidatePath(`/admin/reservations/${r}`);
   }
 
   revalidatePath(DOC_LIST_PATH[docType]);

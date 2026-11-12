@@ -5,7 +5,7 @@ import { fetchAll } from "@/lib/fetch-all";
 import { getT } from "@/lib/i18n/server";
 import type { Currency, Remittance } from "@/lib/types";
 import { PageHeader } from "@/components/ui";
-import { AllocateForm, type StockOption } from "./allocate-form";
+import { AllocateForm, type InvoiceOption, type StockOption } from "./allocate-form";
 
 export default async function AllocatePage({ params }: { params: Promise<{ id: string }> }) {
   await requireRole(["admin", "manager"]);
@@ -32,7 +32,7 @@ export default async function AllocatePage({ params }: { params: Promise<{ id: s
     fetchAll<{ vehicle_id: string; amount: number; invoices: unknown }>((from, to) =>
       supabase
         .from("invoice_items")
-        .select("vehicle_id, amount, invoices!inner(id, invoice_no, customer_id, currency, exchange_rate, status)")
+        .select("vehicle_id, amount, invoices!inner(id, invoice_no, customer_id, currency, exchange_rate, status, total, amount_paid)")
         .not("vehicle_id", "is", null)
         .neq("invoices.status", "cancelled")
         .neq("invoices.doc_type", "quotation")
@@ -57,6 +57,24 @@ export default async function AllocatePage({ params }: { params: Promise<{ id: s
         customer_id: inv.customer_id,
       });
     }
+  }
+  // Issued invoices with a balance, for "allocate to a whole invoice" (e.g. a container invoice with several cars).
+  const invoices = new Map<string, InvoiceOption>();
+  for (const it of items.data ?? []) {
+    const inv = it.invoices as unknown as { id: string; invoice_no: string; customer_id: string; currency: Currency; exchange_rate: number; status: string; total: number; amount_paid: number };
+    const balance = Number(inv?.total) - Number(inv?.amount_paid);
+    if (!it.vehicle_id || !inv || !["issued", "partially_paid"].includes(inv.status) || !(balance > 0)) continue;
+    const o = invoices.get(inv.id) ?? {
+      id: inv.id,
+      invoice_no: inv.invoice_no,
+      currency: inv.currency,
+      rate: inv.currency === "JPY" ? 1 : Number(inv.exchange_rate) || 1,
+      balance,
+      sameCustomer: inv.customer_id === rem.customer_id,
+      vehicles: [],
+    };
+    o.vehicles.push({ id: it.vehicle_id, amount: Number(it.amount) });
+    invoices.set(inv.id, o);
   }
   const allocatedJpy = new Map<string, number>();
   for (const a of allocs.data ?? []) {
@@ -92,6 +110,7 @@ export default async function AllocatePage({ params }: { params: Promise<{ id: s
           available: Number(rem.remaining_amount),
         }}
         options={options}
+        invoices={[...invoices.values()].sort((a, b) => Number(b.sameCustomer) - Number(a.sameCustomer) || b.invoice_no.localeCompare(a.invoice_no))}
       />
     </>
   );

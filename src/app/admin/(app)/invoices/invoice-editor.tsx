@@ -2,20 +2,23 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Trash2, Search, UserPlus, X, PenLine } from "lucide-react";
+import { Car, Trash2, Search, UserPlus, X, PenLine, Container, Package } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { DictKey } from "@/lib/i18n/dictionaries";
 import { convert, money, round, vehicleTitle, num } from "@/lib/format";
-import { CURRENCIES, INCOTERMS, INCOTERM_LABEL, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type Customer, type DocType, type ExtVehicle, type ShipmentType, type Vehicle } from "@/lib/types";
+import { CONTAINER_MAX_VEHICLES, INVOICE_MAX_PARTS, CURRENCIES, INCOTERMS, INCOTERM_LABEL, SHIPMENT_TYPES, hasFreight, hasInsurance, type Currency, type Customer, type DocType, type ExtVehicle, type ShipmentType, type Vehicle } from "@/lib/types";
 import { quickCreateCustomer } from "../customers/actions";
-import { saveInvoice, type InvoicePayload } from "./actions";
+import { containerCars, saveInvoice, type InvoicePayload } from "./actions";
 
 export type VehicleOption = Pick<
   Vehicle,
   "id" | "stock_no" | "chassis_no" | "make" | "model" | "grade" | "year" | "color" | "mileage" | "engine_cc" | "transmission" | "fuel" | "price" | "price_currency" | "status"
 > & { port?: { name: string; shipment_modes: string[] } | null };
 
-type Line = { key: string; vehicle_id: string | null; description: string; quantity: number; unit_price: number; ext_vehicle?: ExtVehicle | null };
+/** A part from Parts stock that can be put on an invoice. */
+export type PartOption = { id: string; part_no: string; name: string; make: string | null; model: string | null; condition: string; price: number | null; price_currency: Currency; quantity: number };
+
+type Line = { key: string; vehicle_id: string | null; description: string; quantity: number; unit_price: number; ext_vehicle?: ExtVehicle | null; part_id?: string | null };
 
 const EXT_FIELDS: { k: keyof ExtVehicle; label: string; w: string }[] = [
   { k: "make", label: "Make *", w: "w-28" },
@@ -34,11 +37,11 @@ const newKey = () => `l${++seq}`;
 export function InvoiceEditor({
   customers: initialCustomers,
   vehicles,
+  parts = [],
   rates,
   defaults,
   initial,
-  addVehicleId,
-  addVehiclePrice,
+  addVehicles,
   docType = "invoice",
 }: {
   /** Which document this editor makes: invoice, quotation (valid-until date) or auction deposit. */
@@ -48,13 +51,12 @@ export function InvoiceEditor({
     "id" | "name" | "company" | "country" | "port" | "address" | "phone" | "email" | "consignee_name" | "consignee_address" | "consignee_phone" | "notify_party"
   >[];
   vehicles: VehicleOption[];
+  parts?: PartOption[];
   rates: Record<Currency, number>;
   defaults: { currency: Currency; tax_rate: number };
   initial?: Partial<InvoicePayload> & { id?: string; items?: InvoicePayload["items"] };
-  /** Pre-adds this vehicle (from the stock list "Create invoice" action). */
-  addVehicleId?: string;
-  /** Unit price for the pre-added vehicle (e.g. from a reservation). */
-  addVehiclePrice?: number;
+  /** Pre-adds these vehicles (a car's "Create invoice" action, or every car of a container), with a unit price when a reservation has one. */
+  addVehicles?: { id: string; price?: number }[];
 }) {
   const { t, locale } = useT();
   const router = useRouter();
@@ -109,6 +111,10 @@ export function InvoiceEditor({
   });
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [panel, setPanel] = useState<"" | "container" | "parts">("");
+  const [contRef, setContRef] = useState("");
+  const [contMsg, setContMsg] = useState("");
+  const [partSearch, setPartSearch] = useState("");
 
   const vehicleMap = useMemo(() => new Map(vehicles.map((v) => [v.id, v])), [vehicles]);
   const usedIds = new Set(lines.map((l) => l.vehicle_id).filter(Boolean));
@@ -131,6 +137,51 @@ export function InvoiceEditor({
   }, [search, vehicles, lines]);
 
   const effectiveRates = { ...rates, [currency]: rate } as Record<Currency, number>;
+
+  const partMap = useMemo(() => new Map(parts.map((p) => [p.id, p])), [parts]);
+  const usedParts = new Set(lines.map((l) => l.part_id).filter(Boolean));
+  const partResults = useMemo(() => {
+    const s = partSearch.trim().toLowerCase();
+    return parts
+      .filter((p) => !usedParts.has(p.id))
+      .filter((p) => !s || [p.part_no, p.name, p.make, p.model].filter(Boolean).join(" ").toLowerCase().includes(s))
+      .slice(0, 20);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partSearch, parts, lines]);
+  const carCount = lines.filter((l) => l.vehicle_id || l.ext_vehicle).length;
+  const partCount = lines.filter((l) => l.part_id).length;
+  const isContainer = shipmentType !== "" && shipmentType !== "roro";
+
+  function addPart(p: PartOption) {
+    const specs = [`Part no: ${p.part_no}`, [p.make, p.model].filter(Boolean).join(" "), p.condition].filter(Boolean);
+    const price = p.price != null ? convert(Number(p.price), p.price_currency, currency, effectiveRates) : 0;
+    setLines((ls) => [...ls, { key: newKey(), vehicle_id: null, part_id: p.id, description: `${p.name}\n${specs.join(" · ")}`, quantity: 1, unit_price: price }]);
+    setPartSearch("");
+  }
+
+  /** Adds every car of a booking / BL / container that is not invoiced yet. */
+  function addContainer() {
+    const ref = contRef.trim();
+    if (!ref) return;
+    setContMsg("");
+    start(async () => {
+      const r = await containerCars(ref);
+      const found = r.ids.map((id) => vehicleMap.get(id)).filter((v): v is VehicleOption => !!v && !usedIds.has(v.id));
+      found.forEach((v) => addVehicle(v));
+      const missing = r.ids.length - r.ids.filter((id) => vehicleMap.has(id)).length;
+      setContMsg(
+        [
+          `${found.length} added.`,
+          r.invoiced.length ? `Already on an invoice: ${r.invoiced.join(", ")}.` : "",
+          missing ? `${missing} not available to invoice.` : "",
+          !r.ids.length && !r.invoiced.length ? "No car has this booking, BL or container no." : "",
+        ]
+          .filter(Boolean)
+          .join(" ")
+      );
+      if (found.length && shipmentType === "" && r.shipmentType) setShipmentType(r.shipmentType);
+    });
+  }
 
   function describe(v: VehicleOption) {
     const specs = [
@@ -155,15 +206,17 @@ export function InvoiceEditor({
     setShowSearch(false);
   }
 
-  // Opened from a vehicle's "Create invoice" action: add it once.
+  // Opened from a vehicle's "Create invoice" action, or for a whole container: add the cars once.
   const autoAdded = useRef(false);
   useEffect(() => {
-    if (autoAdded.current || !addVehicleId) return;
+    if (autoAdded.current || !addVehicles?.length) return;
     autoAdded.current = true;
-    const v = vehicleMap.get(addVehicleId);
-    if (v && !usedIds.has(v.id)) addVehicle(v, addVehiclePrice);
+    for (const a of addVehicles) {
+      const v = vehicleMap.get(a.id);
+      if (v && !usedIds.has(v.id)) addVehicle(v, a.price);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addVehicleId]);
+  }, [addVehicles]);
 
   function addManualVehicle() {
     setLines((ls) => [...ls, { key: newKey(), vehicle_id: null, description: "", quantity: 1, unit_price: 0, ext_vehicle: { make: "", model: "" } }]);
@@ -238,6 +291,8 @@ export function InvoiceEditor({
     const badExt = lines.find((l) => l.ext_vehicle && (!l.ext_vehicle.make.trim() || !l.ext_vehicle.model.trim()));
     if (badExt) return setError("Enter the make and model for each vehicle that is not in stock.");
     if (roroBlocked.length) return setError(t("m_roro_blocked", { stock: roroBlocked[0].stock_no, port: roroBlocked[0].port!.name }));
+    if (isContainer && carCount > CONTAINER_MAX_VEHICLES) return setError(`A container takes at most ${CONTAINER_MAX_VEHICLES} vehicles. This invoice has ${carCount}.`);
+    if (partCount > INVOICE_MAX_PARTS) return setError(`An invoice takes at most ${INVOICE_MAX_PARTS} parts. This one has ${partCount}.`);
     const payload: InvoicePayload = {
       id: initial?.id,
       doc_type: docType,
@@ -261,9 +316,10 @@ export function InvoiceEditor({
       insurance: insuranceAmt,
       shipment_type: shipmentType || null,
       tax_rate: Number(taxRate) || 0,
-      items: lines.map(({ vehicle_id, description, quantity, unit_price, ext_vehicle }) => ({ vehicle_id, description, quantity, unit_price, ext_vehicle: ext_vehicle ?? null })),
+      items: lines.map(({ vehicle_id, description, quantity, unit_price, ext_vehicle, part_id }) => ({ vehicle_id, description, quantity, unit_price, ext_vehicle: ext_vehicle ?? null, part_id: part_id ?? null })),
       issue,
       reservation_id: initial?.reservation_id ?? null,
+      reservation_ids: initial?.reservation_ids,
     };
     start(async () => {
       const res = await saveInvoice(payload);
@@ -472,8 +528,22 @@ export function InvoiceEditor({
 
       <section className="card">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-3.5">
-          <h2 className="text-sm font-semibold">{t("inv_items")}</h2>
+          <div>
+            <h2 className="text-sm font-semibold">{t("inv_items")}</h2>
+            <p className={`mt-0.5 text-xs ${(isContainer && carCount > CONTAINER_MAX_VEHICLES) || partCount > INVOICE_MAX_PARTS ? "font-semibold text-red-600" : "text-slate-500"}`}>
+              Vehicles {carCount}
+              {isContainer ? ` / ${CONTAINER_MAX_VEHICLES}` : ""} · Parts {partCount} / {INVOICE_MAX_PARTS}
+            </p>
+          </div>
           <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn-secondary" onClick={() => setPanel((p) => (p === "container" ? "" : "container"))}>
+              <Container className="h-4 w-4" />
+              Add container
+            </button>
+            <button type="button" className="btn-secondary" onClick={() => setPanel((p) => (p === "parts" ? "" : "parts"))}>
+              <Package className="h-4 w-4" />
+              Add part
+            </button>
             <button type="button" className="btn-secondary" onClick={() => setShowSearch((s) => !s)}>
               <Car className="h-4 w-4" />
               {t("inv_add_vehicle")}
@@ -496,6 +566,59 @@ export function InvoiceEditor({
             </select>
           </div>
         </div>
+
+        {panel === "container" && (
+          <div className="border-b border-slate-100 bg-slate-50 p-4">
+            <label className="label" htmlFor="inv-container-ref">
+              Booking, BL or container no. — adds every car of it that is not invoiced yet
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <input
+                id="inv-container-ref"
+                className="input max-w-xs"
+                value={contRef}
+                onChange={(e) => setContRef(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addContainer();
+                  }
+                }}
+              />
+              <button type="button" className="btn-primary" disabled={pending || !contRef.trim()} onClick={addContainer}>
+                Add cars
+              </button>
+            </div>
+            {contMsg && (
+              <p className="mt-2 text-xs text-slate-600" role="status">
+                {contMsg}
+              </p>
+            )}
+          </div>
+        )}
+
+        {panel === "parts" && (
+          <div className="border-b border-slate-100 bg-slate-50 p-4">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <input className="input pl-9" aria-label="Search parts" placeholder="Search part no., name, make, model…" value={partSearch} onChange={(e) => setPartSearch(e.target.value)} />
+            </div>
+            <ul className="mt-2 max-h-72 divide-y divide-slate-100 overflow-auto rounded-lg border border-slate-200 bg-white">
+              {partResults.length === 0 && <li className="px-3 py-3 text-sm text-slate-500">{t("no_results")}</li>}
+              {partResults.map((p) => (
+                <li key={p.id}>
+                  <button type="button" className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-brand-50" onClick={() => addPart(p)}>
+                    <span>
+                      <span className="font-medium">{p.part_no}</span> · {p.name}
+                      <span className="block text-xs text-slate-500">{[p.make, p.model, p.condition, `qty ${p.quantity}`].filter(Boolean).join(" · ")}</span>
+                    </span>
+                    <span className="shrink-0 tabular-nums text-slate-600">{p.price != null ? money(p.price, p.price_currency, locale) : "—"}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {showSearch && (
           <div className="border-b border-slate-100 bg-slate-50 p-4">
@@ -561,6 +684,11 @@ export function InvoiceEditor({
                       {v && (
                         <div className="mb-1 inline-flex items-center gap-1 rounded bg-brand-50 px-1.5 py-0.5 text-[11px] font-medium text-brand-700">
                           <Car className="h-3 w-3" /> {v.stock_no}
+                        </div>
+                      )}
+                      {l.part_id && (
+                        <div className="mb-1 inline-flex items-center gap-1 rounded bg-cerulean-50 px-1.5 py-0.5 text-[11px] font-medium text-cerulean-700">
+                          <Package className="h-3 w-3" /> {partMap.get(l.part_id)?.part_no ?? "Part"}
                         </div>
                       )}
                       {l.ext_vehicle && (

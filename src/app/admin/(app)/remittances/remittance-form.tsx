@@ -48,6 +48,7 @@ export function RemittanceForm({
     exchange_rate: "",
     instructed_amount: "",
     remit_amount: "",
+    bank_fee_jpy: "",
     remit_date: "",
     received_date: new Date().toISOString().slice(0, 10),
     remarks: "",
@@ -65,6 +66,7 @@ export function RemittanceForm({
         exchange_rate: String(initial.exchange_rate ?? ""),
         instructed_amount: String(initial.instructed_amount ?? ""),
         remit_amount: String(initial.remit_amount ?? ""),
+        bank_fee_jpy: String(initial.bank_fee_jpy ?? ""),
         remit_date: initial.remit_date ?? "",
         received_date: initial.received_date ?? "",
         remarks: initial.remarks ?? "",
@@ -124,6 +126,7 @@ export function RemittanceForm({
         exchange_rate: Number(f.exchange_rate),
         instructed_amount: Number(f.instructed_amount),
         remit_amount: Number(f.remit_amount),
+        bank_fee_jpy: f.bank_fee_jpy === "" ? null : Number(f.bank_fee_jpy),
         remit_date: f.remit_date,
         received_date: f.received_date,
         remarks: f.remarks || null,
@@ -272,6 +275,10 @@ export function RemittanceForm({
             value={charges === null ? "" : money(charges, f.currency as Currency, locale)}
           />
         </div>
+        <div>
+          {label("rem_bank_fee_jpy")}
+          <input className="input" type="number" step="1" min="0" placeholder="¥" value={f.bank_fee_jpy} onChange={(e) => set("bank_fee_jpy", e.target.value)} />
+        </div>
 
         <div>
           {label("rem_remit_date", true)}
@@ -351,6 +358,7 @@ const JA_LABELS: Partial<Record<DictKey, string>> = {
   rem_instructed: "指示金額",
   rem_remit_amount: "送金金額",
   rem_bank_charges: "銀行手数料",
+  rem_bank_fee_jpy: "円建て銀行手数料",
   rem_remit_date: "送金日",
   rem_received_date: "送金受領日",
   rem_remarks: "備考",

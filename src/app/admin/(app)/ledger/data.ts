@@ -57,7 +57,7 @@ export async function loadEntries(p: Period): Promise<Entry[]> {
       .limit(LIMIT),
     supabase
       .from("remittances")
-      .select("id, received_date, currency, remit_amount, bank_charges, exchange_rate, remitter, bank, office, shift, customers(name)")
+      .select("id, received_date, currency, remit_amount, bank_charges, bank_fee_jpy, exchange_rate, remitter, bank, office, shift, customers(name)")
       .gte("received_date", p.from)
       .lte("received_date", p.to)
       .limit(LIMIT),
@@ -118,7 +118,7 @@ export async function loadEntries(p: Period): Promise<Entry[]> {
       party: (r.customers as unknown as Named)?.name ?? r.remitter ?? "",
       office: clean(r.office),
       shift: clean(r.shift),
-      detail: [r.bank, Number(r.bank_charges) ? `bank charges ${r.bank_charges}` : ""].filter(Boolean).join(" · "),
+      detail: [r.bank, Number(r.bank_charges) ? `bank charges ${r.bank_charges}` : "", Number(r.bank_fee_jpy) ? `bank fee ¥${Number(r.bank_fee_jpy).toLocaleString()}` : ""].filter(Boolean).join(" · "),
       currency: r.currency as Currency,
       amount: Number(r.remit_amount),
       jpy: jpy(r.remit_amount, r.exchange_rate),

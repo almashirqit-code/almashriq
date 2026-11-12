@@ -20,16 +20,21 @@ export type StockOption = {
   allocatedJpy: number;
 };
 
+/** An issued invoice with a balance: its stock cars and their line amounts (invoice currency). */
+export type InvoiceOption = { id: string; invoice_no: string; currency: Currency; rate: number; balance: number; sameCustomer: boolean; vehicles: { id: string; amount: number }[] };
+
 type Row = { key: number; vehicle_id: string; mode: "amt" | "pct"; value: string };
 let seq = 0;
-const newRow = (value = ""): Row => ({ key: ++seq, vehicle_id: "", mode: "amt", value });
+const newRow = (value = "", vehicle_id = ""): Row => ({ key: ++seq, vehicle_id, mode: "amt", value });
 
 export function AllocateForm({
   remittance,
   options,
+  invoices = [],
 }: {
   remittance: { id: number; currency: Currency; rate: number; available: number };
   options: StockOption[];
+  invoices?: InvoiceOption[];
 }) {
   const { t, locale } = useT();
   const router = useRouter();
@@ -49,6 +54,25 @@ export function AllocateForm({
   const remaining = round(remittance.available - total, cur);
 
   const update = (key: number, patch: Partial<Row>) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+
+  // Whole invoice: one amount, split between the invoice's cars by their prices (the last car takes the rounding).
+  const [target, setTarget] = useState<"stock" | "invoice">("stock");
+  const [invId, setInvId] = useState("");
+  const [invAmt, setInvAmt] = useState("");
+  /** The invoice's balance in the remittance currency, capped at what the remittance has left. */
+  const dueOf = (i: InvoiceOption) => round(Math.min(remittance.available, (i.balance * i.rate) / remittance.rate), cur);
+  function fillInvoice(i: InvoiceOption, amount: number) {
+    const sum = i.vehicles.reduce((s, v) => s + v.amount, 0);
+    let left = amount;
+    setRows(
+      i.vehicles.map((v, k) => {
+        const a = k === i.vehicles.length - 1 ? round(left, cur) : round(sum > 0 ? (amount * v.amount) / sum : amount / i.vehicles.length, cur);
+        left -= a;
+        return newRow(String(a), v.id);
+      })
+    );
+    setError("");
+  }
 
   function submit() {
     setError("");
@@ -75,10 +99,71 @@ export function AllocateForm({
         <label className="label">
           {t("rem_allocate_to")} <span className="text-red-500">*</span>
         </label>
-        <select className="input" value="stock" disabled>
+        <select
+          className="input"
+          value={target}
+          onChange={(e) => {
+            setTarget(e.target.value as "stock" | "invoice");
+            setInvId("");
+            setInvAmt("");
+            setRows([newRow(String(remittance.available))]);
+          }}
+        >
           <option value="stock">{t("rem_allocate_stock")}</option>
+          <option value="invoice">{t("rem_allocate_invoice")}</option>
         </select>
       </div>
+
+      {target === "invoice" && (
+        <div className="card grid grid-cols-1 gap-3 p-4 md:grid-cols-3">
+          <div>
+            <label className="label" htmlFor="rem-invoice">
+              {t("rem_invoice")} <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="rem-invoice"
+              className="input"
+              value={invId}
+              onChange={(e) => {
+                setInvId(e.target.value);
+                const i = invoices.find((x) => x.id === e.target.value);
+                if (!i) return;
+                setInvAmt(String(dueOf(i)));
+                fillInvoice(i, dueOf(i));
+              }}
+            >
+              <option value="">—</option>
+              {invoices.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.sameCustomer ? "★ " : ""}
+                  {i.invoice_no} · {i.vehicles.length} × · {money(i.balance, i.currency, locale)}
+                </option>
+              ))}
+            </select>
+            {invoices.length === 0 && <p className="mt-1 text-xs text-slate-500">{t("rem_invoice_none")}</p>}
+          </div>
+          <div>
+            <label className="label" htmlFor="rem-invoice-amount">
+              {t("rem_invoice_amount")} ({cur})
+            </label>
+            <input id="rem-invoice-amount" className="input" type="number" min="0" step="any" value={invAmt} onChange={(e) => setInvAmt(e.target.value)} />
+          </div>
+          <div className="flex items-end">
+            <button
+              type="button"
+              className="btn-secondary"
+              disabled={!invId || !(Number(invAmt) > 0)}
+              onClick={() => {
+                const i = invoices.find((x) => x.id === invId);
+                if (i) fillInvoice(i, round(Number(invAmt) || 0, cur));
+              }}
+            >
+              {t("rem_invoice_split")}
+            </button>
+          </div>
+          <p className="text-xs text-slate-500 md:col-span-3">{t("rem_invoice_help")}</p>
+        </div>
+      )}
 
       <div className="card flex flex-wrap items-start justify-between gap-4 p-5">
         <div>

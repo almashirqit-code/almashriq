@@ -102,7 +102,7 @@ export default async function RemittancePage({ params }: { params: Promise<{ id:
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat tone="violet" label={t("rem_instructed")} value={money(rem.instructed_amount, cur, locale)} />
-        <Stat tone="sky" label={t("rem_remit_amount")} value={money(rem.remit_amount, cur, locale)} hint={`${t("rem_bank_charges")}: ${money(rem.bank_charges, cur, locale)}`} />
+        <Stat tone="sky" label={t("rem_remit_amount")} value={money(rem.remit_amount, cur, locale)} hint={`${t("rem_bank_charges")}: ${money(rem.bank_charges, cur, locale)}${Number(rem.bank_fee_jpy) > 0 ? ` · ${t("rem_bank_fee_jpy")}: ${money(rem.bank_fee_jpy, "JPY", locale)}` : ""}`} />
         <Stat tone="emerald" label={t("rem_allocated_amount")} value={money(rem.allocated_amount, cur, locale)} />
         <Stat
           tone={rem.remaining_amount > 0 ? "amber" : "emerald"}

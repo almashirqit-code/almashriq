@@ -21,6 +21,8 @@ export type RemittancePayload = {
   exchange_rate: number;
   instructed_amount: number;
   remit_amount: number;
+  /** Our bank's own fee in yen (optional). */
+  bank_fee_jpy?: number | null;
   remit_date: string;
   received_date: string;
   remarks: string | null;
@@ -51,6 +53,8 @@ export async function saveRemittance(p: RemittancePayload): Promise<{ id?: numbe
   const remit = Number(p.remit_amount);
   if (!(rate > 0) || !(instructed > 0) || !(remit > 0)) return { error: "Exchange rate and amounts must be greater than 0." };
   if (remit > instructed) return { error: "rem_err_amounts" };
+  const fee = p.bank_fee_jpy == null || String(p.bank_fee_jpy) === "" ? null : Math.round(Number(p.bank_fee_jpy));
+  if (fee !== null && (!Number.isFinite(fee) || fee < 0 || fee >= 1e12)) return { error: "Bank fee (JPY) is not a valid amount." };
 
   const row = {
     customer_id: p.customer_id,
@@ -64,6 +68,7 @@ export async function saveRemittance(p: RemittancePayload): Promise<{ id?: numbe
     exchange_rate: rate,
     instructed_amount: round(instructed, p.currency),
     remit_amount: round(remit, p.currency),
+    bank_fee_jpy: fee,
     remit_date: p.remit_date,
     received_date: p.received_date,
     remarks: p.remarks?.trim() || null,

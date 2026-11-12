@@ -54,6 +54,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
             quantity: Number(l.quantity),
             unit_price: Number(l.unit_price),
             ext_vehicle: l.ext_vehicle ?? null,
+            part_id: l.part_id ?? null,
           })),
         }}
       />

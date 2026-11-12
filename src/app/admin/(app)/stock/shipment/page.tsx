@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Container } from "lucide-react";
+import { Container, FileText } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, can } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -112,6 +112,14 @@ export default async function ShipmentSheetPage({ searchParams }: { searchParams
         tone="sky"
         back={{ href: q ? `/admin/stock?q=${encodeURIComponent(q)}` : "/admin/stock", label: t("stock_title") }}
         title={t("sh_sheet_title")}
+        actions={
+          rows.length ? (
+            <Link href={`/admin/invoices/new?shipment=${encodeURIComponent(q)}`} className="btn-primary">
+              <FileText className="h-4 w-4" />
+              {t("sh_sheet_invoice")}
+            </Link>
+          ) : undefined
+        }
         subtitle={
           first
             ? [

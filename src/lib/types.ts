@@ -239,7 +239,13 @@ export interface InvoiceItem {
   amount: number;
   sort_order: number;
   ext_vehicle?: ExtVehicle | null;
+  /** A part from Parts stock (migration 0045). */
+  part_id?: string | null;
 }
+
+/** One container: at most this many vehicles, and this many part lines, on an invoice. */
+export const CONTAINER_MAX_VEHICLES = 6;
+export const INVOICE_MAX_PARTS = 31;
 
 /** A vehicle typed in by hand on an invoice (not in our stock). */
 export type ExtVehicle = { make: string; model: string; grade?: string; year?: string; chassis_no?: string; engine_cc?: string; color?: string };
@@ -349,6 +355,8 @@ export interface Remittance {
   instructed_amount: number;
   remit_amount: number;
   bank_charges: number;
+  /** Our bank's own fee on the TT, in yen (migration 0046). */
+  bank_fee_jpy?: number | null;
   remit_date: string;
   received_date: string;
   remarks: string | null;
