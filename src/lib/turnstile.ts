@@ -3,12 +3,13 @@ import { clientIp } from "./rate-limit";
 
 /**
  * Checks the Cloudflare Turnstile token a public form sent (field "cf-turnstile-response").
- * Without TURNSTILE_SECRET_KEY the check is off. If Cloudflare can't be reached it lets the form
- * through: the database rate limits still apply, and real customers are never locked out.
+ * Without TURNSTILE_SECRET_KEY or NEXT_PUBLIC_TURNSTILE_SITE_KEY (no widget on the form) the check is
+ * off. If Cloudflare can't be reached it lets the form through: the database rate limits still apply,
+ * and real customers are never locked out.
  */
 export async function passedTurnstile(fd: FormData) {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true;
+  if (!secret || !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) return true;
   const token = String(fd.get("cf-turnstile-response") ?? "");
   if (!token) return false;
   try {
