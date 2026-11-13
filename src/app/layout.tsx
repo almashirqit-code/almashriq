@@ -4,7 +4,7 @@ import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site").replace(/\/$/, "");
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.app").replace(/\/$/, "");
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),

@@ -209,7 +209,7 @@ export function whatsapp(company: PublicCompany, message: string, ref?: string |
 export const SUPPORT_EMAIL = "support@almashriqtrading.site";
 
 /** Public website address (used for canonical URLs, sitemap and share links). */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site").replace(/\/$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.app").replace(/\/$/, "");
 
 export const assetUrl = (p: string | null | undefined) =>
   p ? siteAssetUrl(p) : null;

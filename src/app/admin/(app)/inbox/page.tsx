@@ -281,7 +281,7 @@ function Setup({ banner }: { banner: React.ReactNode }) {
             Open <b>api-console.zoho.com</b> (signed in as the Zoho admin) → <b>Add client</b> → <b>Server-based Applications</b>.
           </li>
           <li>
-            Homepage URL: <code>https://www.almashriqtrading.site</code> · Authorized redirect URI: <code>{ZOHO_REDIRECT}</code>
+            Homepage URL: <code>https://www.almashriqtrading.app</code> · Authorized redirect URI: <code>{ZOHO_REDIRECT}</code>
           </li>
           <li>
             Copy the <b>Client ID</b> and <b>Client Secret</b> into Vercel → Project → Settings → Environment Variables as <code>ZOHO_CLIENT_ID</code> and <code>ZOHO_CLIENT_SECRET</code>, then redeploy.

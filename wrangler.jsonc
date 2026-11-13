@@ -16,8 +16,6 @@
   "placement": { "mode": "smart" },
   // The live site. Cloudflare creates the DNS records and certificates for these.
   "routes": [
-    { "pattern": "www.almashriqtrading.site", "custom_domain": true },
-    { "pattern": "almashriqtrading.site", "custom_domain": true },
     { "pattern": "www.almashriqtrading.app", "custom_domain": true },
     { "pattern": "almashriqtrading.app", "custom_domain": true }
   ],
@@ -41,8 +39,7 @@
     // Supabase publishable key (replaces the legacy anon JWT): public by design, it is in every
     // browser; RLS protects the data. The variable keeps its old name so no code had to change.
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_4ROQ6iHvu7iDYEPp5SPh7Q_MfTf6Yoh",
-    "NEXT_PUBLIC_SITE_URL": "https://www.almashriqtrading.site",
-    "NEXT_PUBLIC_PHOTO_URL": "https://photos.almashriqtrading.site",
-    "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAFwNaxY7pBdG5KC3"
+    "NEXT_PUBLIC_SITE_URL": "https://www.almashriqtrading.app",
+    "NEXT_PUBLIC_PHOTO_URL": "https://photos.almashriqtrading.app"
   }
 }

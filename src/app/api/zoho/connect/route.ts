@@ -6,6 +6,6 @@ import { zohoConfigured, signState, authorizeUrl } from "@/lib/zoho-mail";
 export async function GET() {
   const profile = await getProfile();
   if (profile.role !== "admin") return NextResponse.json({ error: "Admins only" }, { status: 403 });
-  if (!zohoConfigured()) return NextResponse.redirect(new URL("/admin/inbox?error=setup", process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site"));
+  if (!zohoConfigured()) return NextResponse.redirect(new URL("/admin/inbox?error=setup", process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.app"));
   return NextResponse.redirect(authorizeUrl(signState(profile.id)));
 }

@@ -39,7 +39,7 @@ const BLOCKED_BOTS = /AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|Bytespider|Da
 const SCANNER_PATHS = /(^|\/)\.(env|git|aws|svn|ssh|docker)|^\/(wp-|ipfs\/|cgi-bin|phpmyadmin)|\.(php|aspx?|jsp)$/i;
 
 /** The one address search engines should see (the custom domain). */
-const CANONICAL_HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.site").host;
+const CANONICAL_HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.almashriqtrading.app").host;
 
 /**
  * Public health check for an outside uptime monitor (UptimeRobot, Better Stack…): 200 {"ok":true} when the
@@ -69,8 +69,7 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   // The bare domain → www (one address for Google). Same for the old Vercel address in production.
   const bare = CANONICAL_HOST.replace(/^www\./, "");
-  // almashriqtrading.app (bare and www) is an alias of the main site.
-  if ((host === bare && host !== CANONICAL_HOST) || /^(www\.)?almashriqtrading\.app$/.test(host) ||(process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app") && host !== CANONICAL_HOST)) {
+  if ((host === bare && host !== CANONICAL_HOST) || (process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app") && host !== CANONICAL_HOST)) {
     const url = new URL(request.nextUrl.pathname + request.nextUrl.search, `https://${CANONICAL_HOST}`);
     return NextResponse.redirect(url, 308);
   }

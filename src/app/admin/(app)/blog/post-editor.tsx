@@ -211,7 +211,7 @@ export function PostEditor({ initial }: { initial?: PostInput }) {
             <textarea className="input" rows={3} value={p.seo_description} onChange={(e) => set("seo_description", e.target.value)} placeholder={metaDesc} />
           </div>
           <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-100">
-            <div className="text-[11px] text-emerald-700">almashriqtrading.site › blog › {p.slug || "…"}</div>
+            <div className="text-[11px] text-emerald-700">almashriqtrading.app › blog › {p.slug || "…"}</div>
             <div className="truncate text-sm font-semibold text-blue-700">{p.seo_title || p.title || "Post title"}</div>
             <div className="line-clamp-2 text-xs text-slate-600">{metaDesc || "Description…"}</div>
           </div>
